@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 冈仁波齐转山行程方案 · 北京→临汾→阿里</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #8B2F1B;
+    --red-light: #b7410e;
+    --gold: #c9a227;
+    --ink: #2b2320;
+    --muted: #6b5f58;
+    --bg: #faf7f2;
+    --card: #ffffff;
+    --line: #eadfd2;
+    --blue: #1e3a5f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: #faf5ec; }
+  .side-nav a.active { background: #fdf3e7; color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: #faf5ec; }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: #faf5ec; }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: #fdf3e7; border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(139,47,27,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); box-shadow: 0 8px 22px rgba(139,47,27,.5); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, #5b1a0f 0%, #8B2F1B 55%, #1e3a5f 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  /* 左→右由深到浅的遮罩，保证文字清晰、右侧露出画面 */
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      rgba(45, 18, 10, .88) 0%,
+      rgba(75, 26, 14, .72) 32%,
+      rgba(91, 26, 15, .35) 62%,
+      rgba(30, 58, 95, .25) 100%);
+  }
+  /* 底部渐变衔接正文 */
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid rgba(201,162,39,.6);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: #f6efe6; color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: #fdf3e7; border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: #eef3fa; border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: #eef3fa; color: var(--blue); border: 1px solid #c7d4e4; }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: #ece5db;
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-container.kora { height: 420px; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: #f0ece6; color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar.kora { max-height: 420px; }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: #d8cbb8; border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: #faf5ec; }
+  .side-item.active { background: #fdf3e7; box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: #c62828;
+  }
+  .side-item.nice .side-num { background: #1e3a5f; }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: #5b4a40; margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: #c62828; }
+  .map-pin.nice { background: #1e3a5f; }
+  .map-pin.skip { background: #8d8379; }
+  .map-pin.trans { background: #757575; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: #c62828; color: #fff; }
+  .map-pop .tag.nice { background: #eef3fa; color: #1e3a5f; }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #fbf7f1; }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, rgba(139,47,27,.08), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.fly { background: var(--blue); }
+  .hourline .day-head .d-tag.acclim { background: #e07b00; }
+  .hourline .day-head .d-tag.kora { background: #c62828; }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed #f0e7da; vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: #fcf9f4; }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: #faf6ef; }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar, .map-sidebar.kora { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/kailash2.jpg" alt="冈仁波齐日照金山" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 马年转山 · 一圈功德翻倍</div>
+      <h1>冈仁波齐转山行程方案</h1>
+      <div class="sub">北京 ⇄ 临汾（老家）⇄ 阿里 · 身体在地狱，眼睛在天堂</div>
+      <div class="meta">
+        <span>🚉 行程链：北京 → 临汾 → 拉萨 → 塔钦 → 转山 → 临汾 → 北京</span>
+        <span>📅 时间窗口：9/24 – 10/6 到京</span>
+        <span>🏔 最高点：卓玛拉山口 5630m</span>
+        <span>🚶 路线：外圈约 52–56km</span>
+        <span>🗓 版本：2026-08-02</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 13 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>每日执行细节</a><ul class="sn-sub" data-sub="s4"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>沿途景点规划</a><ul class="sn-sub" data-sub="s5"></ul>
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>路线全景地图</a><ul class="sn-sub" data-sub="s6"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>预算明细</a><ul class="sn-sub" data-sub="s7"></ul>
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>备选路线</a><ul class="sn-sub" data-sub="s8"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>倒排时间表</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>安全与高反应对</a><ul class="sn-sub" data-sub="s10"></ul>
+          <a href="#s11" data-sp="s11"><span class="sn-no">11</span>核心装备清单</a><ul class="sn-sub" data-sub="s11"></ul>
+          <a href="#s12" data-sp="s12"><span class="sn-no">12</span>关键资源</a><ul class="sn-sub" data-sub="s12"></ul>
+          <a href="#s13" data-sp="s13"><span class="sn-no">13</span>实战经验补充</a><ul class="sn-sub" data-sub="s13"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 13 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">每日执行细节</a></li>
+      <li><a href="#s5">沿途景点规划</a></li>
+      <li><a href="#s6">路线全景地图</a></li>
+      <li><a href="#s7">预算明细（三档）</a></li>
+      <li><a href="#s8">备选路线</a></li>
+      <li><a href="#s9">倒排时间表</a></li>
+      <li><a href="#s10">安全与高反应对</a></li>
+      <li><a href="#s11">核心装备清单</a></li>
+      <li><a href="#s12">关键资源</a></li>
+      <li><a href="#s13">实战经验补充（播客）</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1. 核心结论 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node">北京</span><span class="arrow">→</span>
+      <span class="node hl">临汾</span><span class="arrow">→</span>
+      <span class="node">拉萨</span><span class="arrow">→</span>
+      <span class="node">塔钦</span><span class="arrow">→</span>
+      <span class="node hl">转山 3 天</span><span class="arrow">→</span>
+      <span class="node hl">临汾</span><span class="arrow">→</span>
+      <span class="node">北京</span>
+    </div>
+
+    <div class="callout key">
+      <span class="t">🕐 假期怎么凑（好消息：只需请 3 天假）</span>
+      国庆 10/1–10/7 ＋ 中秋 9/25–9/27。<strong>请假 3 天（9/28、29、30），即可拼出 9/24–10/6 完整行程</strong>。
+      9/24 晚下班后从北京飞回临汾（不请假）；<strong>10/6（国庆假期内）从临汾回到北京</strong> —— 满足「10/6 必须到北京」，且 10/7 还在北京休整一天。
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>事项</th><th>结论</th></tr></thead>
+        <tbody>
+          <tr><td>假期</td><td>国庆 10/1–10/7 ＋ 中秋 9/25–9/27</td></tr>
+          <tr><td>推荐方案</td><td><strong>13 天版（9/24–10/6）</strong>，只请 3 天假（9/28、29、30）</td></tr>
+          <tr><td>回京硬约束</td><td><strong>10/6（国庆内）下午到北京</strong>，10/7 北京休整，10/8 上班</td></tr>
+          <tr><td>行程链</td><td>北京 → 临汾 → 拉萨 → 塔钦 → 转山 → 临汾 → 北京</td></tr>
+          <tr><td>预算</td><td>经济 9000–11500 元 ／ 标准 13000–16500 元 ／ 舒适 17500–22000 元</td></tr>
+          <tr><td>三件提前事</td><td>① 边防证（临汾办，免费）② 拉萨＋塔钦住宿提前 1–3 个月订 ③ 四程交通尽早订</td></tr>
+          <tr><td>季节风险</td><td>十月初白天 5–12℃，夜间可至 <strong>-10℃</strong>，山口随时可能下雪 → 装备按秋冬高海拔标准</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 返程的代价</span>
+      塔钦→拉萨 1200km 需 2 天，为满足「10/6 到京 + 回临汾」：<strong>转山 D3（10/3）当天下午就要从塔钦连夜赶往萨嘎</strong>，10/4 赶回拉萨，10/5 飞回临汾，10/6 高铁回京。转山后连续 4 天赶路，身体会累，这是数学上唯一能同时满足所有约束的排法。详见备选方案 C（如果想轻松一点，可 10/6 拉萨直飞北京，但就不经临汾了）。
+    </div>
+  </section>
+
+  <!-- ============ 2. 推荐行程 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 13 天版（9/24–10/6）</h2>
+    <p>请假：<strong>9/28（一）、9/29（二）、9/30（三）</strong>，共 3 天</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>日期</th><th>星期</th><th>行程</th><th>海拔</th><th>假期</th></tr></thead>
+        <tbody>
+          <tr><td>9/24</td><td class="c">四</td><td>北京 → 临汾（晚班机 19:15–20:35，或高铁，下班后出发）</td><td class="c">—</td><td class="c">—</td></tr>
+          <tr><td>9/25</td><td class="c">五</td><td>临汾 → 西安/太原 → 拉萨（中转，傍晚到，直接休息）</td><td class="c">3650m</td><td class="c">中秋</td></tr>
+          <tr><td>9/26</td><td class="c">六</td><td>拉萨适应：上午慢走八廓街，下午大昭寺</td><td class="c">3650m</td><td class="c">中秋</td></tr>
+          <tr><td>9/27</td><td class="c">日</td><td>拉萨适应：上午布宫（约 1.5h），下午休息</td><td class="c">3650m</td><td class="c">中秋</td></tr>
+          <tr><td>9/28</td><td class="c">一</td><td>拉萨 → 日喀则 → 萨嘎（包车，约 600km，7–8h）</td><td class="c">4600m</td><td class="c">请假</td></tr>
+          <tr><td>9/29</td><td class="c">二</td><td>萨嘎 → 帕羊 → 塔钦（约 550km，6–7h）</td><td class="c">4675m</td><td class="c">请假</td></tr>
+          <tr><td>9/30</td><td class="c">三</td><td>塔钦休整：买进山票、景区登记、检查装备</td><td class="c">4675m</td><td class="c">请假</td></tr>
+          <tr><td>10/1</td><td class="c">四</td><td><strong>转山 D1</strong>：塔钦 → 止热寺（约 20–22km，7–8h）</td><td class="c">5100m</td><td class="c">国庆</td></tr>
+          <tr><td>10/2</td><td class="c">五</td><td><strong>转山 D2</strong>：止热寺 → 卓玛拉山口(5630m) → 祖楚寺（约 20km，10–11h，最苦）</td><td class="c">4830m</td><td class="c">国庆</td></tr>
+          <tr><td>10/3</td><td class="c">六</td><td><strong>转山 D3</strong>：祖楚寺 → 塔钦（约 10km，2–3h），<strong>午后包车连夜 → 萨嘎</strong></td><td class="c">4600m</td><td class="c">国庆</td></tr>
+          <tr><td>10/4</td><td class="c">日</td><td>萨嘎 → 拉萨（约 600km，7–8h），下午到拉萨休整</td><td class="c">3650m</td><td class="c">国庆</td></tr>
+          <tr><td>10/5</td><td class="c">一</td><td>拉萨 → 西安 → 临汾（早班机＋高铁/航班，傍晚到老家）</td><td class="c">—</td><td class="c">国庆</td></tr>
+          <tr><td>10/6</td><td class="c">二</td><td>临汾 → 北京（高铁 4.5–5.5h，下午到）✅</td><td class="c">—</td><td class="c">国庆</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 3. 逐小时时间线 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线（精确到小时）</h2>
+    <p>以下为 13 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">9/24（四）· 北京 → 临汾</span>
+          <span class="d-desc">飞行 1h40m</span>
+          <span class="d-tag fly">✈ 交通日</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">17:00</td><td class="t-what">下班后前往首都机场 T3/T2（国内航班提前 2h 到机场，安检＋登机）</td></tr>
+              <tr><td class="t-time">19:15</td><td class="t-what"><b>国航 CA8224 起飞</b>（首选，不请假）</td></tr>
+              <tr><td class="t-time">20:35</td><td class="t-what">抵达临汾尧都机场，打车/接机回家</td></tr>
+              <tr><td class="t-time">21:30</td><td class="t-what">到家，核对行李（边防证、证件、装备）；早睡，第二天 6:00 起</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">备选：高铁 G627 北京丰台 14:29 → 临汾西 19:02（需请半天假）；或更晚班次当晚 22 点后到家。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">9/25（五）· 临汾 → 拉萨</span>
+          <span class="d-desc">中转飞行约 5h</span>
+          <span class="d-tag fly">✈ 交通日 · 中秋</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">06:00</td><td class="t-what">起床，早餐（清淡）；检查身份证、边防证、充电宝</td></tr>
+              <tr><td class="t-time">07:00</td><td class="t-what">出发去临汾西站（高铁）或尧都机场（航班）</td></tr>
+              <tr><td class="t-time">08:00–09:30</td><td class="t-what">临汾 → 西安（高铁约 1.5h）</td></tr>
+              <tr><td class="t-time">10:00</td><td class="t-what">西安咸阳机场值机、候机</td></tr>
+              <tr><td class="t-time">11:30–14:00</td><td class="t-what">西安 → 拉萨（直飞约 2.5–3h，选早班机）</td></tr>
+              <tr><td class="t-time">14:00–14:30</td><td class="t-what"><b>落地拉萨贡嘎机场</b>（3650m），机场大巴/出租去市区</td></tr>
+              <tr><td class="t-time">16:00</td><td class="t-what">入住拉萨酒店，放下行李</td></tr>
+              <tr><td class="t-time">16:30</td><td class="t-what">微信小程序预约布宫（10/27）与大昭寺门票；采购红景天等药品（如没提前备）</td></tr>
+              <tr><td class="t-time">18:00</td><td class="t-what">晚餐（清淡、易消化），<b>不洗澡、不喝酒、不剧烈活动</b></td></tr>
+              <tr><td class="t-time">21:00</td><td class="t-what">入睡（首日高反最容易在夜间出现，务必保证睡眠）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">部分日期有临汾直飞/经停拉萨班次，优先用直飞；到达后有任何不适先休息，别硬逛。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">9/26（六）· 拉萨适应 Day 1</span>
+          <span class="d-desc">慢节奏</span>
+          <span class="d-tag acclim">🏔 适应日 · 中秋</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">08:00</td><td class="t-what">自然醒，早餐</td></tr>
+              <tr><td class="t-time">09:00–11:00</td><td class="t-what">慢走八廓街（顺时针转经，不赶路），适应海拔</td></tr>
+              <tr><td class="t-time">11:00</td><td class="t-what"><b>大昭寺（85 元）</b>入寺参观，11:30 后游客可入</td></tr>
+              <tr><td class="t-time">12:30</td><td class="t-what">午餐（甜茶馆/藏面，多喝热甜茶补糖分）</td></tr>
+              <tr><td class="t-time">14:00–16:00</td><td class="t-what">回酒店午休（高反期下午补觉很重要）</td></tr>
+              <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>※</b> 布宫广场/药王山观景台（免费，20min），拍 50 元背面机位</td></tr>
+              <tr><td class="t-time">18:30</td><td class="t-what">晚餐</td></tr>
+              <tr><td class="t-time">21:30</td><td class="t-what">早睡；确认身体状态（能吃饭、睡眠 ≥6h、无明显头痛即合格）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">适应标准：能正常吃饭、睡眠 ≥6h、无明显头痛。若状态差，宁可把 9/27 下午也用来休息。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">9/27（日）· 拉萨适应 Day 2</span>
+          <span class="d-desc">上午布宫</span>
+          <span class="d-tag acclim">🏔 适应日 · 中秋</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">07:30</td><td class="t-what">起床早餐（布宫需按预约时段提前 40min 排队）</td></tr>
+              <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>布达拉宫（200 元，一号线）</b>参观，约 1.5h</td></tr>
+              <tr><td class="t-time">10:30–11:30</td><td class="t-what">布宫广场/周边慢逛拍照</td></tr>
+              <tr><td class="t-time">12:00</td><td class="t-what">午餐</td></tr>
+              <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>※</b> 西藏博物馆（免费，需预约）或回酒店午休</td></tr>
+              <tr><td class="t-time">16:00</td><td class="t-what">联系/确认 9/28 包车司机与出发时间；确认 10/3、10/4 返程车</td></tr>
+              <tr><td class="t-time">18:00</td><td class="t-what">晚餐；整理进阿里行李（轻装部分寄酒店）</td></tr>
+              <tr><td class="t-time">21:30</td><td class="t-what">早睡，明早 6:30 出发</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">若 9/26 状态不佳，9/27 下午全部用于休息，景点可砍。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">9/28（一）· 拉萨 → 日喀则 → 萨嘎</span>
+          <span class="d-desc">包车约 600km · 7–8h</span>
+          <span class="d-tag">🚙 阿里南线去程 · 请假</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">06:30</td><td class="t-what">早餐，退房；包车出发（4 人拼车/独享）</td></tr>
+              <tr><td class="t-time">08:30–09:30</td><td class="t-what">岗巴拉山口俯瞰<b>羊卓雍措（羊湖）</b>（100 元），停车 40–60min</td></tr>
+              <tr><td class="t-time">10:30</td><td class="t-what">继续出发（海拔逐步爬升，全程每 2h 下车活动防血栓/缓解高反）</td></tr>
+              <tr><td class="t-time">11:30–12:00</td><td class="t-what"><b>※ 卡若拉冰川</b>（约 50 元），20–30min 拍照</td></tr>
+              <tr><td class="t-time">12:30–13:30</td><td class="t-what">江孜午餐；<b>※ 宗山古堡/白居寺</b>（30–40min，时间紧二选一）</td></tr>
+              <tr><td class="t-time">15:00–16:30</td><td class="t-what"><b>※ 扎什伦布寺</b>（55 元，1.5–2h），日喀则</td></tr>
+              <tr><td class="t-time">16:30–19:30</td><td class="t-what">日喀则 → 拉孜 → 萨嘎（约 300km，4h）</td></tr>
+              <tr><td class="t-time">19:30–20:00</td><td class="t-what">到萨嘎（4600m），晚餐、入住；<b>高反观察夜</b>，别喝酒</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">重点：出发前与司机确认 10/3 返程车（塔钦→萨嘎）与 10/4（萨嘎→拉萨），无缝衔接。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">9/29（二）· 萨嘎 → 帕羊 → 塔钦</span>
+          <span class="d-desc">包车约 550km · 6–7h</span>
+          <span class="d-tag">🚙 阿里南线去程 · 请假</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">07:00</td><td class="t-what">早餐，出发</td></tr>
+              <tr><td class="t-time">10:00</td><td class="t-what"><b>※ 帕羊镇</b>停车休息 20min（草原牧场景观）</td></tr>
+              <tr><td class="t-time">12:00–13:00</td><td class="t-what">途中午餐（阿里物价高，提前备些路餐）</td></tr>
+              <tr><td class="t-time">14:00</td><td class="t-what">远眺冈仁波齐峰（南面初见神山）</td></tr>
+              <tr><td class="t-time">14:30–15:30</td><td class="t-what"><b>到达塔钦</b>（4675m），入住<b>弥散供氧旅馆</b></td></tr>
+              <tr><td class="t-time">16:00</td><td class="t-what">休息（此时海拔比拉萨高 1000m，务必平躺适应）</td></tr>
+              <tr><td class="t-time">18:00</td><td class="t-what">晚餐；与客栈老板确认 10/1 转山天气与进山注意事项</td></tr>
+              <tr><td class="t-time">21:00</td><td class="t-what">早睡（海拔 4675m 初夜可能失眠——正常）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">到塔钦后务必住 1–2 晚再转山；选弥散供氧房；问清不动地钉救援车联系方式与价格（150–200 元/人）。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">9/30（三）· 塔钦休整</span>
+          <span class="d-desc">海拔 4675m</span>
+          <span class="d-tag">🏔 适应/休整 · 请假</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">07:30</td><td class="t-what">早餐</td></tr>
+              <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>※ 玛旁雍错（圣湖 150 元）＋拉昂错（鬼湖）</b>包车往返 2–3h</td></tr>
+              <tr><td class="t-time">11:30–12:30</td><td class="t-what">回塔钦午餐</td></tr>
+              <tr><td class="t-time">14:00</td><td class="t-what"><b>买转山进山票（神山圣湖景区约 200 元）</b>、景区登记</td></tr>
+              <tr><td class="t-time">15:00</td><td class="t-what">确认天气（问茶馆/客栈老板）；确认救援车联系方式与运营时间</td></tr>
+              <tr><td class="t-time">15:30–16:30</td><td class="t-what">试走 1–2km 平路，检验鞋子（防水、不磨脚）；适应背负</td></tr>
+              <tr><td class="t-time">17:00</td><td class="t-what">采购：水（1.5L+）、能量食品、葡萄糖、现金（1500–2000 分开放）</td></tr>
+              <tr><td class="t-time">18:30</td><td class="t-what">晚餐（高碳水）；整理转山包（30–40L，两晚换洗衣物＋睡袋内胆）</td></tr>
+              <tr><td class="t-time">20:30</td><td class="t-what"><b>早睡养精蓄锐</b>，明早 7:00 起（出发前一晚睡眠直接决定垭口状态）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">状态差就全程休息、放弃圣湖；转山前一晚务必睡足，海拔 5100m 止热寺那晚可能失眠。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">10/1（四）· 转山 D1</span>
+          <span class="d-desc">塔钦 → 止热寺 · 20–22km · 7–8h</span>
+          <span class="d-tag kora">🚶 转山 · 国庆</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">07:00</td><td class="t-what">早餐（高碳水）；检查装备：登山杖、护膝、保温壶、头灯、便携制氧机（全程佩戴）</td></tr>
+              <tr><td class="t-time">08:00</td><td class="t-what">出发（太阳出来后走，最迟 9:30；前 6km 平缓土路热身）</td></tr>
+              <tr><td class="t-time">09:30</td><td class="t-what"><b>经幡广场</b>（约 5km，可雇马/背夫处）</td></tr>
+              <tr><td class="t-time">11:00</td><td class="t-what"><b>曲古寺</b>（约 10km），休息 20min，茶馆补水</td></tr>
+              <tr><td class="t-time">12:00</td><td class="t-what">路餐（能量棒/巧克力，别吃太饱）</td></tr>
+              <tr><td class="t-time">14:00</td><td class="t-what"><b>※ 哲日普寺</b>，短暂停留（北坡看神山，景观最壮丽）</td></tr>
+              <tr><td class="t-time">16:00 前</td><td class="t-what"><b>到止热寺（5100m）</b>入住（床位 80–150 元，提前订）</td></tr>
+              <tr><td class="t-time">17:00</td><td class="t-what">休息、热水、晚餐（茶馆）</td></tr>
+              <tr><td class="t-time">18:30</td><td class="t-what"><b>※ 北壁日照金山</b>观景（17:30–19:00 前后，天气好时）</td></tr>
+              <tr><td class="t-time">20:00</td><td class="t-what">入睡（5100m 失眠正常，别慌；备好明早 4:30 的头灯）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">全程每 20–30 步一小歇、每小时一大歇；状态差可在止热寺多住一晚，或雇马——不要硬扛。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">10/2（五）· 转山 D2（最艰苦）</span>
+          <span class="d-desc">止热寺 → 卓玛拉山口(5630m) → 祖楚寺 · 约 20km · 10–11h</span>
+          <span class="d-tag kora">🚶 转山 · 国庆</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">04:30</td><td class="t-what"><b>起床、出发</b>（头灯必带；山风午后加大，务必赶早）</td></tr>
+              <tr><td class="t-time">05:00–06:00</td><td class="t-what">摸黑爬升段（天葬台方向）；便携制氧机保持开启</td></tr>
+              <tr><td class="t-time">07:00</td><td class="t-what">天微微亮，<b>※ 天葬台遗址</b>（尊重不打扰）</td></tr>
+              <tr><td class="t-time">09:00–10:00</td><td class="t-what"><b>翻越卓玛拉山口（5630m，全程最高点）</b>——最后 1–2km 连续爬升，每走 20–30 步停下喘口气；经幡阵拍照</td></tr>
+              <tr><td class="t-time">10:30</td><td class="t-what">山口后缓行；<b>※ 托吉措（慈悲湖，约 5200m）</b>冰碛湖，稍作停留</td></tr>
+              <tr><td class="t-time">11:30–13:00</td><td class="t-what">漫长下坡＋平路（碎石多，护膝＋双杖）；路餐补充</td></tr>
+              <tr><td class="t-time">13:30</td><td class="t-what"><b>※ 不动地钉</b>：可坐救援车回塔钦（150–200 元/人），体力不支果断坐</td></tr>
+              <tr><td class="t-time">15:00–16:30</td><td class="t-what">继续前行，天黑前务必抵达补给点</td></tr>
+              <tr><td class="t-time">17:30 前</td><td class="t-what"><b>到祖楚寺（4830m，D2 住宿）</b>，床位 80–150 元，晚餐、休息</td></tr>
+              <tr><td class="t-time">20:00</td><td class="t-what">早睡（明早 8:00 出发，11:00 前后回塔钦）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">这是全程高反最危险段：垭口遇大风低温立即休整，绝不硬撑；深夜不要翻垭口后段（狼患）。状态实在差就祖楚寺多住一晚。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">10/3（六）· 转山 D3 + 返程</span>
+          <span class="d-desc">祖楚寺 → 塔钦 · 约 10km · 2–3h；午后包车 → 萨嘎</span>
+          <span class="d-tag kora">🚶 转山收尾 · 国庆</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">08:00</td><td class="t-what">出发（祖楚寺 → 塔钦平缓为主）</td></tr>
+              <tr><td class="t-time">09:00</td><td class="t-what"><b>※ 宗堆/经幡廊</b>（出口段，玛尼墙与经幡）</td></tr>
+              <tr><td class="t-time">10:00</td><td class="t-what"><b>※ 不动地钉</b>：体力不支可坐救援车（150–200 元/人）回塔钦</td></tr>
+              <tr><td class="t-time">11:00</td><td class="t-what"><b>回到塔钦 ✅ 转山完成（约 52–56km）</b></td></tr>
+              <tr><td class="t-time">11:00–12:30</td><td class="t-what">午餐＋短暂休息；归还/收拾装备</td></tr>
+              <tr><td class="t-time">13:00</td><td class="t-what"><b>包车塔钦 → 萨嘎（550km）</b>，司机提前约好、熟悉路况、备氧气</td></tr>
+              <tr><td class="t-time">17:00</td><td class="t-what">途中休息点下车活动 15min</td></tr>
+              <tr><td class="t-time">20:00–21:00</td><td class="t-what">到萨嘎（4600m），入住、晚餐、休息</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">全程最累一天：转山收尾＋6–7h 夜路。务必提前约车、确认 10/4 萨嘎→拉萨衔接。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">10/4（日）· 萨嘎 → 拉萨</span>
+          <span class="d-desc">包车约 600km · 7–8h</span>
+          <span class="d-tag return">🚙 返程 · 国庆</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">06:00</td><td class="t-what">早餐，出发（早走避开午后天气）</td></tr>
+              <tr><td class="t-time">09:00</td><td class="t-what">途中休息下车活动</td></tr>
+              <tr><td class="t-time">12:00</td><td class="t-what">途中午餐</td></tr>
+              <tr><td class="t-time">14:00–15:00</td><td class="t-what"><b>到拉萨</b>，入住同一家/近的酒店</td></tr>
+              <tr><td class="t-time">15:30</td><td class="t-what">下午休整（洗澡可，别太久；<b>低反提前注意：别立即开车</b>）</td></tr>
+              <tr><td class="t-time">18:00</td><td class="t-what">晚餐；确认明早航班时间与值机</td></tr>
+              <tr><td class="t-time">21:30</td><td class="t-what">早睡，明早 5:30 起赶飞机</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">连续赶路第 4 天，注意休息；如天气好可车观沿途草原牧场景观。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">10/5（一）· 拉萨 → 西安 → 临汾</span>
+          <span class="d-desc">早班机约 3h ＋ 中转约 2h</span>
+          <span class="d-tag return">✈ 返程 · 国庆</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">05:30</td><td class="t-what">起床，退房，前往机场（提前 2h）</td></tr>
+              <tr><td class="t-time">07:30–10:30</td><td class="t-what">拉萨 → 西安（早班机约 3h）</td></tr>
+              <tr><td class="t-time">11:30–13:00</td><td class="t-what">西安 → 临汾（高铁约 1.5–2h，或航班）</td></tr>
+              <tr><td class="t-time">13:30–14:00</td><td class="t-what">到临汾，回家休息（若航班晚点则傍晚到）</td></tr>
+              <tr><td class="t-time">15:00</td><td class="t-what">午睡/休整（低反期嗜睡正常，<b>不要安排驾驶或高强度活动</b>）</td></tr>
+              <tr><td class="t-time">18:30</td><td class="t-what">晚餐，与家人团聚</td></tr>
+              <tr><td class="t-time">22:00</td><td class="t-what">早睡（明天高铁回北京）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">有拉萨直飞临汾班次优先用；10/5 是返程最高峰，票务必提前抢。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">10/6（二）· 临汾 → 北京</span>
+          <span class="d-desc">高铁 4.5–5.5h</span>
+          <span class="d-tag return">🚄 回京 · 国庆</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">07:12</td><td class="t-what"><b>首选高铁 07:12 → 11:54</b>（临汾西 → 北京丰台，上午到）</td></tr>
+              <tr><td class="t-time">10:38</td><td class="t-what">备选班次 10:38 → 15:20（若没抢到早班）</td></tr>
+              <tr><td class="t-time">12:00</td><td class="t-what">到北京丰台站，回家 ✅<b>（满足 10/6 到京硬约束）</b></td></tr>
+              <tr><td class="t-time">13:00</td><td class="t-what">午餐；下午<strong>北京休整</strong>（低反期嗜睡，别安排工作/驾驶）</td></tr>
+              <tr><td class="t-time">21:30</td><td class="t-what">早睡，调整作息，10/7 继续休整、10/8 上班</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">国庆返程最高峰，临汾→北京车票提前 15 天抢（如 07:12 或 10:38 班次）。</div>
+      </div>
+    </div>
+
+    <div class="callout key">
+      <span class="t">🕐 使用建议</span>
+      时间均为<b>预估</b>，海拔、体力、天气会改变节奏。转山段（10/1–10/3）「先甜后苦」为主流路线，若选择「先苦后甜」或雇马/坐救援车，时间会相应变化。<strong>安全第一、体验第二、完赛最不重要</strong>。
+    </div>
+  </section>
+
+  <!-- ============ 3. 每日执行细节 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>每日执行细节</h2>
+
+    <h3>9/24 北京 → 临汾（不请假）</h3>
+    <ul>
+      <li><strong>首选飞机</strong>：国航 CA8224，首都机场 19:15 → 尧都机场 20:35（1 小时 40 分，每天 1 班，9 月底务必提前订）。</li>
+      <li>备选高铁：北京丰台 14:29 → 临汾西 19:02（G627，4.5h，需请半天假）；或更晚到临汾的班次。</li>
+      <li>当晚在家休息，行李提前寄到临汾或随身带走。</li>
+    </ul>
+
+    <h3>9/25 临汾 → 拉萨（中秋）</h3>
+    <ul>
+      <li>临汾无稳定直飞拉萨，走中转：<strong>临汾 → 西安（高铁约 1.5h）＋ 西安 → 拉萨（每日 10+ 班，2.5–3h）</strong>，9/25 傍晚可到拉萨。部分日期有临汾直飞/经停拉萨的航班，出发前核实。</li>
+      <li><strong>到达当天不洗澡、不喝酒、不剧烈活动、不熬夜。</strong></li>
+      <li>布宫、大昭寺需<strong>提前 3–5 天实名预约</strong>（微信小程序），9/25 落地当晚就约。</li>
+      <li>备：红景天（提前 1 周开始吃）、高原安、布洛芬、葡萄糖口服液。</li>
+    </ul>
+
+    <h3>9/26–9/27 拉萨适应（2 天，够用但别浪费）</h3>
+    <ul>
+      <li>适应标准：能正常吃饭、睡眠 ≥6h、无明显头痛。两天基本够，若状态差，宁可在后面塔钦休整日多歇半天，也不要硬上。</li>
+      <li>9/26 慢走八廓街＋大昭寺；9/27 上午布宫（约 1.5h），下午回酒店休息。</li>
+    </ul>
+
+    <h3>9/28–9/29 进阿里（包车走阿里南线）</h3>
+    <ul>
+      <li><strong>为什么包车</strong>：拉萨到塔钦 1200km 只有一条班车，11 点发车、20–24 小时连夜卧铺直达（650–750 元，只能买全程票）。高反风险大、返程无保证，不适合第一次转山。</li>
+      <li>南线：拉萨 → 日喀则(3650m) → 拉孜 → 萨嘎(4600m) → 帕羊 → 塔钦(4675m)，<strong>海拔逐步上升，本身就是最好的适应过程</strong>。</li>
+      <li>拼车价：越野车约 3–3.5 元/km，4 人拼车往返人均约 3000–4000 元；独享包车 8000–12000 元/往返。司机食宿是否含在报价，<strong>出发前谈清</strong>。</li>
+      <li>沿途每 2 小时下车活动，别睡太沉。</li>
+      <li><strong>重点</strong>：9/28 与司机确认 10/3 的返程车（塔钦→萨嘎），10/4 萨嘎→拉萨 无缝衔接。</li>
+    </ul>
+
+    <h3>9/30 塔钦休整（住 1–2 晚适应，选弥散供氧旅馆）</h3>
+    <ul>
+      <li><strong>适应优先</strong>：到塔钦后至少住 1–2 晚再出发转山，应对突发高反或恶劣天气。<strong>选有弥散供氧的房间</strong>（房间内置制氧机，塔钦已有），出发前一晚睡眠质量直接决定垭口状态。</li>
+      <li><strong>上午（可选）</strong>：包车去 <strong>玛旁雍错（圣湖）＋拉昂错（鬼湖）</strong>，塔钦往返约 2–3h，圣湖门票约 150 元。转山前静心一瞥圣湖很值得。</li>
+      <li>中午回塔钦吃饭；<strong>下午买转山进山票（神山圣湖景区约 200 元/人）</strong>、景区登记、确认天气（问茶馆/客栈老板）。</li>
+      <li><strong>问清救援车</strong>：不动地钉之后的救援车联系方式、价格（150–200 元/人）与运营时间，这是你的退路。</li>
+      <li>试走 1–2km 平路，检验鞋子（防水、不磨脚）。</li>
+      <li>采购：水（1.5L+）、能量食品、葡萄糖。途中止热寺/祖楚寺有补给点，但贵、品类少。早睡养精蓄锐。</li>
+    </ul>
+
+    <h3>10/1–10/3 转山（52–56km，3 天）</h3>
+    <p><strong>D1 塔钦→止热寺（20–22km，7–8h）</strong></p>
+    <ul>
+      <li>7:30 早餐，太阳出来后出发，最迟 9:30。</li>
+      <li>前 6km 平缓土路热身；经曲古寺、哲日普寺。北坡看神山，景观最壮丽。</li>
+      <li>止热寺住宿：多人间床位为主（80–150 元/人），国庆要提前订。海拔 5100m 当晚可能失眠——正常，别慌。</li>
+      <li>部分路段可雇马（塔钦有马队，按段计价）。</li>
+    </ul>
+    <p><strong>D2 止热寺→卓玛拉山口(5630m)→祖楚寺（约 20km，10–11h）· 最艰苦</strong></p>
+    <ul>
+      <li><strong>凌晨 4:30–5:00 出发</strong>（头灯），下午山口风大、随时变天。</li>
+      <li><strong>便携制氧机全程佩戴、睡觉也戴</strong>，中途取下再戴需重新适应；垭口遇暴风雪时它是生命线。</li>
+      <li>最后 1–2km 连续爬升，<strong>每走 20–30 步停下喘口气</strong>，全程高反最危险段。</li>
+      <li>过山口后漫长下坡+平路，碎石多，护膝＋双杖。天黑前到祖楚寺。</li>
+      <li>状态差就在止热寺多住一晚，或雇马/背夫，<strong>不要硬扛</strong>（但会压缩 10/3 返程，提前做好心理准备）。</li>
+    </ul>
+    <p><strong>D3 祖楚寺→塔钦（约 10km，2–3h）＋ 当天返程赶路</strong></p>
+    <ul>
+      <li>祖楚寺 → 塔钦平缓为主，<strong>8:00 出发，11:00 前后回到塔钦</strong>；经过宗堆后到不动地钉，若体力不支可坐救援车回塔钦（150–200 元/人）。</li>
+      <li>午餐＋短暂休息后，<strong>约 13:00 包车塔钦 → 萨嘎（550km，约 20:00–21:00 到）</strong>，住萨嘎。</li>
+      <li>这是全程最累的一天：转山收尾＋6–7 小时夜路。务必提前约好车、司机熟悉路况、带氧气。</li>
+    </ul>
+
+    <h3>10/4–10/6 返程（连续四天赶路，见核心结论的提醒）</h3>
+    <ul>
+      <li><strong>10/4</strong> 早 6:00 萨嘎 → 拉萨（600km，7–8h），<strong>14:00–15:00 到拉萨</strong>，下午休整，住拉萨。</li>
+      <li><strong>10/5</strong> 早班机拉萨 → 西安（约 3h），西安高铁/航班回临汾（1.5–2h），<strong>傍晚到老家</strong>。有拉萨直飞临汾班次优先用。</li>
+      <li><strong>10/6</strong> 上午高铁临汾西 → 北京丰台（4.5–5.5h），<strong>下午到北京 ✅</strong>。选上午班次（如 07:12 → 11:54 或 10:38 → 15:20）。</li>
+      <li><strong>这是国庆返程最高峰，10/5 拉萨→临汾、10/6 临汾→北京 的票务必提前抢。</strong></li>
+    </ul>
+  </section>
+
+  <!-- ============ 4. 沿途景点规划 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>沿途景点规划</h2>
+
+    <div class="callout info">
+      <span class="t">🎯 优先级说明</span>
+      本次行程时间非常紧凑，景点按三档优先级安排：<span class="badge must">必去</span> 是本次旅行的核心，<span class="badge nice">顺路</span> 在不耽误行程的前提下看，<span class="badge skip">可跳过</span> 时间紧就果断放弃。门票为 2026 年旺季参考价，以现场为准。
+    </div>
+
+    <div class="gallery">
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag must">必去</span><img src="images/potala.jpg" alt="布达拉宫" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">布达拉宫<small>9/27 上午 · 3–4h</small></div>
+          <p class="sc-feat"><b>特点：</b>世界海拔最高的宫堡式建筑群，红宫白宫层层叠叠依山而起；五世达赖灵塔殿镶金嵌宝，登顶可俯瞰整座拉萨城。</p>
+          <div class="sc-meta">📍 3700m ｜ 🎫 一号线 200 元<br>💡 提前 10 天小程序抢票，8:30 放票</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag must">必去</span><img src="images/jokhang.jpg" alt="大昭寺 / 八廓街" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">大昭寺 / 八廓街<small>9/26–27 · 1.5–2h</small></div>
+          <p class="sc-feat"><b>特点：</b>供奉释迦牟尼 12 岁等身像——藏传佛教最神圣的圣物；寺前青石板常年被磕长头的信众磨得发亮，转八廓街感受最真实的朝圣日常。</p>
+          <div class="sc-meta">📍 3650m ｜ 🎫 85 元<br>💡 11:30 后游客入寺，顺时针转经</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag must">必去</span><img src="images/yamdrok.jpg" alt="羊卓雍措" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">羊卓雍措（羊湖）<small>9/28 上午 · 40–60min</small></div>
+          <p class="sc-feat"><b>特点：</b>三大圣湖之一，湖水随光线呈现多层次蓝绿；岗巴拉山口 5030m 俯瞰，如碧玉弯月镶嵌群山之间。</p>
+          <div class="sc-meta">📍 4441m ｜ 🎫 100 元<br>💡 1 号观景台最经典</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag nice">顺路</span><img src="images/glacier.jpg" alt="卡若拉冰川" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">卡若拉冰川<small>9/28 · 20–30min</small></div>
+          <p class="sc-feat"><b>特点：</b>青藏高原离公路最近的冰川，冰舌几乎垂到国道旁；《红河谷》取景地，途中牦牛与雪山同框，是最经典的藏地画面。</p>
+          <div class="sc-meta">📍 约 5400m ｜ 🎫 约 50 元<br>💡 山口可见冰川全景</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag nice">顺路</span><img src="images/tashilhunpo.jpg" alt="扎什伦布寺" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">扎什伦布寺<small>9/28 下午 · 1.5–2h</small></div>
+          <p class="sc-feat"><b>特点：</b>班禅驻锡地，强巴佛殿供奉世界最大铜佛（26m）；金顶与白色院墙在日喀则阳光下格外庄严。</p>
+          <div class="sc-meta">📍 3860m ｜ 🎫 55 元<br>💡 精简看强巴佛殿约 1h</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag must">必去</span><img src="images/manasarovar.jpg" alt="玛旁雍错" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">玛旁雍错（圣湖）<small>9/30 · 1–2h</small></div>
+          <p class="sc-feat"><b>特点：</b>三大圣湖之首、世界海拔最高淡水湖之一；转山前静心一瞥，湖面如镜映衬神山雪峰。</p>
+          <div class="sc-meta">📍 4588m ｜ 🎫 150 元<br>💡 日出日照金山更佳，需 6:30 前出发</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag must">必去</span><img src="images/kailash.jpg" alt="冈仁波齐" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">冈仁波齐<small>9/30–10/3 · 52–56km</small></div>
+          <p class="sc-feat"><b>特点：</b>被藏传佛教、印度教、苯教共同尊为「世界中心」的神山，金字塔形雪峰终年不化；转山一圈，是无数信徒一生的心愿。</p>
+          <div class="sc-meta">📍 6638m ｜ 🎫 进山票约 200 元<br>💡 只可远观不可攀登，绕行祈福</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag must">必去</span><img src="images/kailash2.jpg" alt="止热寺日照金山" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">止热寺日照金山<small>10/1–2 · 清晨</small></div>
+          <p class="sc-feat"><b>特点：</b>D1 夜宿止热寺，清晨直面神山北壁，晨曦将雪峰染成金色——转山全程最震撼的画面之一，也是全程最壮丽的景观段。</p>
+          <div class="sc-meta">📍 5100m ｜ 🎫 床位 80–150 元<br>💡 北坡看神山，景观最壮丽</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag must">必去</span><img src="images/pass_hiker.jpg" alt="卓玛拉山口" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">卓玛拉山口<small>10/2 D2 · 全程最高点</small></div>
+          <p class="sc-feat"><b>特点：</b>全程最高点 5630m，五彩经幡阵与玛尼堆在风中猎猎作响；是转山的精神高潮，也是体力与高反的极限考验。</p>
+          <div class="sc-meta">📍 5630m ｜ 💡 凌晨 4:30–5:00 出发<br>⚠️ 每走 20–30 步停下喘口气</div>
+        </div>
+      </figure>
+      <figure class="spot-card">
+        <div class="sc-img"><span class="sc-tag nice">顺路</span><img src="images/kora_flags.jpg" alt="转山沿途经幡" loading="lazy"></div>
+        <div class="sc-body">
+          <div class="sc-name">转山沿途经幡<small>10/1 D1 · 塔钦→止热寺</small></div>
+          <p class="sc-feat"><b>特点：</b>一路可见的五彩经幡与玛尼堆，承载着每一位朝圣者的祈愿；前 6km 平缓土路热身，经曲古寺、哲日普寺。</p>
+          <div class="sc-meta">📍 4675–5100m ｜ 💡 太阳出来后出发，最迟 9:30</div>
+        </div>
+      </figure>
+    </div>
+    <p class="gallery-note">图片为 Unsplash 免费图库（Unsplash License），仅作景观参考；实际光影随季节与天气变化。</p>
+
+    <h3>9/26–9/27 拉萨市区（适应期，以慢为主）</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>景点</th><th>看点</th><th>海拔</th><th>门票</th><th>建议停留</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr><td><strong>布达拉宫</strong></td><td>红宫白宫、灵塔殿、五世达赖灵塔；登顶俯瞰拉萨全景</td><td class="c">3700m</td><td class="c">一号线 200 元<br>二号线 100 元</td><td class="c">3–4h</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td><strong>大昭寺</strong></td><td>释迦牟尼 12 岁等身像、金顶平台远眺布宫；下午二楼有辩经</td><td class="c">3650m</td><td class="c">85 元（旺季）</td><td class="c">1.5–2h</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td><strong>八廓街</strong></td><td>转经道＋商业街，顺时针行走，看藏式生活与朝圣者</td><td class="c">3650m</td><td class="c">免费</td><td class="c">1–2h</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td>药王山观景台</td><td>50 元人民币背面同款机位，拍布宫经典角度</td><td class="c">3725m</td><td class="c">免费</td><td class="c">20min</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td>宗角禄康公园</td><td>布宫背面湖心倒影，人少清静，日落时最美</td><td class="c">3650m</td><td class="c">免费</td><td class="c">30min</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td>罗布林卡</td><td>历代达赖夏宫园林，藏式园林典范</td><td class="c">3650m</td><td class="c">60 元</td><td class="c">1–2h</td><td class="c"><span class="badge skip">可跳过</span></td></tr>
+          <tr><td>色拉寺</td><td>15:00–17:00 喇嘛辩经，场面生动（寺庙在城北，需往返）</td><td class="c">3680m</td><td class="c">50 元</td><td class="c">1–2h</td><td class="c"><span class="badge skip">可跳过</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout key">
+      <span class="t">📌 布宫预约提醒（最重要）</span>
+      旺季（5–10 月）布宫必须<strong>提前 10 天</strong>在小程序「布达拉宫票务预订系统」实名预约，每日 8:30 放票，限流 8000 人，一个身份证 7 天内只能约 1 次。<strong>9/25 落地当晚就必须把 9/27 的票抢到</strong>；一/二号线都可，首次去选一号线（含全部核心殿堂）。大昭寺 11:30 后才对游客开放，上午是信众时间。
+    </div>
+
+    <h3>9/28–9/29 阿里南线去程（羊湖→江孜→日喀则→萨嘎→塔钦）</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>景点</th><th>看点</th><th>海拔</th><th>门票</th><th>建议停留</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr><td><strong>羊卓雍措（羊湖）</strong></td><td>三大圣湖之一，岗巴拉山口 5030m 俯瞰「碧玉湖」全景，1 号观景台最经典</td><td class="c">4441m（湖面）</td><td class="c">100 元</td><td class="c">40–60min</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td><strong>卡若拉冰川</strong></td><td>电影《红河谷》取景地，冰舌近在咫尺；途经山口可见冰川全景</td><td class="c">约 5400m</td><td class="c">约 50 元</td><td class="c">20–30min</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td>江孜宗山古堡</td><td>抗英遗址《红河谷》原型，古城俯瞰江孜</td><td class="c">4020m</td><td class="c">约 50 元</td><td class="c">30–40min</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td>白居寺·十万佛塔</td><td>「塔寺结合」罕见形制，壁画精美</td><td class="c">4020m</td><td class="c">约 60 元</td><td class="c">30min</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td><strong>扎什伦布寺</strong></td><td>班禅驻锡地，强巴佛殿有世界最大铜佛（26m）</td><td class="c">3860m</td><td class="c">55 元</td><td class="c">1.5–2h</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td>拉孜（藏刀之乡）</td><td>进阿里前最后一个县城，可补给休整</td><td class="c">4020m</td><td class="c">—</td><td class="c">30min</td><td class="c"><span class="badge skip">可跳过</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout key">
+      <span class="t">📌 去程节奏（关键取舍）</span>
+      9/28 是全程最赶的一天（600km）：<strong>7:00 拉萨出发</strong> → 约 2h 到岗巴拉山口看羊湖全景（9:00–10:00）→ 卡若拉冰川（11:00）→ 江孜午餐＋宗山古堡/白居寺（12:30–14:00）→ 日喀则扎什伦布寺（15:00–16:30）→ 拉孜晚餐（18:00）→ 约 21:00 到萨嘎。若时间不足，<strong>白居寺、宗山古堡二选一</strong>，扎寺留 1h 精简看强巴佛殿。
+    </div>
+
+    <h3>9/30 塔钦周边（休整日，可轻量游玩）</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>景点</th><th>看点</th><th>海拔</th><th>门票</th><th>建议停留</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr><td><strong>冈仁波齐南面观景</strong></td><td>转山前正面瞻仰神山；塔钦周边土坡即可远眺日照金山</td><td class="c">4675m</td><td class="c">免费</td><td class="c">30min</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td><strong>玛旁雍错（圣湖）</strong></td><td>三大圣湖之首、世界上海拔最高淡水湖之一；环湖公路/湖边静谧</td><td class="c">4588m</td><td class="c">150 元</td><td class="c">1–2h</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td>拉昂错（鬼湖）</td><td>与圣湖一丘之隔，湖水咸涩、湖色幽暗，阴阳对比强烈</td><td class="c">4573m</td><td class="c">免费（需边防证）</td><td class="c">30min</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout key">
+      <span class="t">📌 9/30 安排建议</span>
+      上午去玛旁雍错＋拉昂错（塔钦出发约 40km，往返约 2–3h），中午回塔钦吃饭；下午买进山票（约 200 元）、景区登记、采购补给、试走 1–2km。早睡，为转山养精蓄锐。若上午起不来，圣湖看日照金山（日出）效果更好，但需 6:30 前出发。
+    </div>
+
+    <h3>10/1–10/3 转山沿线（52–56km，一天一段）</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>路段</th><th>看点</th><th>海拔</th><th>备注</th><th>优先级</th></tr></thead>
+        <tbody>
+          <tr><td><strong>D1 塔钦→止热寺</strong></td><td>曲古寺、止热寺；北坡正面看神山，最壮丽一段</td><td class="c">4675→5100m</td><td class="c">20–22km，7–8h</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td>曲古寺（D1）</td><td>转山途中第一座寺院，主供金刚持</td><td class="c">约 4800m</td><td class="c">顺路进入</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td><strong>止热寺/芝热寺（D1 夜宿）</strong></td><td>直面神山北壁，晨曦日照金山绝佳机位</td><td class="c">5100m</td><td class="c">多人间床位 80–150 元</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td><strong>卓玛拉山口（D2）</strong></td><td>全程最高点 5630m，五彩经幡阵、玛尼堆，转山精神高潮</td><td class="c">5630m</td><td class="c">凌晨 4:30–5:00 出发</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td>天葬台遗址（D2 山口前）</td><td>藏传文化遗迹，衣冠冢与经幡</td><td class="c">约 5600m</td><td class="c">路过尊重不打扰</td><td class="c"><span class="badge nice">顺路</span></td></tr>
+          <tr><td><strong>祖楚寺（D2 夜宿）</strong></td><td>米拉日巴修行地，寺院宁静</td><td class="c">4830m</td><td class="c">多人间床位</td><td class="c"><span class="badge must">必去</span></td></tr>
+          <tr><td><strong>D3 祖楚寺→塔钦</strong></td><td>出口段经幡廊、玛尼墙，回到塔钦完成转山</td><td class="c">4830→4675m</td><td class="c">约 10km，2–3h</td><td class="c"><span class="badge must">必去</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>10/4–10/6 返程（赶路为主，无整块景点时间）</h3>
+    <ul>
+      <li><strong>10/4 萨嘎→拉萨</strong>：全程赶路 600km，无景点时间；如天气好可车观沿途草原牧场景观。</li>
+      <li><strong>10/5 拉萨→临汾</strong>：一早离拉萨，市区景点不再安排；如有 2h 富余可逛布宫广场（免费，不进馆）。</li>
+      <li><strong>10/6 临汾→北京</strong>：纯交通日。</li>
+    </ul>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 景点取舍总原则</span>
+      本次是「转山为主、顺路看景」的紧凑行程。<strong>必去清单只有 7 项：布宫、大昭寺/八廓街、羊湖、扎什伦布寺、玛旁雍错、止热寺日照金山、卓玛拉山口</strong>。其余全部看时间和体力，宁可少看，不要因贪景点导致转山状态差——高反面前一切美景退居其次。
+    </div>
+  </section>
+
+  <!-- ============ 5. 路线全景地图 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>路线全景地图</h2>
+
+    <div class="callout info">
+      <span class="t">🗺️ 地图使用说明</span>
+      以下为<strong>交互式地图</strong>（高德地图底图，需联网加载）。地图包含：全程路线分段着色、景点定位（红/蓝/灰圆点为优先级）、点击圆点查看<strong>日期、时段、门票、停留时长、优先级</strong>。可缩放拖动；右下角图例说明颜色含义。<strong>转山环线</strong>另附局部放大图。
+    </div>
+
+    <p class="map-note">📍 图上标记的数字对应景点编号；右侧已直接列出每个节点的内容，点击地图圆点可在地图上定位查看。</p>
+    <div class="map-wrap">
+      <div class="map-container" id="mapMain"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+
+    <div class="callout key">
+      <span class="t">🧭 全程路线速览（对应上方地图）</span>
+      <strong>蓝线</strong>＝9/28–29 去程包车（拉萨→羊湖→卡若拉→江孜→日喀则→拉孜→萨嘎→帕羊→塔钦）｜
+      <strong>橙线</strong>＝9/30 圣湖一日（塔钦→玛旁雍错→拉昂错→塔钦）｜
+      <strong>红线</strong>＝10/1–3 转山环线（塔钦→止热寺→卓玛拉山口→祖楚寺→塔钦）｜
+      <strong>绿线</strong>＝10/3 夜–10/4 返程（塔钦→萨嘎→拉萨）｜
+      <strong>灰虚线</strong>＝飞机/高铁段（9/24 北京→临汾、9/25 临汾→拉萨、10/5 拉萨→临汾、10/6 临汾→北京，位于图外东侧，不在此地图范围）。
+    </div>
+
+    <h3>转山环线放大图（10/1–10/3）</h3>
+    <p class="map-note">📍 转山约 52km 顺时针环线，主峰冈仁波齐（6638m）居中。右侧已直接列出每个节点内容，点击圆点可在地图上定位。</p>
+    <div class="map-wrap">
+      <div class="map-container kora" id="mapKora"></div>
+      <aside class="map-sidebar kora" id="sidebarKora"></aside>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>编号</th><th>点</th><th>海拔</th><th>日期·时段</th><th>里程</th><th>要点</th></tr></thead>
+        <tbody>
+          <tr><td class="c">①</td><td>塔钦（起点/终点）</td><td class="c">4675m</td><td class="c">10/1 晨 · 10/3 午</td><td class="c">0km</td><td>转山大本营，进山票 200 元</td></tr>
+          <tr><td class="c">②</td><td>经幡广场</td><td class="c">4740m</td><td class="c">10/1 上午</td><td class="c">约 5km</td><td>可雇马/背夫处，五彩经幡</td></tr>
+          <tr><td class="c">③</td><td>曲古寺</td><td class="c">4860m</td><td class="c">10/1 中午</td><td class="c">约 10km</td><td>转山第一座寺院，主供金刚持</td></tr>
+          <tr><td class="c">④</td><td><strong>止热寺（D1 住宿）</strong></td><td class="c">5100m</td><td class="c">10/1 16:00 前到</td><td class="c">约 20km</td><td>北壁日照金山机位，床位 80–150 元</td></tr>
+          <tr><td class="c">⑤</td><td>天葬台遗址</td><td class="c">约 5370m</td><td class="c">10/2 清晨</td><td class="c">约 4km</td><td>藏传文化遗迹，尊重不打扰</td></tr>
+          <tr><td class="c">⑥</td><td><strong>卓玛拉山口</strong></td><td class="c">5630m</td><td class="c">10/2 9:00–10:00</td><td class="c">约 8km</td><td>全程最高点，经幡阵，每 20–30 步一歇</td></tr>
+          <tr><td class="c">⑦</td><td>托吉措（慈悲湖）</td><td class="c">约 5200m</td><td class="c">10/2 上午</td><td class="c">山口后</td><td>冰碛湖，转山途中著名的湖</td></tr>
+          <tr><td class="c">⑧</td><td><strong>祖楚寺（D2 住宿）</strong></td><td class="c">4830m</td><td class="c">10/2 天黑前到</td><td class="c">约 22km</td><td>米拉日巴修行地，床位 80–150 元</td></tr>
+          <tr><td class="c">⑨</td><td>宗堆/经幡廊</td><td class="c">约 4750m</td><td class="c">10/3 上午</td><td class="c">约 7km</td><td>出口段，玛尼墙与经幡</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 6. 预算 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>预算明细（三档）</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>项目</th><th>经济版</th><th>标准版</th><th>舒适版</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>北京↔临汾往返</td><td>600–700</td><td>700–1000</td><td>1200–1600</td><td>高铁约 300–350/程；飞机约 500–800/程</td></tr>
+          <tr><td>大交通（临汾⇄拉萨）</td><td>2800–3500</td><td>3200–4000</td><td>4000–5000</td><td>中转航班；9/25 出发、10/5 返回</td></tr>
+          <tr><td>拉萨↔塔钦交通</td><td>1300–1500</td><td>3000–4000</td><td>5000–8000</td><td>班车往返 / 4 人拼车 / 独享包车（含 10/3、10/4 返程）</td></tr>
+          <tr><td>住宿（约 10 晚）</td><td>1300</td><td>2000–2400</td><td>3200–4200</td><td>2 晚住临汾/北京家免费；转山 2 晚床位 80–150，拉萨/萨嘎标间 200–400</td></tr>
+          <tr><td>门票</td><td>350–500</td><td>350–500</td><td>350–500</td><td>转山 200；羊湖 100；玛旁雍错 150（布宫/扎寺等另行约 400+）</td></tr>
+          <tr><td>餐饮（约 13 天）</td><td>1100–1400</td><td>1300–1800</td><td>1800–2400</td><td>阿里地区物价偏高</td></tr>
+          <tr><td>装备</td><td>800–1200</td><td>2500–3500</td><td>4000+</td><td>从零购入冲锋衣/羽绒/鞋约 2500+</td></tr>
+          <tr><td>保险</td><td>200</td><td>300</td><td>500</td><td>必须含<strong>高原反应＋直升机救援</strong>条款</td></tr>
+          <tr><td>药品/氧气/杂项</td><td>300–500</td><td>400–700</td><td>600–900</td><td>便携制氧机闲鱼日租约 20 元×转山天数（推荐），小氧气瓶拉萨/塔钦买</td></tr>
+          <tr><td><strong>合计</strong></td><td><strong>约 9000–11500</strong></td><td><strong>约 13000–16500</strong></td><td><strong>约 17500–22000</strong></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <span class="t">⚠️</span>
+      国庆黄金周是塔钦住宿<strong>全年最贵</strong>的时段；2026 马年加成下可能更紧张。<strong>10/5、10/6 是返程最高峰</strong>，票务必提前抢。
+    </div>
+  </section>
+
+  <!-- ============ 7. 备选路线 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>备选路线</h2>
+
+    <h3>备选 A：7 天极限版（只放国庆，不请假）</h3>
+    <div class="callout warn">
+      <span class="t">⚠️ 只适合有 2 次以上 5000m 经验、无高反史的人</span>
+      北京→临汾→拉萨往返占掉 2 天，真正在西藏只剩 5 天：D1 到拉萨 → D2 仅 1 天适应（高风险）→ D3 飞阿里＋到塔钦（航班少，赌运气）→ D4–D6 转山 2–3 天 → D7 返。<strong>强烈不推荐</strong>。
+    </div>
+
+    <h3>备选 B：返程直飞北京（更轻松，但不经临汾）</h3>
+    <p>若想避免 10/3 转山当天连夜赶路：<strong>10/3 住塔钦 → 10/4 塔钦→萨嘎 → 10/5 萨嘎→拉萨 → 10/6 拉萨直飞北京</strong>（下午到京，满足 10/6 硬约束）。代价：不经临汾，临汾老家改在 10/11（周日）回、10/12 返京（需再请 1 天假）。转山后有缓冲，身体舒服很多。</p>
+
+    <h3>备选 C：转山提前（多请 1 天假，返程更从容）</h3>
+    <p>若愿意 10/5、10/6 保持，但想把 10/3 的赶路拆开：转山改为 <strong>9/30–10/2</strong>（塔钦休整提前到 9/29 晚），10/3 塔钦→萨嘎（白天从容），10/4 萨嘎→拉萨，10/5 拉萨→临汾，10/6 临汾→北京。需多请 9/29 半天假＋9/30 已请，拉萨适应少一天，高反风险略升。</p>
+  </section>
+
+  <!-- ============ 8. 倒排时间表 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>倒排时间表</h2>
+    <ul class="timeline">
+      <li><span class="when">现在 – 8 月中</span><span class="what">① 订四程票：9/24 北京→临汾、9/25 临汾→拉萨、10/5 拉萨→临汾、10/6 临汾→北京；② 开始体能：每周 3 次有氧（慢跑/爬楼 40min+）</span></li>
+      <li><span class="when">8 月底</span><span class="what">联系拉萨–塔钦包车/拼车资源；订拉萨住宿（3 晚）；<strong>预约 10/3 塔钦→萨嘎 与 10/4 萨嘎→拉萨 的返程车</strong></span></li>
+      <li><span class="when">9 月上旬</span><span class="what">订塔钦住宿（3 晚，含转山途中止热寺/祖楚寺 2 晚）、萨嘎过夜住宿；买高原徒步保险（含直升机救援）</span></li>
+      <li><span class="when">9 月中旬</span><span class="what">办边防证（含「阿里地区普兰县」，临汾户籍地公安/政务大厅免费当天取）；买/租装备；开始吃红景天</span></li>
+      <li><span class="when">出发前 1 周</span><span class="what"><strong>闲鱼租便携制氧机（日租约 20 元）</strong>、试戴确认电量续航；羽绒睡袋/冰爪等确认到位</span></li>
+      <li><span class="when">9/20 前</span><span class="what">核对所有订单、证件复印件备 2 份、打印行程单、预约拉萨景点门票、确认临汾往返班次</span></li>
+      <li><span class="when">9/22 前后</span><span class="what"><strong>抢 10/5 拉萨→临汾、10/6 临汾→北京 车票/机票</strong>（火车票提前 15 天开售，返程高峰手慢无；马年人流百万级，务必提前）</span></li>
+      <li><span class="when">9/24–9/25</span><span class="what">北京→临汾→拉萨，出发 🎒</span></li>
+      <li><span class="when">到塔钦后</span><span class="what"><strong>住 1–2 晚适应、选弥散供氧旅馆，问清救援车（不动地丁）联系方式与价格</strong></span></li>
+    </ul>
+
+    <div class="callout key">
+      <span class="t">🪪 边防证细节</span>
+      进阿里地区（含塔钦）必须持边防证。临汾户籍：本人带身份证到户籍地县级公安机关出入境/治安窗口办理，免费、一般当场可取，目的地写「西藏自治区 阿里地区普兰县」（可多写几个县：日喀则各县、山南洛扎/隆子等）。若户口不在临汾，需先办居住证，或在拉萨委托旅行社代办（100–300 元，需 1–2 天）。
+    </div>
+  </section>
+
+  <!-- ============ 9. 安全与高反 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>安全与高反应对（最重要）</h2>
+    <ul>
+      <li><strong>红线原则</strong>：出现<strong>休息后不缓解的持续头痛＋呕吐/意识模糊/咳粉色痰（肺水肿信号）</strong> → 立即下撤，止热寺/祖楚寺有下山的路和车，别犹豫。</li>
+      <li>从拉萨到转山，每天海拔增量控制在 500m 以内（本行程已按此设计）。</li>
+      <li>5100m 止热寺夜间失眠是正常生理反应，第二天不要因此加码。</li>
+      <li>转山全程<strong>手机信号差、现金为王</strong>（准备 1500–2000 现金分开放）。</li>
+      <li>10 月天气突变随时可能发生，<strong>永远假设最坏情况</strong>：包里常备轻薄羽绒和雨衣，头灯电池双份。真实案例：5 分钟冰雹可积 5 厘米厚、同伴失温昏迷——垭口遇大风低温立即休整，绝不硬撑。</li>
+      <li>不要独自脱离队伍，尤其卓玛拉山口附近，有信号但地形复杂。</li>
+      <li><strong>天黑不走路</strong>：冬季有狼患，天黑前抵达补给点，不要夜间翻垭口后段。</li>
+      <li><strong>救援车是你的退路</strong>：不动地钉之后可坐当地车回塔钦（150–200 元/人），天黑/天气突变/高反加重时果断坐车，活着回家比完赛重要。</li>
+      <li><strong>低反（醉氧）</strong>：下高原后 48 小时嗜睡乏力、不要开车或安排高强度工作。</li>
+      <li><strong>返程连续四天赶路（10/3–10/6）</strong>是对身体的额外考验，尤其 10/3 转山当天连夜赶路：包车务必正规、司机熟悉路况、备氧气，途中每 2 小时下车活动。</li>
+    </ul>
+  </section>
+
+  <!-- ============ 10. 装备 ============ -->
+  <section id="s11">
+    <h2 class="sec"><span class="no">11</span>核心装备清单</h2>
+    <div class="gear">
+      <div>
+        <h3>证件</h3>
+        <ul>
+          <li>身份证</li>
+          <li>边防证</li>
+          <li>进山门票</li>
+          <li>保险单（手机＋打印 1 份）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>衣物（秋冬高海拔，四层穿衣）</h3>
+        <ul>
+          <li>冲锋衣裤（防水防风）</li>
+          <li>羽绒服（700+ 蓬）＋<strong>备用保暖层一套</strong></li>
+          <li>抓绒中层＋速干内衣×3</li>
+          <li>中帮防水登山鞋（新鞋提前穿开）</li>
+          <li><strong>保暖裤/羽绒裤</strong>（播客强调：只穿羊毛打底裤会崩溃）</li>
+          <li>羊毛袜×3、<strong>保暖帽＋护脸（遮耳遮下半脸）</strong></li>
+          <li><strong>厚手套（防水保暖）</strong>、魔术头巾×2、墨镜（UV400）</li>
+          <li>一次性雨衣</li>
+        </ul>
+      </div>
+      <div>
+        <h3>户外</h3>
+        <ul>
+          <li>双登山杖（卓玛拉下坡全靠它）</li>
+          <li>头灯＋备用电池</li>
+          <li>30–40L 背包</li>
+          <li>保温壶 1L＋水瓶/水袋 ≥1.5L</li>
+          <li><strong>冰爪（垭口有冰必带）</strong></li>
+          <li><strong>羽绒睡袋（-10℃ 温标）＋睡袋内胆</strong>（住宿极简陋）</li>
+          <li>路餐：能量棒、巧克力、牛肉干</li>
+          <li>SPF50+ 防晒霜、润唇膏</li>
+        </ul>
+      </div>
+      <div>
+        <h3>医疗</h3>
+        <ul>
+          <li><strong>便携制氧机（闲鱼日租约 20 元，全程佩戴）</strong></li>
+          <li>红景天（提前 1 周）</li>
+          <li>高原安/诺迪康</li>
+          <li>布洛芬（高反头痛最有效）</li>
+          <li>葡萄糖口服液</li>
+          <li>晕车药、肠胃药、创可贴</li>
+          <li>护膝（下山关键）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>其他</h3>
+        <ul>
+          <li>小氧气瓶（紧急用，返程夜路也用得上）</li>
+          <li>充电宝（转山路无充电）</li>
+          <li>现金、湿巾、洗漱用品</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout info">
+      <span class="t">🛒 装备采购提示</span>
+      装备可在拉萨买齐（体育用品店多）；登山杖、水、氧气塔钦小镇也买得到，只是贵、选择少。
+    </div>
+  </section>
+
+  <!-- ============ 11. 关键资源 ============ -->
+  <section id="s12">
+    <h2 class="sec"><span class="no">12</span>关键资源（出行前逐一核实）</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>资源</th><th>信息</th></tr></thead>
+        <tbody>
+          <tr><td>北京→临汾</td><td>飞机：国航 CA8224 首都 19:15 → 尧都 20:35，每天 1 班；高铁：北京丰台/北京北 → 临汾西，4.5–5.5h，多趟</td></tr>
+          <tr><td>临汾→拉萨航班</td><td>无稳定直飞，经西安/太原/成都中转（临汾→西安高铁约 1.5h 最顺）</td></tr>
+          <tr><td>拉萨→临汾返程（10/5）</td><td>早班机拉萨→西安（约 3h）＋ 西安→临汾高铁/航班（1.5–2h）；有拉萨直飞临汾班次优先用</td></tr>
+          <tr><td>临汾→北京（10/6）</td><td>高铁临汾西→北京丰台 4.5–5.5h（选上午班次）；或尧都→首都国航 1 天 1 班。返程高峰，提前抢票</td></tr>
+          <tr><td>拉萨→塔钦班车</td><td>拉萨北郊客运站（扎基路 11 号），11:00 发车，约 20–24h，650–750 元，只能买全程票</td></tr>
+          <tr><td>拉萨→塔钦包车</td><td>阿里南线约 1200km，2 天；4 人拼车人均往返 3000–4000 元</td></tr>
+          <tr><td>拉萨↔阿里昆莎机场航班</td><td>班次少、易取消，仅作返程备选</td></tr>
+          <tr><td>神山圣湖景区门票</td><td>约 200 元/人（塔钦购票）</td></tr>
+          <tr><td>布宫/大昭寺预约</td><td>微信小程序实名预约，提前 3–5 天</td></tr>
+          <tr><td>边防证</td><td>临汾户籍地公安/政务大厅，免费当天取</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 12. 实战经验补充（播客学习） ============ -->
+  <section id="s13">
+    <h2 class="sec"><span class="no">13</span>实战经验补充（两期播客学习）</h2>
+
+    <div class="callout info">
+      <span class="t">🎧 本补充整理自两期冈仁波齐转山实战播客</span>
+      <strong>①《基本无害》Ep194</strong>：毛冬连续两年单日转山（17/19 小时）真实体验＋凯乐石藏族户外主播分享；<strong>②《苦中找乐》</strong>：松鹤 52 公里两天转山＋219 公路暴风雪实录。以下都是他们「用身体换来的」经验，与正文方案互补。
+    </div>
+
+    <h3>13.1 马年人流预警：价格翻 3 倍、务必提前订房</h3>
+    <div class="callout warn">
+      <span class="t">⚠️ 2026 是马年</span>
+      信众认为<strong>马年转一圈功德＝其他年份 13 圈</strong>，当地预估人流从往年 20 万级<strong>暴增至百万级</strong>。宾馆价格可能从 500 元涨到 1500 元（3 倍）。<strong>塔钦＋止热寺住宿务必现在就开始联系预订</strong>，10/5–10/6 返程票同样按「百万级人流」提前准备。
+    </div>
+
+    <h3>13.2 便携制氧机：最被低估的「性价比之王」</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>方案</th><th>优势</th><th>劣势</th><th>适合</th></tr></thead>
+        <tbody>
+          <tr><td><strong>便携制氧机（推荐）</strong></td><td>连续供氧不断、闲鱼日租约 20 元、可边走路边吸</td><td>需充电、有重量、中途取下需重新适应</td><td>预算有限但需多日吸氧</td></tr>
+          <tr><td>医用氧气袋</td><td>容量大</td><td>一次性、不能重复充气、携带不便</td><td>短途/固定营地</td></tr>
+          <tr><td>碳纤维氧气瓶</td><td>超轻便携</td><td>贵、需提前购买</td><td>轻度高反备用</td></tr>
+          <tr><td>普通氧气罐</td><td>最便宜</td><td>几分钟吸完、等于没带</td><td><strong>不推荐用于徒步</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout key">
+      <span class="t">💡 松鹤用法：全程佩戴不取下</span>
+      租来的制氧机<strong>从出发到结束一直戴着，睡觉也戴</strong>——一旦中途拿下来，再戴上可能需要一段时间血氧才能恢复。他就是在翻卓玛拉垭口遇暴风雪时靠它保持呼吸平稳，同行没带氧气的人在垭口严重高反、只能靠人搀扶。<strong>出发前 1 周闲鱼搜「便携制氧机 日租」下单</strong>。
+    </div>
+
+    <h3>13.3 救援车机制：认怂不是耻辱，是智慧</h3>
+    <ul>
+      <li>过了卓玛拉垭口后的<strong>不动地钉（平缓地带）是救援车起点</strong>，<strong>150–200 元/人</strong>直接坐车回塔钦（当地皮卡/面包车，非救护车）。</li>
+      <li><strong>该坐车的情况</strong>：天色已暗、天气突变（暴风雪/大雨）、脚起泡走不动、高反持续加重、制氧设备电量耗尽。</li>
+      <li>松鹤到不动地钉选择坐车，同伴选择走完——「这不是比赛，没有人给你发奖牌」。<strong>安全第一、体验第二、完赛最不重要。</strong></li>
+      <li>塔钦时提前问清救援车联系方式与运营时间。</li>
+    </ul>
+
+    <h3>13.4 天气突变是真实杀人事件</h3>
+    <div class="callout warn">
+      <span class="t">⚡ 真实案例：5 分钟冰雹积 5 厘米</span>
+      咏哥与一位运动高手同行，过折返点后天气骤变，<strong>冰雹 5 分钟积 5 厘米厚</strong>，同伴失温昏迷，咏哥脱衣给他、拖着走，头顶雷电劈在周围。差 50 米爬升就发生意外。<strong>结论：晴天和阴天是两个强度</strong>，垭口段遇到大风低温立即休整，绝不硬撑；心态放平，天气或身体不对就果断下撤。
+    </div>
+
+    <h3>13.5 转山节奏：两天/三天/一天怎么选</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>维度</th><th>两天（推荐）</th><th>三天（最佳体验）</th><th>一天（不推荐）</th></tr></thead>
+        <tbody>
+          <tr><td>节奏</td><td>先甜后苦，夜宿止热寺</td><td>充分感受风景人文</td><td>匆匆赶路</td></tr>
+          <tr><td>体力</td><td>中等可恢复</td><td>最从容</td><td>17–19 小时，极高</td></tr>
+          <tr><td>风险</td><td>较低</td><td>最低</td><td><strong>夜间遇狼、失温、高反加重</strong></td></tr>
+          <tr><td>一句话</td><td>大多数人体能最优解</td><td>时间充裕者首选</td><td>仅适合拉练目的</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <span class="t">⚠️ 一日走完的陷阱</span>
+      毛冬去年 17 小时、今年 19 小时一日走完，今年因保暖不足遭遇低温大风，体能意志双重崩溃，称「此生最疲惫」。<strong>除非拉练目的，否则至少分两天</strong>；若必须一日，天不亮出发、带头灯，但<strong>不要深夜翻垭口后段</strong>——见狼概率高达 50%（冬季狼饿、失温、高反叠加致命）。
+    </div>
+
+    <h3>13.6 夜间狼患与天黑原则</h3>
+    <ul>
+      <li>冬季小动物少、狼饿，甚至跑到镇上。毛冬去年凌晨 3–4 点两次见狼。</li>
+      <li><strong>藏族人天黑不走路、找地方住</strong>。游客也应天黑前抵达补给点，不要夜间翻垭口后段（宗堆附近几公里是最容易遇狼熊的路段）。</li>
+    </ul>
+
+    <h3>13.7 装备查漏补缺（播客重点补充）</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>装备</th><th>播客强调</th></tr></thead>
+        <tbody>
+          <tr><td>保暖帽＋护脸</td><td>必须防风防寒、能遮住耳朵和下半脸；毛冬护脸太薄「头被吹傻」</td></tr>
+          <tr><td>厚手套</td><td>防水保暖；毛冬完全没带，低温大风下崩溃</td></tr>
+          <tr><td>保暖裤＋羽绒</td><td>只穿一条羊毛打底裤是踩坑；备用保暖层至少一套</td></tr>
+          <tr><td>冰爪</td><td>垭口有冰必带，无攀登基础强烈建议</td></tr>
+          <tr><td>羽绒睡袋（-10℃ 温标）＋睡袋内胆</td><td>住宿极简陋（大通铺/茶馆长椅），止热寺有相对好一点的标间</td></tr>
+          <tr><td>保温壶</td><td>5600 米喝一口热水是「救命级别」的体验</td></tr>
+          <tr><td>头灯＋备用电池</td><td>两天路线可选，一日走完/天气延误必须</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>13.8 低反（醉氧）：下高原后的隐藏风险</h3>
+    <div class="callout warn">
+      <span class="t">😴 从 5000 米回平原会「醉氧」</span>
+      身体适应高原低氧后突然回到富氧平原，会出现<strong>嗜睡、乏力、反应迟钝</strong>。松鹤回平原后开车只想睡觉。<strong>下高原后 48 小时不要开车、不要安排高强度工作</strong>——尤其 10/6 从临汾回北京当天，若身体疲惫优先选高铁而非自驾，落地后充分休息。
+    </div>
+
+    <h3>13.9 与藏族同胞相处：多一分理解</h3>
+    <ul>
+      <li>补给点老板很多<strong>不懂普通话</strong>，不是不招呼你，是语言障碍；学几句简单藏语问候（「扎西德勒」）很有用。</li>
+      <li><strong>带现金</strong>：部分补给点无移动支付。</li>
+      <li>住大通铺别挑剔卫生；茶馆气氛很好。</li>
+    </ul>
+
+    <h3>13.10 心理预期：转山的四个阶段</h3>
+    <div class="callout key">
+      <span class="t">🧠 毛冬的转山心理曲线</span>
+      ① 靠兴趣好玩出发 → ② 有点累、靠疲惫支撑 → ③ 求生本能上来、必须走出去 → ④ 连意志力都没了，在天地之间麻木地拖着肉体前行——此时反而抵达「身心合一」。<strong>极度疲惫后的自我对话，比风光更珍贵</strong>。提前做好心理准备，中途任何阶段感到不对，13.3 的救援车就是你的退路。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理，并吸收《基本无害》Ep194（毛冬等）与《苦中找乐》（松鹤）两期冈仁波齐转山实战播客经验。价格、航班、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 转山顺利，扎西德勒 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      showFallback('mapKora', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    // ---- 高德地图底图（矢量中文图，无需 key） ----
+    // 注意：每个地图必须使用独立的 tileLayer 实例（Leaflet 中一个图层不能同时被两个地图使用）
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // ---- WGS-84 → GCJ-02（火星坐标）纠偏，确保标注在高德底图上定位准确 ----
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    // ---- 通用：圆点 marker（数字编号） ----
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    // ---- 侧边节点清单：直接列出每个节点内容，点击可在对应地图上定位 ----
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      // 地图上点标记时，联动高亮对应侧边条目
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全景图：全程路线 + 沿途景点 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+      { c: '#1e6fd9', d: 3, n: '9/28 去程·拉萨→日喀则→萨嘎', pts: [[29.97, 91.11], [29.02, 90.80], [28.88, 90.22], [28.94, 89.63], [29.28, 88.82], [29.10, 87.62], [29.38, 85.30]] },
+      { c: '#1e6fd9', d: 3, n: '9/29 去程·萨嘎→帕羊→塔钦', pts: [[29.38, 85.30], [29.66, 84.15], [31.00, 81.25]] },
+      { c: '#e07b00', d: 3, n: '9/30 圣湖·塔钦→玛旁雍错→拉昂错→塔钦', pts: [[31.00, 81.25], [30.72, 81.28], [30.67, 81.43], [31.00, 81.25]] },
+      { c: '#c62828', d: 4, n: '10/1–3 转山环线', pts: [[31.00, 81.25], [31.03, 81.24], [31.06, 81.20], [31.10, 81.30], [31.10, 81.36], [31.09, 81.42], [31.04, 81.42], [31.00, 81.25]] },
+      { c: '#2e7d32', d: 3, n: '10/3夜–10/4 返程·塔钦→萨嘎→拉萨', pts: [[31.00, 81.25], [29.66, 84.15], [29.38, 85.30], [29.28, 88.82], [29.97, 91.11]] }
+    ];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点（数字编号 = 与正文景点表对应）
+    var spotsMain = [
+      { num: 1, prio: 'must', lat: 29.97, lng: 91.11, name: '布达拉宫', t: '9/27 上午 · 3–4h', fee: '200 元（一号线）', note: '提前 10 天小程序抢票' },
+      { num: 2, prio: 'must', lat: 29.653, lng: 91.131, name: '大昭寺 / 八廓街', t: '9/26–27 · 1.5–2h', fee: '85 元', note: '11:30 后游客可入寺，顺时针转经' },
+      { num: 3, prio: 'nice', lat: 29.67, lng: 91.12, name: '药王山观景台', t: '9/27 · 20min', fee: '免费', note: '50 元背面同款机位' },
+      { num: 4, prio: 'must', lat: 29.02, lng: 90.80, name: '羊卓雍措（羊湖）', t: '9/28 9:00–10:00 · 40–60min', fee: '100 元', note: '岗巴拉山口俯瞰全景' },
+      { num: 5, prio: 'nice', lat: 28.88, lng: 90.22, name: '卡若拉冰川', t: '9/28 11:00 · 20–30min', fee: '约 50 元', note: '《红河谷》取景地' },
+      { num: 6, prio: 'nice', lat: 28.94, lng: 89.63, name: '江孜宗山古堡 / 白居寺', t: '9/28 12:30–14:00 · 30–40min', fee: '各约 50–60 元', note: '时间紧二选一' },
+      { num: 7, prio: 'nice', lat: 29.28, lng: 88.82, name: '扎什伦布寺', t: '9/28 15:00–16:30 · 1.5–2h', fee: '55 元', note: '强巴佛殿最大铜佛' },
+      { num: 8, prio: 'skip', lat: 29.10, lng: 87.62, name: '拉孜（藏刀之乡）', t: '9/28 18:00 晚餐 · 30min', fee: '—', note: '进阿里前最后补给' },
+      { num: 9, prio: 'must', lat: 30.67, lng: 81.43, name: '玛旁雍错（圣湖）', t: '9/30 上午 · 1–2h', fee: '150 元', note: '世界最高淡水湖之一' },
+      { num: 10, prio: 'nice', lat: 30.72, lng: 81.28, name: '拉昂错（鬼湖）', t: '9/30 顺路 · 30min', fee: '免费', note: '与圣湖一丘之隔' },
+      { num: 11, prio: 'must', lat: 31.00, lng: 81.25, name: '塔钦（起点）', t: '9/29 晚–10/3 · 大本营', fee: '转山票 200 元', note: '南面可瞻仰神山' }
+    ];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([toGCJ(28.6, 80.8), toGCJ(31.4, 91.6)]);
+
+    // 图例
+    var legendHtml = '<div class="map-legend"><b>图例</b>' +
+      '<span class="sw" style="background:#1e6fd9"></span>9/28–29 去程包车<br>' +
+      '<span class="sw" style="background:#e07b00"></span>9/30 圣湖一日<br>' +
+      '<span class="sw" style="background:#c62828"></span>10/1–3 转山环线<br>' +
+      '<span class="sw" style="background:#2e7d32"></span>10/3夜–4 返程<br>' +
+      '<span class="sw dash"></span>飞机/高铁段（图外东侧）</div>';
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+
+    // ---- 转山局部放大图 ----
+    var mapKora = L.map('mapKora', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    var koraRoute = [[31.00, 81.25], [31.03, 81.24], [31.06, 81.20], [31.10, 81.30], [31.10, 81.36], [31.09, 81.42], [31.04, 81.42], [31.00, 81.25]];
+    L.polyline(koraRoute.map(function (p) { return toGCJ(p[0], p[1]); }), { color: '#c62828', weight: 4, opacity: 0.9 }).addTo(mapKora)
+      .bindPopup(popHtml('<h4>转山环线 · 约 52km</h4><p>顺时针方向：塔钦 → 止热寺 → 卓玛拉山口 → 祖楚寺 → 塔钦</p>'));
+
+    var koraSpots = [
+      { num: 1, prio: 'must', lat: 31.00, lng: 81.25, name: '塔钦（起点/终点）', t: '10/1 晨出发 · 10/3 午回到', h: '4675m', note: '转山票 200 元，南面看神山' },
+      { num: 2, prio: 'nice', lat: 31.03, lng: 81.24, name: '经幡广场', t: '10/1 出发后 · 5km', h: '4740m', note: '可雇马/背夫' },
+      { num: 3, prio: 'nice', lat: 31.06, lng: 81.20, name: '曲古寺', t: '10/1 中午 · 10km', h: '4860m', note: '第一座寺院' },
+      { num: 4, prio: 'must', lat: 31.10, lng: 81.30, name: '止热寺（D1 住宿）', t: '10/1 16:00 前 · 20km', h: '5100m', note: '日照金山机位，床位 80–150 元' },
+      { num: 5, prio: 'nice', lat: 31.10, lng: 81.36, name: '天葬台遗址', t: '10/2 清晨 · 4km', h: '5370m', note: '尊重不打扰' },
+      { num: 6, prio: 'must', lat: 31.09, lng: 81.42, name: '卓玛拉山口', t: '10/2 9:00–10:00 · 8km', h: '5630m', note: '全程最高点，经幡阵，慢行' },
+      { num: 7, prio: 'nice', lat: 31.05, lng: 81.44, name: '托吉措（慈悲湖）', t: '10/2 上午', h: '约 5200m', note: '山口后冰碛湖' },
+      { num: 8, prio: 'must', lat: 31.04, lng: 81.42, name: '祖楚寺（D2 住宿）', t: '10/2 天黑前 · 22km', h: '4830m', note: '米拉日巴修行地，床位 80–150 元' },
+      { num: 9, prio: 'nice', lat: 31.02, lng: 81.33, name: '宗堆/经幡廊', t: '10/3 上午 · 7km', h: '约 4750m', note: '出口段玛尼墙' }
+    ];
+    var koraMarkers = [];
+    koraSpots.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapKora)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '　<strong>海拔：</strong>' + s.h + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      koraMarkers.push(mk);
+    });
+    renderSidebar('sidebarKora', koraSpots, mapKora, koraMarkers);
+    mapKora.fitBounds([toGCJ(30.98, 81.18), toGCJ(31.12, 81.46)]);
+  }
+
+  // Leaflet 已通过本地文件同步加载，直接初始化
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    // ① 为各章节的 h3 小节生成锚点 id，并填充小节列表
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130; // 视口偏上偏移，避免标题被顶部吞掉
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      // 一级分组：手风琴展开当前章节所在分组
+      syncGroups(groupFor(cur));
+      // 二级章节高亮
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      // 三级小节高亮
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    // 分组标题点击：手风琴切换展开/折叠
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320; // 滚动超过此像素才出现
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+</script>
+</body>
+</html>
