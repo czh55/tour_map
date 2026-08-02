@@ -6,12 +6,13 @@
 
 ```
 tour_map/
-├── 2026-冈仁波齐转山行程方案.html  # 实战成品（单文件，可离线打开）
-├── docs/
-│   └── WORKFLOW.md                # 制作工作流（权威，下个项目照此执行）
-├── images/                        # 景点图片（Unsplash License，本地化）
-├── fonts/                         # 手写体字体（MaShanZheng 楷书，本地化）
-├── leaflet/                       # 地图库（Leaflet 本地文件 + 高德瓦片）
+├── docs/                          # GitHub Pages 部署源（/docs）
+│   ├── index.html                 # 入口页（项目导航）
+│   ├── 2026-冈仁波齐转山行程方案.html  # 实战成品（可离线打开）
+│   ├── WORKFLOW.md                # 制作工作流（权威，下个项目照此执行）
+│   ├── images/                    # 景点图片（Unsplash License，本地化）
+│   ├── fonts/                     # 手写体字体（MaShanZheng 楷书，本地化）
+│   └── leaflet/                   # 地图库（Leaflet 本地文件 + 高德瓦片）
 └── README.md
 ```
 

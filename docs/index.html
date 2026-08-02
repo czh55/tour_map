@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tour_map · 冈仁波齐转山行程方案</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --red: #8B2F1B;
+      --red-light: #a54326;
+      --gold: #C9A227;
+      --cream: #F7F1E3;
+      --card: #FFFFFF;
+      --text: #3B2E24;
+      --muted: #8a7a68;
+      --line: #E5DCCB;
+    }
+    body {
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+
+    /* 封面区 */
+    .cover {
+      position: relative;
+      height: 46vh;
+      min-height: 300px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .cover img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 60%;
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(20,10,8,.05) 0%, rgba(20,10,8,.35) 60%, rgba(20,10,8,.75) 100%);
+    }
+    .cover-inner {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 40px 24px 48px;
+      color: #fff;
+    }
+    .cover .kicker {
+      font-size: 13px;
+      letter-spacing: 4px;
+      background: rgba(0,0,0,.3);
+      display: inline-block;
+      padding: 4px 16px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .cover h1 {
+      font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-shadow: 0 2px 16px rgba(0,0,0,.5);
+    }
+    .cover p {
+      margin-top: 10px;
+      font-size: 15px;
+      opacity: .92;
+      text-shadow: 0 1px 8px rgba(0,0,0,.5);
+    }
+
+    /* 主体 */
+    .main {
+      max-width: 760px;
+      margin: -28px auto 0;
+      padding: 0 24px 72px;
+      position: relative;
+      z-index: 3;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 8px 30px rgba(80,50,30,.12);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 18px;
+      color: var(--red);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h2::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+    .card p, .card li {
+      font-size: 14.5px;
+      color: #5b4c3d;
+    }
+    .card ul {
+      padding-left: 20px;
+    }
+    .card li { margin-bottom: 6px; }
+
+    /* 入口按钮 */
+    .entry {
+      text-align: center;
+    }
+    .entry a.big {
+      display: block;
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-light) 100%);
+      color: #fff;
+      text-decoration: none;
+      padding: 20px 24px;
+      border-radius: 14px;
+      font-size: 20px;
+      letter-spacing: 2px;
+      box-shadow: 0 10px 26px rgba(139,47,27,.35);
+      transition: transform .2s ease, box-shadow .2s ease;
+      margin-bottom: 14px;
+    }
+    .entry a.big small {
+      display: block;
+      font-size: 12.5px;
+      letter-spacing: 1px;
+      opacity: .85;
+      margin-top: 6px;
+    }
+    .entry a.big:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(139,47,27,.45);
+    }
+    .entry .sub-links {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .entry .sub-links a {
+      color: var(--red);
+      text-decoration: none;
+    }
+    .entry .sub-links a:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--muted);
+      padding: 8px 24px 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <img src="images/kailash2.jpg" alt="冈仁波齐" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">tour_map · 旅游规划 HTML 制作工作流</div>
+      <h1>冈仁波齐转山行程方案</h1>
+      <p>2026 国庆 · 北京 → 临汾 → 拉萨 → 冈仁波齐转山 → 返京</p>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="card entry">
+      <a class="big" href="2026-冈仁波齐转山行程方案.html">
+        📖 打开完整行程方案
+        <small>交互地图 · 逐小时时间线 · 景点图库 · 章节导航</small>
+      </a>
+      <div class="sub-links">
+        制作方法见 <a href="https://github.com/czh55/tour_map/blob/main/docs/WORKFLOW.md" target="_blank" rel="noopener">docs/WORKFLOW.md</a>
+        ｜ 仓库 <a href="https://github.com/czh55/tour_map" target="_blank" rel="noopener">github.com/czh55/tour_map</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💡 这个项目是什么</h2>
+      <p>一次旅行 → 一份可视化 HTML 行程方案的<b>制作工作流</b>。沉淀自 2026 冈仁波齐转山实战，包含可复用的组件与本地化资源。</p>
+      <ul>
+        <li><b>资源全本地化</b>：图片 / 字体 / 地图库全部下载到项目内，不依赖 CDN，离线可用。</li>
+        <li><b>高德地图</b>：WGS-84 → GCJ-02 坐标转换，国内地图精准显示。</li>
+        <li><b>三级章节导航</b>：一级分组 ≤4 个，小节由 JS 自动生成。</li>
+        <li><b>响应式设计</b>：手机友好，手写体标题 + 封面图美化。</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>tour_map · 由 czh55 维护</footer>
+</body>
+</html>
