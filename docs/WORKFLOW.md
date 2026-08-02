@@ -15,6 +15,7 @@ Task Progress:
 - [ ] 7. 视觉美化：封面图 + 手写体标题 + 主题色
 - [ ] 8. 质量验证：浏览器实测 + 结构自检
 - [ ] 9. 输出归档：备份版本 + README + Git
+- [ ] 10. 汇总收录：guides.json 追加记录，接入汇总门户
 ```
 
 ---
@@ -207,3 +208,51 @@ node -e "new Function(allScriptsText)"
 | 本地图片 | `images/` | Unsplash 下载 |
 | 地图侧栏 | `.map-wrap` | 节点内容直接展示 |
 | 返回 TOP | `.back-top` | 右下角浮动按钮 |
+
+---
+
+## Step 10：添加到攻略汇总页（多攻略站点）
+
+`docs/index.html` 是旅游攻略**汇总门户**（数据驱动），不是单页。新增一篇攻略后，汇总页会自动出现新卡片。
+
+**目录结构**：
+
+```
+docs/
+├── index.html                # 汇总门户（无需改动）
+├── guides.json               # 攻略索引数据（追加一条记录）
+├── {攻略名}.html             # 攻略成品（相对路径引用资源）
+├── images/<slug>/            # 该攻略的图片资源
+├── fonts/  leaflet/          # 共享资源（不重复下载）
+└── WORKFLOW.md
+```
+
+**添加步骤**：
+
+1. 攻略 HTML 成品放入 `docs/`，图片等资源放入 `docs/images/<slug>/`，相对路径引用。
+2. 在 `docs/guides.json` 数组末尾追加一条记录：
+   ```json
+   {
+     "slug": "kailash-kora-2026",
+     "title": "2026 冈仁波齐转山行程方案",
+     "cover": "images/kailash2.jpg",
+     "html": "2026-冈仁波齐转山行程方案.html",
+     "date": "2026-10",
+     "destination": "西藏",
+     "days": 13,
+     "difficulty": "高海拔徒步",
+     "summary": "北京→临汾→拉萨→冈仁波齐转山→返京，13 天全行程",
+     "tags": ["转山", "西藏", "高海拔徒步"]
+   }
+   ```
+   字段说明：
+   - `slug`：唯一标识，用作资源目录名。
+   - `title` / `cover` / `html`：必填，卡片标题、封面图、跳转地址（均为相对路径）。
+   - `summary` / `destination` / `tags`：参与汇总页搜索与标签筛选；`tags` 自动聚合为筛选 chips。
+   - `date` / `days` / `difficulty`：元信息，为未来卡片布局扩展预留。
+3. 推送后 GitHub Pages 自动构建，汇总页即出现新卡片，无需改 `index.html`。
+
+**约定**：
+- `cover` 缺省时卡片用主题色渐变占位，不会破版。
+- 搜索覆盖 `title` / `summary` / `destination` / `tags`；标签筛选为多选（AND 逻辑）。
+- 汇总页 JS 用 `createElement` + `textContent` 渲染，避免注入，无需转义 HTML。
