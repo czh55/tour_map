@@ -10,5 +10,29 @@
     "difficulty": "高海拔徒步",
     "summary": "北京→临汾→拉萨→冈仁波齐转山→返京，13 天全行程",
     "tags": ["转山", "西藏", "高海拔徒步"]
+  },
+  {
+    "slug": "dalian-2026",
+    "title": "2026 大连 3 天 2 晚周末攻略",
+    "cover": "images/dalian/dali-coast.jpg",
+    "html": "2026-大连3天2晚周末攻略.html",
+    "date": "2026-08",
+    "destination": "辽宁·大连",
+    "days": 3,
+    "difficulty": "城市海滨",
+    "summary": "北京⇄大连高铁 4 小时，星海广场→老虎滩→金石滩，海鲜+滨海大道 3 天 2 晚",
+    "tags": ["大连", "海滨", "周末短途", "海鲜"]
+  },
+  {
+    "slug": "liuzhou-2026",
+    "title": "2026 柳州 3 天 2 晚周末攻略",
+    "cover": "images/liuzhou/lz-karst-river.jpg",
+    "html": "2026-柳州3天2晚周末攻略.html",
+    "date": "2026-08",
+    "destination": "广西·柳州",
+    "days": 3,
+    "difficulty": "城市休闲",
+    "summary": "北京⇄柳州高铁 9 小时，龙潭公园→工业博物馆→马鞍山夜景，螺蛳粉+喀斯特 3 天 2 晚",
+    "tags": ["柳州", "喀斯特", "周末短途", "螺蛳粉"]
   }
 ]

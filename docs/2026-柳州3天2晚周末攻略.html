@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 柳州 3 天 2 晚周末攻略 · 北京⇄柳州</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #0e7a5a;
+    --red-light: #129a72;
+    --gold: #d9a441;
+    --ink: #22332e;
+    --muted: #6b7d76;
+    --bg: #f3f8f6;
+    --card: #ffffff;
+    --line: #dce9e3;
+    --blue: #1e3a5f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: #eaf5f0; }
+  .side-nav a.active { background: #e4f2ec; color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: #eaf5f0; }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: #eaf5f0; }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: #e4f2ec; border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(14,122,90,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); box-shadow: 0 8px 22px rgba(14,122,90,.5); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, #083c2d 0%, #0e7a5a 55%, #129a72 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      rgba(4, 34, 24, .88) 0%,
+      rgba(8, 56, 42, .72) 32%,
+      rgba(12, 90, 66, .38) 62%,
+      rgba(18, 154, 114, .22) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid rgba(217,164,65,.6);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: #eef7f3; color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: #fdf6e7; border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: #eef3fa; border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: #eef3fa; color: var(--blue); border: 1px solid #c7d4e4; }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: #e2efe9;
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: #edf4f0; color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: #c3d9cf; border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: #eaf5f0; }
+  .side-item.active { background: #e4f2ec; box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: #0e7a5a;
+  }
+  .side-item.nice .side-num { background: #1e3a5f; }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: #3f5c51; margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: #0e7a5a; }
+  .map-pin.nice { background: #1e3a5f; }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: #0e7a5a; color: #fff; }
+  .map-pop .tag.nice { background: #eef3fa; color: #1e3a5f; }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #f4faf7; }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, rgba(14,122,90,.08), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.fly { background: #1e3a5f; }
+  .hourline .day-head .d-tag.food { background: #c9820e; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed #e3eee8; vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: #f6fbf9; }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: #f3f9f6; }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/liuzhou/lz-karst-river.jpg" alt="柳州喀斯特山水" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 周末嗦粉 · 山水工业城</div>
+      <h1>柳州 3 天 2 晚周末攻略</h1>
+      <div class="sub">北京 ⇄ 柳州 · 一碗螺蛳粉 · 一座山水城</div>
+      <div class="meta">
+        <span>✈️ 行程链：北京 → 柳州 → 北京</span>
+        <span>📅 时间窗口：周五晚 – 周日晚（3 天 2 晚）</span>
+        <span>🚄 交通：高铁约 9.5h / 飞机约 3.5h</span>
+        <span>🍜 主题：嗦粉 + 喀斯特山水 + 工业风情</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 3 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 3 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1. 核心结论 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node hl">北京</span><span class="arrow">→</span>
+      <span class="node">柳州站</span><span class="arrow">→</span>
+      <span class="node hl">龙潭公园</span><span class="arrow">→</span>
+      <span class="node">工业博物馆</span><span class="arrow">→</span>
+      <span class="node hl">马鞍山夜景</span><span class="arrow">→</span>
+      <span class="node hl">北京</span>
+    </div>
+
+    <div class="callout key">
+      <span class="t">🕐 周末怎么凑（柳州比大连远，两种方案）</span>
+      <strong>方案 A（推荐）：高铁往返</strong>——周五请半天假，乘 G93/G421 白天高铁（北京西 09:00–10:15 发，约 9.5h，傍晚/晚上到），周日返程高铁回京，全程不熬夜。<strong>方案 B（省时）：飞机往返</strong>——飞行约 3.5h，但柳州航班班次少、票价高（单程 800–2300 元），适合时间紧预算松的人。
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>事项</th><th>结论</th></tr></thead>
+        <tbody>
+          <tr><td>假期</td><td>周末 + 周五请半天假（高铁方案必请）</td></tr>
+          <tr><td>推荐方案</td><td><strong>3 天 2 晚（周五下午 – 周日晚）</strong></td></tr>
+          <tr><td>回京约束</td><td><strong>周日晚间到京</strong>，周一正常上班</td></tr>
+          <tr><td>行程链</td><td>北京 → 柳州 → 龙潭公园 → 工业博物馆 → 马鞍山 → 北京</td></tr>
+          <tr><td>预算（人均）</td><td>经济 1800–2400 元 ／ <strong>标准 2600–3300 元</strong> ／ 舒适 4000–5200 元</td></tr>
+          <tr><td>最大优点</td><td><strong>市区景点几乎全免费</strong>（龙潭公园、工业博物馆、马鞍山、窑埠古镇都免票），预算大头是往返交通</td></tr>
+          <tr><td>三件提前事</td><td>① 高铁/机票提前 2–3 周订（柳州航班少，越早越便宜）② 工业博物馆需预约 ③ 酒店住五星步行街附近</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 最关键的判断：高铁还是飞机？</span>
+      北京 ⇄ 柳州高铁约 <strong>9.5–10 小时</strong>（二等座约 1099 元），往返路上耗掉近一天，来回车程加起来 20 小时；飞机虽快但 <strong>单程 800–2300 元、班次少</strong>。周末 3 天其实是「刚好够玩」的极限：<strong>高铁方案周五下午出发，等于只有 2 个整天</strong>；飞机方案能完整 3 天，但钱包更痛。赶时间请直接选飞机。
+    </div>
+  </section>
+
+  <!-- ============ 2. 推荐行程 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 3 天版（周五下午 – 周日晚）</h2>
+    <p>请假：<strong>周五请半天假</strong>（高铁方案）；飞机方案可视航班时间只请周五下午或半天。</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>日期</th><th>行程</th><th>过夜地</th><th>主题</th></tr></thead>
+        <tbody>
+          <tr><td>D1 周五</td><td>北京 → 柳州（高铁约 9.5h 或飞机约 3.5h），抵达后入住五星步行街附近，青云市场/夜市吃夜宵</td><td class="c">柳州市区</td><td class="c">交通 + 首夜</td></tr>
+          <tr><td>D2 周六</td><td>上午<strong>青云民生市场</strong>早餐 → <strong>龙潭公园</strong>（喀斯特山水，风雨桥），中午嗦螺蛳粉，下午<strong>工业博物馆</strong>（绿皮火车、五菱），晚上<strong>马鞍山登顶看全城夜景 + 胜利烧烤城</strong></td><td class="c">柳州市区</td><td class="c">山水 + 工业 + 夜景</td></tr>
+          <tr><td>D3 周日</td><td>上午<strong>柳侯公园</strong>（柳宗元文化）＋<strong>柳州博物馆</strong>，中午嗦粉买伴手礼，下午乘水上公交游柳江，傍晚返程回京</td><td class="c">—</td><td class="c">人文收尾</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="t">🧭 时间不够怎么砍</span>
+      只能玩 2 天：砍柳州博物馆，D3 上午只逛柳侯公园 + 水上公交。若对工业没兴趣，砍工业博物馆，把 D2 下午换给<b>百里柳江夜游船</b>（约 100 元，看音乐喷泉）。
+    </div>
+  </section>
+
+  <!-- ============ 3. 逐小时时间线 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线（精确到小时）</h2>
+    <p>以下为 3 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1（周五）· 北京 → 柳州</span>
+          <span class="d-desc">高铁约 9.5h</span>
+          <span class="d-tag fly">🚄 交通日</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">09:00–10:15</td><td class="t-what">北京西站出发，<b>乘 G93 / G421 高铁赴柳州</b>（约 9.5h，二等座约 1099 元）</td></tr>
+              <tr><td class="t-time">18:15–20:03</td><td class="t-what"><b>抵达柳州站</b>（G93 约 18:15 / G421 约 20:03），打车至酒店</td></tr>
+              <tr><td class="t-time">20:30</td><td class="t-what">入住五星步行街附近酒店，放下行李</td></tr>
+              <tr><td class="t-time">21:00</td><td class="t-what">夜宵：<b>青云民生市场</b>或酒店附近吃螺蛳粉/炒螺蛳粉，早睡</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">高铁上记得带零食和水；G93 到柳州约 18:15，还能吃个不错的夜宵。飞机方案则傍晚 17 点前后落地，省 6 小时在路上的时间。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2（周六）· 龙潭公园 + 工业博物馆 + 马鞍山夜景</span>
+          <span class="d-desc">山水 · 工业 · 夜景三连</span>
+          <span class="d-tag">🌄 主玩日</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">08:00</td><td class="t-what">起床，去<b>青云民生市场</b>吃早餐（露水汤圆、芋头糕、玉米汁，人均 20 元）</td></tr>
+              <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>龙潭公园</b>（免费，5A）：喀斯特山水、风雨桥、镜湖，穿汉服拍照 2h</td></tr>
+              <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：聚宝/曹妹螺蛳粉（加炸蛋 + 鸭脚）</td></tr>
+              <tr><td class="t-time">13:00–15:00</td><td class="t-what"><b>柳州工业博物馆</b>（免费，需预约）：老厂房、绿皮火车、五菱神车，工业风拍照</td></tr>
+              <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>※</b> 自由活动：窑埠古镇白天逛 / 柳州博物馆 / 回酒店午休三选一</td></tr>
+              <tr><td class="t-time">17:30</td><td class="t-what">前往<b>马鞍山公园</b>，乘电梯登顶（上行 20 元）</td></tr>
+              <tr><td class="t-time">19:30</td><td class="t-what"><b>全城亮灯瞬间</b>（19:30 前后），俯瞰柳江绕城，360° 夜景拍照</td></tr>
+              <tr><td class="t-time">20:30</td><td class="t-what">下山步行 10 分钟到<b>胜利烧烤城</b>：炒螺蛳粉、螺蛳鸭脚煲、叮当炒冰</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">马鞍山 19:30 亮灯是全天高光，务必 19:00 前登顶占位。龙潭公园早 8 点前入园能避开旅行团，镜湖人少景美。</div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3（周日）· 柳侯公园 + 水上公交 + 返程</span>
+          <span class="d-desc">人文 + 江景 · 傍晚返京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>时间</th><th>事项</th></tr></thead>
+            <tbody>
+              <tr><td class="t-time">08:00</td><td class="t-what">早餐：大华干捞粉/融安滤粉（本地早餐）</td></tr>
+              <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>柳侯公园</b>（免费）：柳侯祠、柳宗元衣冠墓、百年古树</td></tr>
+              <tr><td class="t-time">10:30–11:30</td><td class="t-what"><b>※ 柳州博物馆</b>（免费）：恐龙化石、民族展厅</td></tr>
+              <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：螺蛳粉收尾 + 五星街买伴手礼（袋装螺蛳粉约 10 元/包）</td></tr>
+              <tr><td class="t-time">13:30–15:00</td><td class="t-what"><b>※ 水上公交 1 号线</b>（3 元）：南车渡 → 东堤码头，柳江风光游船</td></tr>
+              <tr><td class="t-time">15:30</td><td class="t-what">回酒店取行李，前往柳州站</td></tr>
+              <tr><td class="t-time">16:30–23:00</td><td class="t-what"><b>乘高铁返京</b>（下午/傍晚车次，G94 等约 9.5h，深夜到北京）</td></tr>
+              <tr><td class="t-time">23:30</td><td class="t-what">到家，第二天上班（高铁返程较累，建议周一请假半天缓冲）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="hl-note">高铁返程到北京已深夜，若周一上班累，返程改飞机（傍晚航班 3.5h 到京）。水上公交半小时一班，提前去排队。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4. 景点图鉴 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+    <p>柳州最大优势：<strong>市区景点几乎全免费</strong>。必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/liuzhou/lz-karst-river.jpg" alt="龙潭公园喀斯特山水" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">龙潭公园 <small>免费 · 5A</small></div>
+          <div class="sc-feat">喀斯特山水 + 民族风情。<b>镜湖、风雨桥、侗寨鼓楼</b>超出片，城市天然氧吧。</div>
+          <div class="sc-meta">📅 6:30–22:30 · ⏱ 2h · 🚌 19 路龙潭公园站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/liuzhou/lz-industrial.jpg" alt="柳州工业博物馆工业风" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">柳州工业博物馆 <small>免费 · 需预约</small></div>
+          <div class="sc-feat">全国首个城市工业博物馆。<b>巨型绿皮火车、老式汽车、五菱神车</b>，工业风拍照天花板。</div>
+          <div class="sc-meta">📅 9:00–17:00（周一闭馆）· ⏱ 1.5–2h · 📍 柳东路 220 号</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/liuzhou/lz-karst-dramatic.jpg" alt="柳州山水" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马鞍山公园 <small>免费 · 电梯 20 元</small></div>
+          <div class="sc-feat">柳州市区最高点。<b>19:30 全城亮灯</b>瞬间超震撼，柳江绕城如带，360° 夜景。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1.5h · 📍 鱼峰区屏山大道</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/liuzhou/lz-night-market.jpg" alt="窑埠古镇夜景" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">窑埠古镇 <small>免费</small></div>
+          <div class="sc-feat">仿古建筑群，<b>夜景灯光绝美</b>，汉服/民族服饰拍照圣地，江边游船看柳江。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–1.5h · 📍 马鞍山脚下柳江边</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">柳侯公园 <small>免费 · 4A</small></div>
+          <div class="sc-feat">纪念柳宗元的古典园林。<b>柳侯祠、罗池、百年古树</b>，园内柳侯祠有国家一级文物荔子碑。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 城中区文惠路</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/liuzhou/lz-boats.jpg" alt="柳江游船" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">百里柳江 <small>游船约 100 元 / 水上公交 3 元</small></div>
+          <div class="sc-feat">柳江穿城而过。<b>音乐喷泉（20:00/21:00）</b>、蟠龙山瀑布；省钱玩法坐 3 元水上公交。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 南车渡/东堤码头</div>
+        </div>
+      </div>
+    </div>
+    <p class="gallery-note">部分图片为 Unsplash 广西喀斯特山水主题图（龙潭公园同款喀斯特地貌），用于页面配图。更多免费景点：青云民生市场（早市）、柳州博物馆、鱼峰公园、都乐公园。</p>
+  </section>
+
+  <!-- ============ 5. 路线地图 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6. 预算明细 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+    <p>以下为<strong>单人、不含购物</strong>的估算；柳州市区景点几乎全免费，预算大头是往返交通。高铁往返约 2200 元、飞机往返约 2000–4600 元。</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>项目</th><th>经济（1800–2400）</th><th>标准（2600–3300）</th><th>舒适（4000–5200）</th></tr></thead>
+        <tbody>
+          <tr><td>往返交通</td><td>高铁往返约 2200</td><td>高铁二等座往返约 2200</td><td>飞机往返约 3000–4000</td></tr>
+          <tr><td>住宿（2 晚）</td><td>快捷 200–300</td><td>市中心连锁 400–600</td><td>五星/江景酒店 800–1200</td></tr>
+          <tr><td>门票</td><td>基本全免（马鞍山电梯 20）</td><td>马鞍山电梯 20 + 夜游船 100</td><td>夜游船 + 汉服体验 + 贡多拉</td></tr>
+          <tr><td>餐饮（3 天）</td><td>100–150</td><td>180–260（顿顿嗦粉 + 鸭脚煲）</td><td>300–450（含正餐 + 夜市）</td></tr>
+          <tr><td>市内交通</td><td>公交 + 步行 30</td><td>打车 + 水上公交 60–90</td><td>打车为主 120–180</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 2900 元）</span>
+      高铁往返 2200 + 住宿 2 晚 500（双人分 1000）+ 马鞍山电梯 20 + 夜游船 100 + 餐饮 220 + 市内交通 80 ≈ <strong>3120 元</strong>。若改飞机（往返约 3500），总花费会跳到 4500 上下，主要看你对「时间 vs 钱包」的取舍。
+    </div>
+  </section>
+
+  <!-- ============ 7. 备选方案 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 三江侗族风情（延长版）</h3>
+    <p>时间充足时，柳州市区 → <strong>三江侗族自治县</strong>（约 2h），看<strong>程阳八寨风雨桥</strong>、三江鼓楼、侗族百家宴。适合对少数民族文化感兴趣的人，但需要多留 1 天，周末档一般不够。</p>
+
+    <h3>7.2 纯市区慢游版（不赶路）</h3>
+    <p>砍掉工业博物馆和柳州博物馆，行程改为：D2 龙潭公园 + 窑埠古镇 + 马鞍山夜景，D3 柳侯公园 + 水上公交 + 嗦粉。适合纯休闲，日均步数少一半。</p>
+
+    <h3>7.3 飞机往返（省 12 小时）</h3>
+    <p>北京 → 柳州飞行约 3.5h，周五傍晚航班落地即可逛夜市，周日晚返京不熬夜。代价是单程 800–2300 元、班次少（多为国航，每天 1–3 班）。提前 2 周盯价格能买到 1000 元上下的票。</p>
+  </section>
+
+  <!-- ============ 8. 交通与住宿 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 柳州 交通</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>方式</th><th>时长</th><th>参考价</th><th>备注</th></tr></thead>
+        <tbody>
+          <tr><td>高铁（性价比）</td><td class="c">9.5–10h</td><td class="c">二等座约 1099 元</td><td>G93（北京西 09:00 → 柳州 18:15）、G421（10:15 → 20:03）</td></tr>
+          <tr><td>飞机（省时间）</td><td class="c">约 3.5h</td><td class="c">800–2300 元</td><td>班次少，多为国航，早订便宜</td></tr>
+          <tr><td>普速直达</td><td class="c">20–31h</td><td class="c">硬卧 446–458 元</td><td>Z/K 字头，太耗时，周末不推荐</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <span class="t">⚠️ 高铁时间不短</span>
+      9.5 小时的高铁单程并不轻松。<strong>白天车次至少保证上车睡觉、下车就玩</strong>；返程尽量选傍晚到达的车次，避免深夜折腾。
+    </div>
+
+    <h3>8.2 市内交通</h3>
+    <ul>
+      <li><strong>打车</strong>：起步价低，市区景点之间多为起步价内（10 元上下）。</li>
+      <li><strong>水上公交</strong>：3 元/人，1 号线南车渡 → 东堤码头，游柳江性价比之王。</li>
+      <li><strong>共享电驴</strong>：酒店可租，约 35 元/天，市区骑行自由，最推荐。</li>
+      <li><strong>公交</strong>：龙潭公园 19 路直达；大部分景点相距 2 公里内，骑行/步行 10 分钟。</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>区域</th><th>价格/晚</th><th>优点</th><th>短板</th></tr></thead>
+        <tbody>
+          <tr><td>五星步行街/市中心</td><td>200–400</td><td>吃逛出行超方便，青云市场、柳侯公园步行可达</td><td>周末可能满房，提前订</td></tr>
+          <tr><td>窑埠古镇/柳江边</td><td>300–500</td><td>江景 + 夜景，窑埠古镇就在楼下</td><td>离柳州站略远</td></tr>
+          <tr><td>柳州站附近</td><td>150–300</td><td>到站即住、返程方便</td><td>环境一般，餐饮选择少</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ 9. 美食清单 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+    <div class="gear">
+      <div>
+        <h3>🍜 必吃螺蛳粉</h3>
+        <ul>
+          <li>聚宝、曹妹、凤张（居民区老店，加炸蛋 + 鸭脚）</li>
+          <li>干捞螺蛳粉、炒螺蛳粉都值得试</li>
+          <li>微辣起步，不吃辣提前说</li>
+        </ul>
+        <h3>🥘 夜宵硬菜</h3>
+        <ul>
+          <li>螺蛳鸭脚煲（鸭脚软糯脱骨）</li>
+          <li>凉拌牛杂、酸嘢（酸爽开胃）</li>
+          <li>张飞木薯羹（甜品收尾）</li>
+          <li>胜利烧烤城：炒螺蛳粉 15 元、叮当炒冰 20 元</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍳 本地早餐</h3>
+        <ul>
+          <li>青云民生市场：露水汤圆、芋头糕、玉米汁</li>
+          <li>大华干捞粉、融安滤粉</li>
+          <li>冰碴豆花、芝麻糊（均价 5–15 元）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>五星街商圈（游客方便，选择多）</li>
+          <li>青云市场（本地人早餐天堂）</li>
+          <li>胜利烧烤城（夜市烟火气）</li>
+          <li>景区周边螺蛳粉易踩雷，认准居民区老店</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 螺蛳粉防雷</span>
+      ① 默认偏辣，<strong>不吃辣提前说</strong>；② 鸭脚煲分量足，2 人点小份即可；③ 夜市海鲜/烧烤先问价再下单；④ 景区门口的「网红螺蛳粉」很多是割游客的，<strong>居民区老店才是王道</strong>。
+    </div>
+  </section>
+
+  <!-- ============ 10. 出行贴士 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝、薄外套（早晚温差大）</li>
+        <li>防晒霜、雨伞（南方多阵雨）</li>
+        <li>运动鞋（龙潭公园/马鞍山都要走路）</li>
+        <li>下载地图 App、备零钱</li>
+      </ul>
+      <ul>
+        <li>高铁/机票提前 2–3 周订</li>
+        <li>工业博物馆、马鞍山电梯线上预约</li>
+        <li>酒店选可免费取消，住五星步行街附近</li>
+        <li>天气 app 关注降雨</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>机场/高铁站黑车多</strong>，优先网约车/正规出租；② 水上公交半小时一班，提前排队；③ 苗寨银饰谨慎购买，伴手礼去青云市场买袋装螺蛳粉（10 元/包）；④ 工业博物馆周一闭馆，别扑空。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      柳州是「<strong>景点全免费、嗦粉吃到爽</strong>」的宝藏城市——龙潭公园看喀斯特山水、工业博物馆拍工业大片、马鞍山看柳江夜景、螺蛳粉连嗦三顿不重样。唯一的门槛是往返 20 小时的高铁，选对交通方式，周末 3 天也能玩得尽兴。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），广西喀斯特山水主题图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 柳州市区地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+      { c: '#1e6fd9', d: 3, n: 'D2 主玩线 · 龙潭→工业馆→马鞍山', pts: [[24.267, 109.406], [24.325, 109.427], [24.298, 109.408]] },
+      { c: '#c9820e', d: 3, n: 'D3 人文线 · 柳侯→博物馆→水上公交', pts: [[24.323, 109.412], [24.316, 109.410], [24.326, 109.420]] }
+    ];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+      { num: 1, prio: 'must', lat: 24.267, lng: 109.406, name: '龙潭公园', t: 'D2 上午 · 2h', fee: '免费', note: '喀斯特山水、风雨桥、镜湖' },
+      { num: 2, prio: 'must', lat: 24.325, lng: 109.427, name: '柳州工业博物馆', t: 'D2 下午 · 1.5–2h', fee: '免费', note: '需预约，绿皮火车、五菱' },
+      { num: 3, prio: 'must', lat: 24.298, lng: 109.408, name: '马鞍山公园', t: 'D2 傍晚 · 1.5h', fee: '免费（电梯 20）', note: '19:30 亮灯看全城夜景' },
+      { num: 4, prio: 'nice', lat: 24.320, lng: 109.425, name: '窑埠古镇', t: 'D2 顺路 / D3 · 1h', fee: '免费', note: '夜景灯光、汉服拍照' },
+      { num: 5, prio: 'nice', lat: 24.323, lng: 109.412, name: '柳侯公园', t: 'D3 上午 · 1h', fee: '免费', note: '柳侯祠、柳宗元衣冠墓' },
+      { num: 6, prio: 'nice', lat: 24.316, lng: 109.410, name: '柳州博物馆', t: 'D3 上午 · 1h', fee: '免费', note: '恐龙化石、民族展厅' },
+      { num: 7, prio: 'nice', lat: 24.326, lng: 109.420, name: '百里柳江（水上公交）', t: 'D3 下午 · 1h', fee: '3 元/100 元', note: '南车渡→东堤码头，音乐喷泉' },
+      { num: 8, prio: 'skip', lat: 24.345, lng: 109.416, name: '胜利烧烤城', t: 'D2 夜宵 · 1h', fee: '人均 50', note: '炒螺蛳粉、螺蛳鸭脚煲' }
+    ];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([toGCJ(24.24, 109.38), toGCJ(24.37, 109.45)]);
+
+    var legendHtml = '<div class="map-legend"><b>图例</b>' +
+      '<span class="sw" style="background:#1e6fd9"></span>D2 主玩线<br>' +
+      '<span class="sw" style="background:#c9820e"></span>D3 人文线<br>' +
+      '<span class="sw dash"></span>高铁/飞机段（北京⇄柳州）</div>';
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+</script>
+</body>
+</html>
