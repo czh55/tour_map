@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 法国 20 天全景攻略 · 巴黎南法深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #7b2d26;
+    --red-light: #96392f;
+    --gold: #d9a441;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #2d4a6b;
+    --cover1: #551812;
+    --ov1: rgba(70,18,12,.88);
+    --ov2: rgba(123,45,38,.72);
+    --ov3: rgba(190,90,60,.38);
+    --ov4: rgba(220,140,80,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(123,45,38,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/france/france-cover.jpg" alt="法国旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 20 天环线 · 巴黎 + 南法</div>
+      <h1>法国 20 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 巴黎 · 卢瓦尔城堡 · 圣米歇尔山 · 普罗旺斯 · 蔚蓝海岸</div>
+      <div class="meta">
+        <span>🛫 行程链：巴黎 → 吉维尼 → 卢瓦尔河谷 → 圣米歇尔山 → 里昂 → 阿维尼翁 → 普罗旺斯 → 蔚蓝海岸 → 返程</span>
+        <span>📅 时间窗口：20 天 19 晚</span>
+        <span>✈️ 北京⇄巴黎 直飞约 11–13 小时</span>
+        <span>🛂 签证：申根签（法国领区受理，材料齐全约 10–15 个工作日）</span>
+        <span>🕐 时差 -6/-7 小时 · 🔌 220V 欧标 C/E 插座 · 💶 1€≈7.8 元</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 20 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 20 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">巴黎</span>
+      <span class="arrow">→</span>
+      <span class="node">卢瓦尔河谷</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">圣米歇尔山</span>
+      <span class="arrow">→</span>
+      <span class="node">里昂</span>
+      <span class="arrow">→</span>
+      <span class="node">普罗旺斯</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">蔚蓝海岸</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 20 天怎么安排最合理</span>
+      法国是「<strong>一座巴黎 + 一整片法兰西</strong>」的目的地：巴黎浓缩艺术与历史，卢瓦尔河谷是城堡童话，圣米歇尔山孤悬潮汐之上，南下里昂、普罗旺斯与蔚蓝海岸则是法国的另一面。20 天从巴黎出发画一条南下大环线，<strong>前 6 天巴黎周边，后 12 天一路向南</strong>，最后飞回巴黎休整购物返程，每段都不赶。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>申根签证：法国领区办理，需护照+照片+行程单+酒店机票订单+医疗保险，材料齐全约 <strong>10–15 个工作日</strong>；申根签可顺游周边申根国</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>夏令时（3 月底–10 月底）比北京慢 <strong>6 小时</strong>，冬令时慢 7 小时</td>
+</tr>
+<tr>
+<td>电源插座</td>
+<td>220V <strong>欧标 C/E 型（两圆脚）</strong>，国内充电器需带转换插头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>欧元 EUR，<strong>1€ ≈ 7.8 元</strong>；刷卡极普及，备 100–200€ 现金</td>
+</tr>
+<tr>
+<td>最佳季节</td>
+<td>5–6 月、9–10 月天气最佳；6 月中–7 月底普罗旺斯薰衣草季；7–8 月南法酷热且游客最多</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>巴黎 → 吉维尼 → 卢瓦尔河谷 → 圣米歇尔山 → 里昂 → 阿维尼翁 → 普罗旺斯 → 马赛/蔚蓝海岸 → 巴黎</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 30000–38000 ／ 标准 50000–65000 ／ 舒适 85000–120000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办申根签证 ② 订 TGV 早鸟票 ③ 卢浮宫/凡尔赛/圣米歇尔山官网预约时段</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>热门景点全部要预约</strong>：卢浮宫、凡尔赛宫、圣米歇尔山修道院旺季必须官网订时段，否则现场排队 1–2 小时甚至进不去。② 法国火车票<strong>越早买越便宜</strong>：TGV 早鸟票提前 3 个月约比临期便宜 30–40%，行程一定就尽早锁票。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 20 天版</h2>
+
+    <p>以下为 20 天 19 晚的推荐节奏：巴黎及周边 6 天，卢瓦尔与圣米歇尔山 3 天，里昂与普罗旺斯 4 天，马赛与蔚蓝海岸 4 天，回巴黎休整购物 3 天。城际交通以 TGV 高铁为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵巴黎</td>
+<td>北京✈巴黎（直飞约 11–13h），入住市区，战神广场看埃菲尔铁塔夜景</td>
+<td>巴黎</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>卢浮宫（三宝）→ 杜乐丽花园 → 香榭丽舍大街 + 凯旋门</td>
+<td>巴黎</td>
+<td>艺术日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>巴黎圣母院 → 圣礼拜堂彩绘玻璃 → 蒙马特圣心堂 + 画家广场</td>
+<td>巴黎</td>
+<td>左岸日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>凡尔赛宫全天：镜厅 + 国王套房 + 大花园</td>
+<td>巴黎</td>
+<td>凡尔赛日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>吉维尼莫奈花园（睡莲池）→ 返回巴黎，奥赛博物馆晚场</td>
+<td>巴黎</td>
+<td>花园日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>火车到卢瓦尔河谷：香波堡（双螺旋楼梯）+ 布卢瓦城堡</td>
+<td>图尔</td>
+<td>城堡日1</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>舍农索水上城堡 → 昂布瓦斯城堡 + 达芬奇故居</td>
+<td>图尔</td>
+<td>城堡日2</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>转场到圣米歇尔山：圣山城墙 + 潮汐滩涂</td>
+<td>蓬托尔松</td>
+<td>圣山日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>圣米歇尔山修道院 → 雷恩 → TGV 到里昂，老城夜景</td>
+<td>里昂</td>
+<td>转场日</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>里昂：富维耶圣母院 → 里昂老城 → 白莱果广场</td>
+<td>里昂</td>
+<td>里昂日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>TGV 到阿维尼翁：教皇宫殿 + 圣贝内泽桥</td>
+<td>阿维尼翁</td>
+<td>阿维尼翁日</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>普罗旺斯石头城：戈尔德 + 塞南克修道院薰衣草</td>
+<td>戈尔德</td>
+<td>石头城日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>鲁西永红土城 + 瓦朗索勒薰衣草田（6–7 月）或阿尔勒梵高</td>
+<td>普罗旺斯</td>
+<td>薰衣草日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>到马赛：老港 + 守护圣母圣殿（可选伊夫岛）</td>
+<td>马赛</td>
+<td>马赛日</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>到尼斯：天使湾 + 城堡山瞭望台 + 英格兰人大道</td>
+<td>尼斯</td>
+<td>蔚蓝海岸</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>埃兹山顶花园 → 摩纳哥蒙特卡洛（赌场 + 王宫）</td>
+<td>尼斯</td>
+<td>摩纳哥日</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>戛纳影节宫 + 昂蒂布老城（或芒通）</td>
+<td>尼斯</td>
+<td>戛纳日</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>尼斯✈巴黎（约 1.5h），下午塞纳河游船</td>
+<td>巴黎</td>
+<td>回巴黎</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>奥赛博物馆 + 老佛爷/春天百货购物</td>
+<td>巴黎</td>
+<td>购物日</td>
+</tr>
+<tr>
+<td>D20 返程</td>
+<td>巴黎✈北京（直飞约 11–13h），入境到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍吉维尼（D5）与昂布瓦斯（D7）之一；圣米歇尔山也可改一日往返（巴黎出发跟团）。薰衣草季（6 月中–7 月底）优先普罗旺斯，秋冬则把日子匀给巴黎博物馆。带娃家庭建议放弃长途转场的圣米歇尔山，卢瓦尔城堡与尼斯海边更适合。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 20 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达巴黎</span>
+          <span class="d-desc">入住市区，埃菲尔铁塔夜景</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">北京✈巴黎戴高乐机场（直飞约 11–13h）。入境后 RER B 或 Roissybus 进市区（约 1h，票价约 13€）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">入住巴黎市区酒店（建议卢浮宫/歌剧院一带），就近办 Navigo 交通卡（周卡约 30€）</td></tr>
+          <tr><td class="t-time">19:30–21:30</td><td class="t-what"><b>战神广场 + 埃菲尔铁塔</b>（外观免费）：晚上整点铁塔闪灯 5 分钟，先感受巴黎</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">回酒店休息，倒时差（夏令时比北京晚 6h，基本无感）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">戴高乐机场进市区 RER B 最便宜、Roissybus 直达歌剧院；巴黎地铁 2 圈内单程约 2.5€。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 卢浮宫 + 香榭丽舍</span>
+          <span class="d-desc">艺术与中轴线一日</span>
+          <span class="d-tag ">🎨 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>卢浮宫</b>（成人约 22€，务必官网预约时段）：三宝——蒙娜丽莎、胜利女神、断臂维纳斯</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>杜乐丽花园</b>（免费）：卢浮宫旁散步，午餐三明治/可丽饼</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>香榭丽舍大街 + 凯旋门</b>（免费，登顶约 13€）：从协和广场走到凯旋门</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐：左岸小馆油封鸭/牛排薯条，或歌剧院区 bistro</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卢浮宫每周二闭馆，且周一/周三至周五晚间延至 21:45；周五晚人流相对少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 圣母院 + 蒙马特</span>
+          <span class="d-desc">左岸与高地一日</span>
+          <span class="d-tag ">⛪ 左岸日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>巴黎圣母院</b>（免费，需官网预约入内时段）：2024 年 12 月重新开放，玫瑰窗与祭坛</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">西岱岛：<b>圣礼拜堂</b>（成人约 11.5€）：全欧洲最大彩绘玻璃</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">拉丁区午餐：沙威玛/法式小馆，路过莎士比亚书店</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><b>蒙马特高地</b>：圣心堂（免费）+ 画家广场 + 爱墙，俯瞰巴黎全景</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">蒙马特山脚晚餐，夜观红磨坊风车（外观免费）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣母院登塔需另行预约且名额少；蒙马特山下地铁站小偷多，背包前背。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 凡尔赛宫</span>
+          <span class="d-desc">镜厅 + 大花园</span>
+          <span class="d-tag ">👑 凡尔赛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">巴黎 RER C 到凡尔赛宫站（约 45min）或坐观光巴士</td></tr>
+          <tr><td class="t-time">09:00–13:00</td><td class="t-what"><b>凡尔赛宫主殿</b>（通票约 21€，含花园）：镜厅、国王套房、战争厅</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">花园午餐（可野餐，宫殿草坪禁止踩踏）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>大花园 + 大运河</b>（免费）：音乐喷泉秀（夏季特定日）+ 小火车/租自行车逛</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返回巴黎，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">凡尔赛周一闭馆；通票可官网买含花园音乐节/喷泉秀的套餐。旺季 8 点前到可避开长队。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 吉维尼莫奈花园</span>
+          <span class="d-desc">睡莲池 + 奥赛晚场</span>
+          <span class="d-tag alt">🪷 花园日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">圣拉扎尔站火车到韦尔农（约 45min）→ 接驳巴士到吉维尼</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>莫奈花园 + 睡莲池</b>（成人约 11.5€）：印象派诞生地，日本桥与水景花园</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">吉维尼午餐：诺曼底风味（苹果酒炖菜）</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what">吉维尼村漫步 + 印象派博物馆（成人约 8€，可选）</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">返回巴黎；晚上<b>奥赛博物馆</b>（周四延至 21:45，成人约 16€）：印象派大厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">莫奈花园 3 月底–11 月初开放；奥赛由老火车站改建，睡莲与梵高必看。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 香波堡</span>
+          <span class="d-desc">卢瓦尔河谷城堡日①</span>
+          <span class="d-tag ">🏰 城堡日1</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">巴黎奥斯特利茨站火车到布卢瓦（约 1h20）</td></tr>
+          <tr><td class="t-time">10:00–13:30</td><td class="t-what"><b>香波堡</b>（成人约 16€）：达芬奇双螺旋楼梯 + 法国最大狩猎城堡</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">香波堡附近午餐</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>布卢瓦皇家城堡</b>（成人约 14€）：四座不同时代的建筑翼楼，夜景灯光秀夏季可选</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿图尔（卢瓦尔河谷交通枢纽），晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卢瓦尔河谷城堡群太多，20 天选香波堡 + 舍农索两座代表即可；自驾更自由，火车+当地巴士也可到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 舍农索 + 昂布瓦斯</span>
+          <span class="d-desc">水上城堡 + 达芬奇</span>
+          <span class="d-tag ">🌉 城堡日2</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>舍农索城堡</b>（成人约 15.5€）：横跨谢尔河的水上城堡，六位女主人的故事</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">舍农索午餐</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>昂布瓦斯城堡 + 达芬奇故居</b>（成人约 15€）：圣于贝尔小教堂安葬达芬奇</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">回图尔，傍晚逛图尔老城 + 晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">昂布瓦斯达芬奇故居（克洛吕斯城堡）与昂布瓦斯城堡可买联票；卢瓦尔河谷夏天很热，中午注意补水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 圣米歇尔山</span>
+          <span class="d-desc">潮汐孤岛初遇</span>
+          <span class="d-tag ">🏔 圣山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what">图尔出发转场（自驾约 3.5h；火车+巴士约 4h），午前到蓬托尔松</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：圣米歇尔山脚下普拉妈妈 omelette（约 25€，历史名店）</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>圣米歇尔山城墙漫步</b>（免费）：主街、城墙、潮汐滩涂</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">黄昏远眺圣山轮廓 + 潮汐时刻表查好，宿蓬托尔松</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣米歇尔山是全法最神奇的地标：涨潮时是孤岛，退潮可走近滩涂，务必查潮汐表并在安全区域走。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 圣米歇尔山 → 里昂</span>
+          <span class="d-desc">修道院 + 长途转场</span>
+          <span class="d-tag ">🚄 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>圣米歇尔山修道院</b>（成人约 11–13€）：哥特奇迹，蓝色海岸与潮汐环绕</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">山脚午餐后出发，巴士到雷恩（约 1h15）</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what">雷恩 TGV 到里昂（约 3h30），傍晚入住里昂老城/白莱果广场</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what">里昂老城夜景：富维耶山缆车上山俯瞰，回程里昂街头小吃</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣米歇尔山到里昂全程约 5–6 小时，是全程最长转场；TGV 票提前买，当天行程留足缓冲。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 里昂</span>
+          <span class="d-desc">富维耶 + 老城</span>
+          <span class="d-tag ">🏙 里昂日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>富维耶圣母院</b>（免费）：缆车上山，俯瞰里昂全城 + 古罗马剧场遗址（免费）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：里昂传统小馆（bouchon，里昂名菜）</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>里昂老城</b>（免费）：丝绸街、壁画街、圣让大教堂</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>白莱果广场</b>（欧洲最大步行广场之一）+ 罗纳河畔散步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">里昂是世界美食之都，午餐的 bouchon 套餐（约 25–35€）值得专程体验；富维耶缆车往返约 3.5€。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 阿维尼翁</span>
+          <span class="d-desc">教皇城一日</span>
+          <span class="d-tag ">🕌 阿维尼翁日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">TGV：里昂 → 阿维尼翁（约 1h10）</td></tr>
+          <tr><td class="t-time">10:30–13:30</td><td class="t-what"><b>教皇宫殿</b>（成人约 15.5€）：中世纪最大哥特宫殿，教皇短期驻跸史</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">午餐：阿维尼翁老城</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>圣贝内泽桥</b>（断桥，成人约 6.5€）+ 城墙漫步</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿阿维尼翁，晚餐：南法风味</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">7 月阿维尼翁戏剧节是欧洲最大戏剧节，届时住宿贵且难订；平季老城石板路很适合散步。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 普罗旺斯石头城</span>
+          <span class="d-desc">戈尔德 + 塞南克</span>
+          <span class="d-tag alt">💐 石头城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">从阿维尼翁出发到<b>戈尔德</b>（石头城，免费）：悬崖上的灰白石屋，法国最美小镇之一</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>塞南克修道院</b>（免费，花园 6–7 月开放约 7–8€）：薰衣草田配修道院经典机位</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">石头城午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>鲁西永</b>（红土城，免费）：赭红色房屋与峡谷</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿戈尔德/阿维尼翁，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">普罗旺斯小镇之间最好自驾或包车（约 8 小时环线 80–120€/车）；薰衣草最佳时间是清晨与黄昏。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 瓦朗索勒薰衣草</span>
+          <span class="d-desc">花田 + 阿尔勒</span>
+          <span class="d-tag ">🌸 薰衣草日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>瓦朗索勒高原薰衣草田</b>（6 月中–7 月底，免费）：一望无际的紫色花海</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">薰衣草农场午餐/薰衣草周边采购（精油、香皂）</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what">非薰衣草季改去<b>阿尔勒</b>（梵高小镇，免费）：黄色咖啡馆、梵高中心</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">返阿维尼翁/前往马赛方向，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">薰衣草收割约在 7 月底，想拍花海务必 7 月中旬前；瓦朗索勒距离阿维尼翁约 1.5h 车程。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 马赛</span>
+          <span class="d-desc">老港 + 守护圣母</span>
+          <span class="d-tag ">⛵ 马赛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">阿维尼翁 → 马赛（TGV 约 30min 或自驾 1h）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>马赛老港</b>（免费）：鱼市、渡船去<b>伊夫岛</b>（往返船票约 15€，可选）</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：马赛鱼汤 bouillabaisse（约 40–60€/人）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>守护圣母圣殿</b>（免费）：马赛制高点，金圣母俯瞰全城与地中海</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">老港晚餐，夜灯初上</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">马赛 2013 年评为欧洲文化之都，现代美术馆（MuCEM）也值得一逛；老港夜晚注意安全。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 尼斯</span>
+          <span class="d-desc">天使湾初见</span>
+          <span class="d-tag ">🏖 蔚蓝海岸</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">马赛 → 尼斯（火车约 2h30，沿地中海海岸线）</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">尼斯老城午餐：尼斯沙拉 + 松露意面</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>天使湾 + 英格兰人大道</b>（免费）：蔚蓝海岸最经典弯月海湾</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>城堡山瞭望台</b>（免费）：登顶俯瞰天使湾全景，日落时分最佳</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">尼斯 7–8 月全城爆满，住宿提前 1–2 个月订；城堡山电梯免费，懒人友好。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 埃兹 + 摩纳哥</span>
+          <span class="d-desc">山顶花园 + 蒙特卡洛</span>
+          <span class="d-tag ">💎 摩纳哥日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">尼斯乘 82 路巴士/火车到<b>埃兹</b>（约 30min）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>埃兹山顶花园</b>（成人约 7€）：仙人掌植物园 + 俯瞰海天一色</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">埃兹午餐</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>摩纳哥</b>：蒙特卡洛赌场（前厅免费，入内约 17€）+ 王宫广场看卫兵换岗</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">返回尼斯，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">尼斯到摩纳哥坐 TER 火车约 40min、单程约 4€；摩纳哥赌场 21 岁以上才能进博彩区。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 戛纳 + 昂蒂布</span>
+          <span class="d-desc">电影节之城</span>
+          <span class="d-tag ">🎬 戛纳日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">尼斯乘 TER 火车到戛纳（约 30min）</td></tr>
+          <tr><td class="t-time">09:45–12:00</td><td class="t-what"><b>戛纳影节宫</b>（外观免费）：星光大道手印 + 海滨大道</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">戛纳午餐</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>昂蒂布老城</b>（免费）：毕加索博物馆（成人约 8€）+ 海港</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返回尼斯，晚餐（海鲜大餐收官）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">5 月戛纳电影节期间全城戒备、酒店天价；昂蒂布被称为「最像普罗旺斯的海边」。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 回巴黎</span>
+          <span class="d-desc">尼斯✈巴黎 + 塞纳河</span>
+          <span class="d-tag ">🛫 回巴黎日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">尼斯蔚蓝海岸机场✈巴黎（约 1.5h，提前订特价 400–900 元）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">入住巴黎，午餐</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>塞纳河游船</b>（约 15€，1 小时）：一路看埃菲尔铁塔、圣母院、奥赛博物馆</td></tr>
+          <tr><td class="t-time">17:00–20:00</td><td class="t-what">自由活动：圣日耳曼区咖啡馆 / 卢森堡公园 / 蒙帕纳斯大厦看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">巴黎奥利/戴高乐双机场均可选；塞纳河游船晚上开船最出片（船班到 22:00 左右）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 博物馆 + 购物</span>
+          <span class="d-desc">奥赛 + 老佛爷</span>
+          <span class="d-tag ">🛍 购物日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what"><b>奥赛博物馆</b>（成人约 16€）：印象派镇馆之馆，睡莲、星空、咖啡馆</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：歌剧院区</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><b>老佛爷/春天百货</b>（免费入内）：巴黎购物收官，退税单记得开</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐 + 行李整理，夜逛巴黎最后一晚</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">法国退税约 12%，单日单店消费满 100€ 可办；老佛爷顶楼露台免费俯瞰歌剧院。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 返程</span>
+          <span class="d-desc">巴黎✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">自由活动：蒙马特早晨咖啡 / 玛黑区面包房早餐</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">退房，酒店到戴高乐机场（RER B 或机场大巴）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">机场办理退税、值机，免税店补货（马卡龙、香水、红酒）</td></tr>
+          <tr><td class="t-time">16:00–06:00</td><td class="t-what">巴黎✈北京（直飞约 11–13h），次日清晨入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">退税要在航班起飞前 3 小时到机场办；戴高乐机场免税店与市区价格相近，伴手礼可以机场解决。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-cover.jpg" alt="埃菲尔铁塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">埃菲尔铁塔 <small>登顶约 29.5€</small></div>
+          <div class="sc-feat">法国象征。<b>战神广场夜景 + 整点闪灯</b>，登顶看巴黎全景。</div>
+          <div class="sc-meta">📅 9:00–23:45 · ⏱ 2–3h · 🚇 地铁 Trocadéro/战神广场</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-1.jpg" alt="卢浮宫" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">卢浮宫 <small>成人约 22€</small></div>
+          <div class="sc-feat">世界最大博物馆。<b>蒙娜丽莎 + 胜利女神 + 维纳斯</b>三宝必看。</div>
+          <div class="sc-meta">📅 9:00–18:00（周五延至 21:45，周二闭）· ⏱ 3–4h · 🚇 Palais Royal</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-2.jpg" alt="凡尔赛宫" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">凡尔赛宫 <small>通票约 21€</small></div>
+          <div class="sc-feat">太阳王路易十四的宫殿。<b>镜厅 + 大花园</b>，欧洲宫廷美学天花板。</div>
+          <div class="sc-meta">📅 9:00–17:30（周一闭）· ⏱ 4–5h · 🚇 RER C Versailles</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-3.jpg" alt="圣米歇尔山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">圣米歇尔山 <small>修道院约 11–13€</small></div>
+          <div class="sc-feat">潮汐孤岛 + 哥特奇迹。<b>修道院 + 城墙滩涂</b>，法国最奇景观。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚌 雷恩/蓬托尔松接驳巴士</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-4.jpg" alt="普罗旺斯·薰衣草" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">普罗旺斯·薰衣草 <small>塞南克修道院免费（花园 7–8€）</small></div>
+          <div class="sc-feat">瓦朗索勒花海 + <b>塞南克修道院经典机位</b>，6–7 月限定。</div>
+          <div class="sc-meta">📅 6 月中–7 月底 · ⏱ 半天 · 🚗 自驾/包车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-5.jpg" alt="尼斯·天使湾" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">尼斯·天使湾 <small>免费</small></div>
+          <div class="sc-feat">蔚蓝海岸最经典海湾。<b>英格兰人大道 + 城堡山日落</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚶 天使湾步道</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-6.jpg" alt="摩纳哥·蒙特卡洛" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">摩纳哥·蒙特卡洛 <small>赌场前厅免费（入内约 17€）</small></div>
+          <div class="sc-feat">富豪小国。<b>蒙特卡洛赌场 + 王宫卫兵换岗</b>，F1 赛道城市。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3–4h · 🚄 尼斯火车 40min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/france/france-7.jpg" alt="里昂·富维耶圣母院" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">里昂·富维耶圣母院 <small>免费</small></div>
+          <div class="sc-feat">世界美食之都地标。<b>缆车上山俯瞰全城</b> + 古罗马剧场。</div>
+          <div class="sc-meta">📅 7:00–19:00 · ⏱ 1–2h · 🚋 富维耶缆车</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（埃菲尔铁塔、卢浮宫、凡尔赛宫、圣米歇尔山、普罗旺斯薰衣草、尼斯天使湾、摩纳哥、里昂等均为法国实景），用于页面配图。更多免费景点：战神广场、杜乐丽花园、巴黎圣母院、蒙马特圣心堂、白莱果广场、塞纳河岸。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 欧元 ≈ 7.8 元人民币估算。往返机票按淡季 5000–7000 元计（北京⇄巴黎直飞）。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（30000–38000）</th>
+<th>标准（50000–65000）</th>
+<th>舒适（85000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄巴黎 5000–6000</td>
+<td>含巴黎⇄尼斯段 7500–9000</td>
+<td>直飞商务/灵活 12000–20000</td>
+</tr>
+<tr>
+<td>住宿（19 晚）</td>
+<td>青旅/民宿 350–500/晚</td>
+<td>三星酒店/公寓 600–1000/晚</td>
+<td>四星/城堡酒店 1500–3000/晚</td>
+</tr>
+<tr>
+<td>境内交通</td>
+<td>火车+巴士 2500–3500</td>
+<td>TGV+城市卡 4000–5500</td>
+<td>TGV 一等座+包车 9000–14000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 1000–1500</td>
+<td>含卢浮宫/凡尔赛/圣山等约 2500–3500</td>
+<td>全含+导览+演出约 6000–9000</td>
+</tr>
+<tr>
+<td>餐饮（20 天）</td>
+<td>超市+简餐 4500–5500</td>
+<td>小馆+正经晚餐 7500–9500</td>
+<td>米其林/法餐正餐 15000–25000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 52000 元）</span>
+      往返机票 8000 + 住宿 19 晚 15200（平均 800/晚）+ TGV 与境内交通 4500 + 门票 3000 + 餐饮 8500 + 签证/杂费 1000 ≈ <strong>50000–55000 元</strong>。大头是住宿与机票；TGV 早鸟票（提前 3 个月）能省 30–40%。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>18.1 巴黎+南法 12 天精华版</h3>
+
+
+    <ul>
+
+      <li>D1–D4 巴黎（铁塔/卢浮宫/圣母院/凡尔赛）</li>
+
+      <li>D5 吉维尼莫奈花园（当天往返）</li>
+
+      <li>D6 TGV 到里昂，D7 里昂→阿维尼翁</li>
+
+      <li>D8 普罗旺斯石头城+薰衣草（季节限定）</li>
+
+      <li>D9 马赛半日→尼斯，D10 埃兹+摩纳哥</li>
+
+      <li>D11 戛纳+昂蒂布，D12 尼斯✈巴黎返程</li>
+
+    </ul>
+
+    <h3>18.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：巴黎迪士尼乐园（预留 2 天，就在巴黎东郊）+ 卢瓦尔城堡（城堡对孩子吸引力大）+ 尼斯天使湾海边；砍掉圣米歇尔山的长途转场与摩纳哥。凡尔赛宫大花园、塞纳河游船、埃菲尔铁塔都很适合家庭。法国餐饮有儿童套餐，餐厅普遍友好。</p>
+
+    <h3>18.3 薰衣草季节版（6 月中–7 月中）</h3>
+
+
+    <p>专程为花海而来：把普罗旺斯扩到 4–5 天——戈尔德/鲁西永/瓦朗索勒/索村（高海拔花期最晚），可加马诺斯克与圣十字湖（跳水+皮划艇）。薰衣草收割从 7 月底开始，越早越壮观；此时南法房价全年最高，务必提前 2 个月订。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 法国 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→巴黎约 11–13h</td>
+<td>往返 5000–7000 元</td>
+<td>法航/国航，戴高乐机场</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>14–18h</td>
+<td>4000–5500 元</td>
+<td>经上海/广州/香港/中东，便宜但费时</td>
+</tr>
+<tr>
+<td>直飞尼斯（可选）</td>
+<td>约 12h（部分航季）</td>
+<td>往返 7500–10000 元</td>
+<td>南法深度游可选去程/返程尼斯进出</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 法国境内交通核心提醒</span>
+      城际首选 <strong>TGV 高铁</strong>：巴黎—里昂 2h、里昂—阿维尼翁 1h10、巴黎—图尔 1h10；<strong>提前 3 个月买早鸟票能省 30–40%</strong>，越临近越贵。巴黎市内地铁单程约 2.5€，办 Navigo 周卡约 30€ 更划算。尼斯—摩纳哥/戛纳坐 TER 火车最方便。
+    </div>
+
+    <h3>19.2 法国境内交通</h3>
+    <ul>
+      <li><strong>TGV 高铁</strong>：巴黎—里昂 2h、里昂—阿维尼翁 1h10、巴黎—图尔 1h10，官网/App 提前购票最便宜</li>
+      <li><strong>TER 区域列车</strong>：尼斯—戛纳 30min、尼斯—摩纳哥 40min、图尔—昂布瓦斯 20min</li>
+      <li><strong>巴黎地铁/RER</strong>：Navigo 交通卡，地铁单程约 2.5€，周卡约 30€</li>
+      <li><strong>景区接驳巴士</strong>：吉维尼（韦尔农站）、圣米歇尔山（蓬托尔松/雷恩）均有接驳</li>
+      <li><strong>国内航班</strong>：尼斯✈巴黎 1.5h，提前订 400–900 元</li>
+      <li><strong>自驾（可选）</strong>：普罗旺斯/卢瓦尔乡间自驾更自由，需国际驾照翻译件</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>巴黎·卢浮宫/歌剧院</td>
+<td>经济 400–600 / 标准 700–1200</td>
+<td>市中心景点步行可达</td>
+<td>价格最高</td>
+</tr>
+<tr>
+<td>巴黎·拉丁区/蒙马特</td>
+<td>经济 350–550 / 标准 600–1000</td>
+<td>文艺氛围，小馆多</td>
+<td>老楼无电梯</td>
+</tr>
+<tr>
+<td>卢瓦尔·图尔/布卢瓦</td>
+<td>经济 300–450 / 标准 500–800</td>
+<td>城堡环线枢纽</td>
+<td>夏季需提前订</td>
+</tr>
+<tr>
+<td>圣米歇尔山/蓬托尔松</td>
+<td>民宿 500–800</td>
+<td>看潮汐日落</td>
+<td>旺季一房难求</td>
+</tr>
+<tr>
+<td>普罗旺斯·戈尔德/阿维尼翁</td>
+<td>民宿 400–700 / 标准 700–1200</td>
+<td>石头城景观</td>
+<td>自驾更自由</td>
+</tr>
+<tr>
+<td>尼斯·天使湾</td>
+<td>经济 400–600 / 标准 700–1200</td>
+<td>海滨散步</td>
+<td>7–8 月爆满</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🥐 必吃经典</h3>
+        <ul>
+          <li>法棍 + 可颂（早餐标配）</li>
+          <li>油封鸭 / 牛排薯条（左岸小馆）</li>
+          <li>马赛鱼汤 bouillabaisse（马赛）</li>
+          <li>里昂 bouchon 传统菜（里昂）</li>
+        </ul>
+        <h3>🍷 美酒与咖啡</h3>
+        <ul>
+          <li>波尔多/勃艮第/罗讷河谷葡萄酒</li>
+          <li>香槟（兰斯产区）</li>
+          <li>左岸花神/双叟咖啡馆</li>
+          <li>里昂街头小酒馆</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🧀 奶酪与甜点</h3>
+        <ul>
+          <li>卡芒贝尔 / 孔泰奶酪</li>
+          <li>马卡龙（拉杜丽/皮埃尔·艾尔梅）</li>
+          <li>可丽饼（布列塔尼发源）</li>
+          <li>法式甜点：玛德琳、欧培拉</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>巴黎拉丁区小馆、圣日耳曼</li>
+          <li>里昂白莱果广场周边 bouchon</li>
+          <li>尼斯老城、戛纳海滨大道</li>
+          <li>普罗旺斯农贸市场（薰衣草/橄榄油）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 法餐正餐人均 30–60€，午市套餐（formule）最划算；② 网红店用 TheFork/La Fourchette 提前订位；③ 自来水可直饮，餐厅要瓶装水会收费；④ 超市（家乐福/欧尚）买水、酸奶、可颂很便宜，赶路效率神器。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 申根签证（法国领区，10–15 个工作日）</li>
+        <li>欧元现金（100–200€ 备用，刷卡普及）</li>
+        <li>转换插头（欧标 C/E 型两圆脚）</li>
+        <li>Navigo 交通卡（巴黎）</li>
+      </ul>
+      <ul>
+        <li>TGV 早鸟票提前 3 个月预订</li>
+        <li>卢浮宫/凡尔赛/圣米歇尔山门票官网预约</li>
+        <li>下载 SNCF Connect 与 Google 地图</li>
+        <li>薰衣草季 6 月中–7 月底，订房提前 1–2 个月</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>巴黎地铁扒手多</strong>，背包前背、钱包不放后袋；② 热门景点（卢浮宫、凡尔赛）排队 1h+，务必官网预约时段；③ 法国多数博物馆周一闭馆（卢浮宫周二闭），安排行程先查开放日；④ 7–8 月南法酷热且游客爆炸，5–6 月与 9 月更舒服，薰衣草季除外。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      法国是「<strong>巴黎的优雅与南法的松弛</strong>」并存的目的地——卢浮宫与埃菲尔铁塔承载文明，卢瓦尔城堡是童话，圣米歇尔山孤悬潮汐，普罗旺斯与蔚蓝海岸负责放空。20 天从巴黎出发一路南下到地中海，再飞回巴黎，一趟看尽法兰西。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c9362f",
+    "d": 3,
+    "n": "法国主线 · 巴黎→卢瓦尔→圣米歇尔山→里昂→普罗旺斯→马赛→尼斯",
+    "pts": [
+      [
+        48.8566,
+        2.3522
+      ],
+      [
+        47.3941,
+        0.6848
+      ],
+      [
+        48.6361,
+        -1.5115
+      ],
+      [
+        45.764,
+        4.8357
+      ],
+      [
+        43.9493,
+        4.8055
+      ],
+      [
+        43.9114,
+        5.2
+      ],
+      [
+        43.2965,
+        5.3698
+      ],
+      [
+        43.7102,
+        7.262
+      ]
+    ]
+  },
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "蔚蓝海岸支线 · 尼斯→埃兹→摩纳哥",
+    "pts": [
+      [
+        43.7102,
+        7.262
+      ],
+      [
+        43.7278,
+        7.3628
+      ],
+      [
+        43.7384,
+        7.4246
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 48.8584,
+    "lng": 2.2945,
+    "name": "巴黎·埃菲尔铁塔",
+    "t": "D1 晚 · 2h",
+    "fee": "登顶约 29.5€",
+    "note": "战神广场夜景、整点闪灯"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 48.8606,
+    "lng": 2.3376,
+    "name": "巴黎·卢浮宫",
+    "t": "D2 上午 · 3h",
+    "fee": "成人约 22€",
+    "note": "蒙娜丽莎、胜利女神"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 48.8049,
+    "lng": 2.1203,
+    "name": "巴黎·凡尔赛宫",
+    "t": "D4 全天 · 5h",
+    "fee": "通票约 21€",
+    "note": "镜厅、大花园"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 47.6161,
+    "lng": 1.5175,
+    "name": "卢瓦尔·香波堡",
+    "t": "D6 上午 · 3h",
+    "fee": "成人约 16€",
+    "note": "双螺旋楼梯、达芬奇"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 48.6361,
+    "lng": -1.5115,
+    "name": "圣米歇尔山",
+    "t": "D8–D9 · 1 天",
+    "fee": "修道院约 11–13€",
+    "note": "潮汐孤岛、哥特修道院"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 45.7623,
+    "lng": 4.8227,
+    "name": "里昂·富维耶圣母院",
+    "t": "D10 上午 · 1.5h",
+    "fee": "免费",
+    "note": "全城俯瞰、古罗马剧场"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 43.9304,
+    "lng": 5.1272,
+    "name": "普罗旺斯·塞南克修道院",
+    "t": "D12 上午 · 1.5h",
+    "fee": "免费",
+    "note": "薰衣草花田、戈尔德石头城"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 43.6951,
+    "lng": 7.2646,
+    "name": "尼斯·天使湾",
+    "t": "D15 下午 · 2h",
+    "fee": "免费",
+    "note": "英格兰人大道、城堡山日落"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[43.2, -2.0], [49.0, 7.6]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c9362f\"></span>法国主线（巴黎→尼斯）<br><span class=\"sw\" style=\"background:#1e6fd9\"></span>蔚蓝海岸支线（尼斯→摩纳哥）<br><span class=\"sw dash\"></span>尼斯—巴黎段为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

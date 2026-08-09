@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 埃及 15 天全景攻略 · 开罗卢克索尼罗河</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #b8850f;
+    --red-light: #d09a18;
+    --gold: #e6b54a;
+    --ink: #332e26;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #1f6fa8;
+    --cover1: #6b4c00;
+    --ov1: rgba(90,62,0,.88);
+    --ov2: rgba(184,133,15,.72);
+    --ov3: rgba(225,170,60,.38);
+    --ov4: rgba(240,200,110,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(184,133,15,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/egypt/egypt-cover.jpg" alt="埃及旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 15 天尼罗河谷环线 · 开罗→阿斯旺→卢克索→红海</div>
+      <h1>埃及 15 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 开罗 · 吉萨金字塔 · 尼罗河邮轮 · 帝王谷红海</div>
+      <div class="meta">
+        <span>🛫 行程链：开罗 → 阿斯旺 → 尼罗河邮轮 → 卢克索 → 红海 → 返程</span>
+        <span>📅 时间窗口：15 天 14 晚</span>
+        <span>✈️ 北京⇄开罗 直飞约 11–12 小时</span>
+        <span>🛂 签证：落地签（约 25 美元）或电子签，中国护照适用</span>
+        <span>🕐 时差 -5 小时（夏令时）/ -6 小时（冬令时）· 🔌 电压 220V C/F 型两圆脚</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 15 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 15 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">开罗</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">阿斯旺</span>
+      <span class="arrow">→</span>
+      <span class="node">尼罗河邮轮</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">卢克索</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">红海</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 15 天怎么安排最合理</span>
+      埃及是「<strong>一河文明、千年神庙</strong>」的目的地：尼罗河从南向北贯穿，开罗的金字塔、阿斯旺的神庙与帆船、卢克索的帝王谷与卡纳克，再加上红海的珊瑚与沙漠，15 天正好完成<strong>「开罗—阿斯旺—尼罗河邮轮—卢克索—红海」</strong>的经典纵贯线。邮轮顺流而下不用来回折腾，节奏上<strong>每天 1–2 个神庙、避开正午烈日</strong>。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证</td>
+<td>落地签（约 25 美元，需自备美元现金）+ 电子签可选；中国护照可申请，出发前确认政策</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>开罗 4 天 → 飞阿斯旺 3 天 → 尼罗河邮轮 3 天 2 晚 → 卢克索 2 天 → 红海 2 天 → 返开罗</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 15 天从开罗✈北京直飞（埃及航空），航班不多，提前 1–2 个月订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>开罗 → 阿斯旺 → 尼罗河邮轮 → 卢克索 → 红海 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 15000–20000 ／ 标准 25000–32000 ／ 舒适 45000–60000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办落地签/电子签 ② 订尼罗河邮轮与阿布辛贝小团 ③ 订开罗—阿斯旺内陆航班</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11 月–3 月最舒适（白天 20–25℃）；4–10 月酷热，暑期尽量上午活动下午躲室内/酒店泳池</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>埃及镑（EGP）+ 美元现金；1 埃及镑 ≈ 0.13 元，小额消费现金，大额（酒店/邮轮）可刷卡</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>小费文化无处不在</strong>：司机、导游、邮轮船员、景区「热心帮忙拍照的人」都会要小费（一般 10–50 埃及镑/次），多备小面额现金；事先讲好的「免费」服务最后多要钱，先问清价格再接受。② 神庙区安检严格、行李过 X 光；<strong>景区周边「搭讪推销」极多</strong>，不买就坚决摇头走开，别接「免费礼物」（接了就会要钱）。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 15 天版</h2>
+
+    <p>以下为 15 天 14 晚的推荐节奏：从开罗一路向南到阿斯旺，再乘尼罗河邮轮顺流回卢克索，最后转到红海度假收尾。每日主景点 ≤2 个，上午 8 点前、下午 16 点后是神庙最佳窗口。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵开罗</td>
+<td>北京✈开罗（约 11h），入住酒店，晚上尼罗河边散步看夜景</td>
+<td>开罗</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>吉萨金字塔群 + 狮身人面像（下午金色光线最佳），可骑骆驼</td>
+<td>开罗</td>
+<td>金字塔日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>埃及博物馆（图坦卡蒙黄金面具）→ 萨拉丁城堡 + 穆罕默德·阿里清真寺</td>
+<td>开罗</td>
+<td>博物馆与城堡</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>伊斯兰开罗：汗哈利利市场 + 爱资哈尔清真寺 + 穆伊兹街，购物</td>
+<td>开罗</td>
+<td>市集日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>开罗✈阿斯旺：阿斯旺大坝 + 未完成的方尖碑，傍晚尼罗河三桅帆船日落</td>
+<td>阿斯旺</td>
+<td>飞南部</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>阿布辛贝神庙（凌晨 4 点出发，车程约 3.5h）往返</td>
+<td>阿斯旺</td>
+<td>阿布辛贝日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>菲莱神庙（乘船登岛）+ 努比亚村，晚上尼罗河夜景</td>
+<td>阿斯旺</td>
+<td>神庙与村落</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>尼罗河邮轮起航：康翁波神庙（鳄鱼神庙）</td>
+<td>邮轮</td>
+<td>邮轮第一天</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>埃德夫神庙（荷鲁斯神庙，马车前往），邮轮继续北上</td>
+<td>邮轮</td>
+<td>邮轮第二天</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>抵达卢克索：西岸帝王谷 + 哈特谢普苏特女王神庙 + 门农巨像</td>
+<td>卢克索</td>
+<td>西岸帝王谷</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>东岸：卡纳克神庙 + 卢克索神庙（晚上看灯光）</td>
+<td>卢克索</td>
+<td>东岸神庙日</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>卢克索热气球日出 → 驱车前往红海赫尔格达（约 4h），入住度假酒店</td>
+<td>红海赫尔格达</td>
+<td>转场红海</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>红海浮潜/潜水（Orange Bay/吉夫顿岛），玻璃底船或水肺可选</td>
+<td>红海赫尔格达</td>
+<td>潜水日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>沙漠冲沙：贝都因村落 + 沙丘越野 + 日落晚餐，或酒店 SPA 放松</td>
+<td>红海赫尔格达</td>
+<td>沙漠日</td>
+</tr>
+<tr>
+<td>D15 返程</td>
+<td>赫尔格达✈开罗（约 1h）或巴士返开罗，开罗✈北京，到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍掉红海（D12–D14）改为开罗多 1 天 + 卢克索多 1 天；红海与沙漠二选一即可。带娃家庭建议把阿布辛贝改为包机/包车小团（凌晨出发对小孩辛苦），红海浮潜选浅水区。夏季（5–9 月）优先把户外行程全部放清晨。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 15 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达开罗</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">13:00–17:00</td><td class="t-what">北京✈开罗（埃及航空直飞约 11h）。机场换汇/办落地签（约 25 美元），打车到市中心（Uber 约 30–45 分钟）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">入住酒店（推荐尼罗河畔的 Zamalek/解放广场附近），休息补充体力</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what">尼罗河边散步，看两岸灯光夜景，河边咖啡厅坐坐</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">晚餐：埃及烤鸽/烤肉拼盘，回酒店早睡倒时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">时差 -6 小时（冬令时），第一天晚上会困，直接睡到第二天自然醒（约当地 6–7 点），正好赶金字塔开门。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 吉萨金字塔</span>
+          <span class="d-desc">金字塔 + 狮身人面像</span>
+          <span class="d-tag ">🐪 金字塔日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">从开罗市中心出发（Uber 或包车，车程约 40min），赶在旅行团前到</td></tr>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>吉萨金字塔群</b>（门票约 540 埃及镑）：胡夫、卡夫拉、孟卡拉三座，可选进入胡夫金字塔内部（另购票，约 600 埃及镑）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：景区附近或回酒店附近烤鸡/库莎丽（Koshary）</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>狮身人面像</b>（含门票）：下午光线从西侧打来最好拍，可付费骑骆驼拍照（先谈好价格）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>吉萨金字塔声光秀</b>（可选，约 20–40 美元）或返回开罗，晚餐：尼罗河船餐厅夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">吉萨景区小贩极多，不骑骆驼就摆手拒绝；进金字塔内部通道低矮闷热、幽闭恐惧慎入。夏季务必 8 点前到，中午 40℃ 极热。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 埃及博物馆</span>
+          <span class="d-desc">博物馆 + 萨拉丁城堡</span>
+          <span class="d-tag ">🏛 博物馆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:30</td><td class="t-what"><b>埃及博物馆（解放广场老馆）</b>（门票约 600 埃及镑）：图坦卡蒙黄金面具与黄金棺、王室木乃伊展厅（另购票）</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：解放广场附近库莎丽/烤鸡</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>萨拉丁城堡 + 穆罕默德·阿里清真寺</b>（联票约 300 埃及镑）：奥斯曼风格清真寺，高处俯瞰开罗全景</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>科普特区</b>（免费）：悬空教堂与罗马塔，步行回酒店</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：埃及菜（烤肉串/烤鱼/塔梅亚炸豆饼）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大埃及博物馆（GEM）位于吉萨，2026 年逐步开放，图坦卡蒙展厅搬迁中；若已开放优先去 GEM（新馆门票约 1000–1500 埃及镑）。老馆开馆早、人流可控。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 汗哈利利市场</span>
+          <span class="d-desc">伊斯兰开罗一日</span>
+          <span class="d-tag ">🕌 市集日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>穆伊兹街</b>（免费）：中世纪伊斯兰建筑群，老城门与清真寺密集</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what"><b>爱资哈尔清真寺</b>（免费，需着装得体）：千年学术中心，庭院安静</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>汗哈利利市场</b>（免费）：香料、灯具、纸莎草画、香水与纪念品，还价到 1/3–1/2 开价</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：市场边老字号库莎丽/烤肉</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">继续逛市场 + 抽水烟咖啡馆体验（可选），买伴手礼</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：尼罗河畔餐厅，准备次日南下</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">汗哈利利周边小偷与「热心带路党」多，贵重物品贴身；纸莎草画、香水这类纪念品在固定店铺买更靠谱，路边摊多为赝品。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 飞阿斯旺</span>
+          <span class="d-desc">阿斯旺大坝 + 帆船日落</span>
+          <span class="d-tag ">🛫 南部日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">开罗机场国内航站楼✈阿斯旺（约 1.5h，提前 1 个月订，约 80–150 美元）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>阿斯旺大坝</b>（约 100 埃及镑）：尼罗河上世界最大水坝之一，看纳赛尔湖</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：阿斯旺烤鱼（尼罗河鲈鱼）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>未完成的方尖碑</b>（约 150 埃及镑）：古埃及最大的方尖碑遗址，花岗岩采石场</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>尼罗河三桅帆船（Felucca）</b>（约 1.5h，谈好价格约 300–500 埃及镑/船）：顺流看河景日落，河畔努比亚村落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：河畔餐厅，夜宿阿斯旺</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿斯旺到阿布辛贝有两种方式：随团车（凌晨 4 点出发约 3.5h）或包机（贵但快）；本文按随团车设计，前一晚早点睡。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 阿布辛贝神庙</span>
+          <span class="d-desc">拉美西斯二世巨像</span>
+          <span class="d-tag ">🗿 阿布辛贝日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">04:00–04:30</td><td class="t-what">酒店大堂集合，旅游团车队凌晨出发（全程警车护送，约 3.5h 车程）</td></tr>
+          <tr><td class="t-time">08:00–11:00</td><td class="t-what"><b>阿布辛贝神庙</b>（门票约 400–600 埃及镑）：拉美西斯二世四座巨像，岩壁上的王后神庙（奈费尔塔利），参观约 2h</td></tr>
+          <tr><td class="t-time">11:00–14:30</td><td class="t-what">返程回阿斯旺（同样约 3.5h），车上补觉</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what">午餐后回酒店休息，泳池或河畔咖啡馆放松</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：阿斯旺烤鱼，尽早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿布辛贝凌晨出发是标配（避开正午 45℃+），全程约 7h 车程；怕累可改包机（约 300–400 美元往返）。神庙内部壁画保留完好，值得细看。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 菲莱神庙</span>
+          <span class="d-desc">水岛神庙 + 努比亚村</span>
+          <span class="d-tag ">🏝 神庙日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">前往菲莱神庙码头，乘船登岛</td></tr>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>菲莱神庙</b>（门票约 450 埃及镑 + 船费）：献给伊西斯女神的水上神庙，搬迁后的阿吉勒基亚岛，柱廊与浮雕</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>努比亚村</b>（约 200–300 埃及镑含船）：彩色房屋与努比亚文化，可买手绘布画</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：阿斯旺河边努比亚风味午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">自由时间：逛阿斯旺集市 / 河畔咖啡馆看帆船，或加项「沙漠植物园」</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐后准备次日邮轮登船</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">菲莱神庙乘船登岛时要确认船费包含往返；岛上紫外线强，防晒帽+水必备。努比亚村小孩会要「礼物」，糖果小面额钱可备一点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 尼罗河邮轮</span>
+          <span class="d-desc">康翁波神庙</span>
+          <span class="d-tag ">🚢 邮轮日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">办理尼罗河邮轮登船手续（4 天 3 晚 / 3 天 2 晚可选，含全餐），整理行李入住船舱</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">邮轮航行，甲板晒太阳看两岸棕榈与村庄</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">邮轮午餐（自助）</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>康翁波神庙</b>（约 300 埃及镑）：罕见的双神神庙（鳄鱼神索贝克+鹰神荷鲁斯），旁边的鳄鱼木乃伊博物馆</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">邮轮晚餐 + 船上尼罗河夜航，晚间可看星星</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">邮轮从阿斯旺到卢克索有 4 天 3 晚与 3 天 2 晚两种行程，本文按 3 天 2 晚（D8–D10 上午）设计；预订时确认停靠埃德夫与康翁波的时间和午餐安排。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 埃德夫神庙</span>
+          <span class="d-desc">荷鲁斯神庙</span>
+          <span class="d-tag ">🐦 埃德夫日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">邮轮停靠埃德夫，乘马车前往神庙（车程约 10min，讲好往返价）</td></tr>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>埃德夫神庙</b>（约 300–400 埃及镑）：保存最完整的古埃及神庙之一，献给鹰神荷鲁斯，巨大塔门浮雕</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">返邮轮，甲板放松/看书</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">邮轮午餐，继续北上航行</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">河景自由活动：看两岸甘蔗田与水鸟，拍照</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">邮轮晚餐 + 船员表演（肚皮舞/旋转舞，视邮轮安排）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">埃德夫马车夫与「导游」会额外要小费，下车前谈好总价；神庙上午光线最好，塔门浮雕细节清晰。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 帝王谷</span>
+          <span class="d-desc">卢克索西岸</span>
+          <span class="d-tag ">⚱ 帝王谷日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">邮轮靠泊卢克索，行李寄存，乘渡轮到西岸</td></tr>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>帝王谷</b>（门票约 600 埃及镑，含 3 座墓）：图坦卡蒙墓（另购票约 500 埃及镑）、KV62，选择拉美西斯五/六世墓看完整壁画</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what"><b>哈特谢普苏特女王神庙</b>（约 250 埃及镑）：三层阶梯式神庙嵌入悬崖，光线上午最佳</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">午餐：西岸路边餐馆或回卢克索东岸</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what"><b>门农巨像</b>（免费）：两座 20m 高石像，打卡后回东岸酒店入住</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：卢克索尼罗河畔餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">帝王谷正午极热且墓内闷，尽量 8 点第一批进；门票含的 3 个墓选「KV9（拉美西斯六世）」「KV17」「KV11」等壁画保存好的，具体开放墓室每天轮换。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 卡纳克神庙</span>
+          <span class="d-desc">卢克索东岸</span>
+          <span class="d-tag ">🛕 神庙日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">卢克索东岸出发（可步行或马车），先到卡纳克</td></tr>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>卡纳克神庙</b>（约 450–600 埃及镑）：134 根巨型石柱大厅、方尖碑、圣湖，埃及最大神庙群</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：卢克索老城区库莎丽/烤肉</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>卢克索神庙</b>（约 400–500 埃及镑）：日落与夜晚灯光下最美，阿蒙神庙轴线，夜晚灯光演出（另购票）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">漫步卢克索滨河大道，逛当地市场买伴手礼</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：河畔餐厅，卢克索最后一晚</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卡纳克与卢克索神庙相距约 3km，可坐马车（讲好价约 50–100 埃及镑）或出租车；卢克索神庙夜景灯光是埃及最出片的机位之一。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 热气球 + 转场红海</span>
+          <span class="d-desc">卢克索→赫尔格达</span>
+          <span class="d-tag alt">🎈 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">04:30</td><td class="t-what">凌晨前往热气球起飞点（天气好才飞，务必提前 1 天确认）</td></tr>
+          <tr><td class="t-time">05:00–07:00</td><td class="t-what"><b>卢克索热气球</b>（约 1500–2500 埃及镑/人）：日出时分飞越帝王谷与尼罗河西岸，俯瞰神庙与田野</td></tr>
+          <tr><td class="t-time">07:30–09:30</td><td class="t-what">返回酒店早餐、退房</td></tr>
+          <tr><td class="t-time">09:30–13:30</td><td class="t-what">包车/拼车前往红海赫尔格达（车程约 4h，公路沿红海海岸线）</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">入住赫尔格达海滨度假酒店（全包式），下午酒店泳池/私家海滩放松</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：酒店自助（全包式含），海边日落散步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">热气球受风力影响可能取消，行程留缓冲；如不坐热气球，D12 上午可改为卢克索博物馆（约 300 埃及镑）再出发。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 红海潜水</span>
+          <span class="d-desc">浮潜 + 玻璃底船</span>
+          <span class="d-tag ">🤿 潜水日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">酒店集合，参加红海浮潜/潜水一日游（约 40–80 美元/人含午餐）</td></tr>
+          <tr><td class="t-time">08:30–13:00</td><td class="t-what"><b>Orange Bay / 吉夫顿岛</b>：快艇出海，2–3 个浮潜点看珊瑚与热带鱼（蓝海星、小丑鱼）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">船上/岛上自助午餐，沙滩自由活动</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">玻璃底船观光或水肺潜水体验（PADI 入门课程约 80–120 美元，需半天）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：酒店海鲜自助，红海落日</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">红海水温全年 20℃+，冬季也能下水；潜水装备与教练费用提前确认，近视者可自带带度数的面镜。怕水的人选玻璃底船即可。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 沙漠冲沙</span>
+          <span class="d-desc">贝都因村落 + 沙丘</span>
+          <span class="d-tag alt">🏜 沙漠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what">上午自由：酒店 SPA / 泳池 / 海滨发呆，或补一次浮潜</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：酒店自助</td></tr>
+          <tr><td class="t-time">13:30–18:00</td><td class="t-what"><b>沙漠冲沙半日游</b>（约 25–40 美元/人）：四驱车沙丘越野 → 贝都因村落参观 → 骑骆驼 → 沙漠日落 + 篝火晚餐</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">沙漠营地晚餐（烤饼+烤肉+埃及茶），观星回程</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">返酒店，收拾行李准备返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">冲沙车程颠簸，晕车/腰椎不好的慎选；沙漠日落黄金一小时拍照最好，多带水与防晒。回开罗航班建议订次日白天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 返程</span>
+          <span class="d-desc">赫尔格达✈开罗✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">退房，前往赫尔格达机场（或乘大巴返开罗约 5–6h）</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">赫尔格达✈开罗（约 1h）或大巴；到开罗后前往国际航站楼</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">办理值机，机场退税（购物满额可退增值税约 10–14%，保留税票）</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what">开罗✈北京（直飞约 11h，埃及航空）</td></tr>
+          <tr><td class="t-time">次日 08:30</td><td class="t-what">抵北京，入境回家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">赫尔格达—开罗大巴约 5–6h 且班次少，赶航班优先选飞机；开罗机场国际出发大厅有埃及特色纪念品与莎草画店，可最后补货。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-cover.jpg" alt="吉萨·金字塔群" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">吉萨·金字塔群 <small>约 540 埃及镑</small></div>
+          <div class="sc-feat">世界七大奇迹仅存者。<b>胡夫/卡夫拉/孟卡拉三塔 + 狮身人面像</b>，可进入金字塔内部。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 3–4h · 🚗 开罗市区 40min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-1.jpg" alt="阿布辛贝·拉美西斯二世神庙" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿布辛贝·拉美西斯二世神庙 <small>约 400–600 埃及镑</small></div>
+          <div class="sc-feat">岩壁上的四尊巨像。<b>神庙平移工程 + 每年两次日光奇迹</b>（2.22/10.22 直射圣殿）。</div>
+          <div class="sc-meta">📅 5:00–18:00 · ⏱ 2h · 🚗 阿斯旺随团车 3.5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-2.jpg" alt="开罗·埃及博物馆" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">开罗·埃及博物馆 <small>约 600 埃及镑</small></div>
+          <div class="sc-feat">图坦卡蒙宝藏主场。<b>黄金面具 + 黄金棺</b>，十万件文物的老馆与新馆 GEM 双线。</div>
+          <div class="sc-meta">📅 9:00–17:00（周五 11:30 开）· ⏱ 2–3h · 🚇 解放广场</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-3.jpg" alt="卢克索·卡纳克神庙" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">卢克索·卡纳克神庙 <small>约 450–600 埃及镑</small></div>
+          <div class="sc-feat">埃及最大神庙群。<b>134 根巨柱大厅 + 方尖碑</b>，圣湖与塔门层层递进。</div>
+          <div class="sc-meta">📅 6:00–17:30 · ⏱ 2.5h · 🚶 卢克索东岸步行/马车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-4.jpg" alt="卢克索·帝王谷" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">卢克索·帝王谷 <small>约 600 埃及镑（含 3 墓）</small></div>
+          <div class="sc-feat">法老安息之地。<b>60+ 座岩墓 + 图坦卡蒙墓</b>，壁画色彩两千多年不褪。</div>
+          <div class="sc-meta">📅 6:00–17:00 · ⏱ 2–3h · 🚢 西岸渡河+小巴</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-5.jpg" alt="阿斯旺·菲莱神庙" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿斯旺·菲莱神庙 <small>约 450 埃及镑</small></div>
+          <div class="sc-feat">献给伊西斯的水上神庙。<b>柱廊倒影 + 迁岛工程</b>，乘船登岛最美。</div>
+          <div class="sc-meta">📅 7:00–17:00 · ⏱ 1.5h · 🚤 码头乘船登岛</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-6.jpg" alt="阿斯旺·尼罗河三桅帆船" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿斯旺·尼罗河三桅帆船 <small>约 300–500 埃及镑/船</small></div>
+          <div class="sc-feat">古法航行体验。<b>日落时段的河景 + 帆影</b>，尼罗河最浪漫的打开方式。</div>
+          <div class="sc-meta">📅 日落时段最佳 · ⏱ 1.5h · 🛶 阿斯旺码头</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/egypt/egypt-7.jpg" alt="红海·赫尔格达" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">红海·赫尔格达 <small>浮潜一日游 40–80 美元</small></div>
+          <div class="sc-feat">全球顶级潜水地。<b>珊瑚花园 + 热带鱼群</b>，冬天水温 20℃ 也能下水。</div>
+          <div class="sc-meta">📅 全年 · ⏱ 1–2 天 · ✈ 开罗飞 1h / 车 4h</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（吉萨金字塔、阿布辛贝、埃及博物馆、卡纳克神庙、帝王谷、菲莱神庙、尼罗河帆船、红海珊瑚均为埃及实景），用于页面配图。更多免费景点：萨拉丁城堡外观、门农巨像、尼罗河滨河大道、汗哈利利市场。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 埃及镑 ≈ 0.13 元、1 美元 ≈ 7.1 元估算。往返机票按直飞淡季 5000–6500 元计。当地小额消费用埃及镑现金，酒店/邮轮/一日游多用美元。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（15000–20000）</th>
+<th>标准（25000–32000）</th>
+<th>舒适（45000–60000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄开罗 5000–6000</td>
+<td>含内陆段（开罗—阿斯旺等）6500–8000</td>
+<td>直飞商务/灵活 15000–25000</td>
+</tr>
+<tr>
+<td>住宿（14 晚）</td>
+<td>民宿/经济酒店 200–350/晚</td>
+<td>四星/尼罗河景观 400–700/晚</td>
+<td>五星全包度假村 1000–2000/晚</td>
+</tr>
+<tr>
+<td>交通</td>
+<td>火车/包车+拼车 2000–3000</td>
+<td>内陆航班+邮轮 4500–6000</td>
+<td>全程包车/包机阿布辛贝 10000–15000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>核心神庙约 2000–3000</td>
+<td>含热气球/骑骆驼约 4000–6000</td>
+<td>全含+私导+声光秀约 8000–12000</td>
+</tr>
+<tr>
+<td>餐饮（15 天）</td>
+<td>路边摊+库莎丽 2500–3500</td>
+<td>正常下馆子 4000–5500</td>
+<td>尼罗河船餐厅+高级餐 10000–15000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 29000 元）</span>
+      往返机票 6500 + 住宿 14 晚 7000（平均 500/晚）+ 内陆交通与邮轮 5500 + 门票（含热气球）5000 + 餐饮 4500 + 签证/小费/杂费 1000 ≈ <strong>29000 元</strong>。大头是内陆航班与邮轮，提前 2 个月订邮轮（约 300–450 美元/人 3 晚全餐）能省不少；阿布辛贝随团车比包机便宜 10 倍。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>13.1 去掉红海的 12 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D4 开罗（同主行程）</li>
+
+      <li>D5–D7 阿斯旺（含阿布辛贝）</li>
+
+      <li>D8–D10 尼罗河邮轮+埃德夫</li>
+
+      <li>D11 卢克索西岸+东岸</li>
+
+      <li>D12 卢克索✈开罗，返程</li>
+
+    </ul>
+
+    <h3>13.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：金字塔骑骆驼（10 分钟短途）与埃及博物馆必去；阿布辛贝改乘包机或放弃（凌晨 3.5h 车程小孩受不了）；红海浮潜选岸边浅水区并穿救生衣；热气球身高与风力受限，8 岁以下一般不推荐。埃及小孩本身随家长免票/半价政策各不相同，买票时先问。</p>
+
+    <h3>13.3 季节补充（冬季/夏季版）</h3>
+
+
+    <p>冬季（11–3 月）：最佳时段，白天 20–25℃ 适合全户外行程，红海仍可下水，酒店价格中等；夏季（5–9 月）：白天 40℃+，把金字塔与神庙全部放清晨 8 点前，午后安排博物馆/酒店泳池，红海改室内潜水中心与傍晚浮潜。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>14.1 北京 ⇄ 埃及 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→开罗约 11–12h</td>
+<td>往返 5000–6500 元</td>
+<td>埃及航空每周多班，开罗国际机场</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>14–22h</td>
+<td>4200–5800 元</td>
+<td>经迪拜/阿布扎比/多哈/伊斯坦布尔，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路/陆路</td>
+<td>—</td>
+<td>—</td>
+<td>中国到埃及无直达铁路/公路，只能飞机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 埃及境内交通核心提醒</span>
+      长途主力是<strong>内陆航班 + 尼罗河邮轮</strong>：开罗—阿斯旺飞约 1.5h、赫尔格达—开罗飞约 1h，比 12h 火车划算；阿斯旺—卢克索走邮轮顺流而下，一站式玩康翁波与埃德夫。市内打车<strong>只认 Uber/InDrive</strong>（明码标价），路边出租车要价 3–5 倍。跨城巴士（Go Bus）便宜但班次少、车内较旧，赶航班别依赖。
+    </div>
+
+    <h3>14.2 埃及境内交通</h3>
+    <ul>
+      <li><strong>内陆航班</strong>：开罗—阿斯旺 1.5h、赫尔格达—开罗 1h，埃及航空/尼罗河航空，提前订 80–150 美元</li>
+      <li><strong>尼罗河邮轮</strong>：阿斯旺—卢克索 3 天 2 晚（全餐+停靠神庙），300–600 美元/人</li>
+      <li><strong>包车/拼车</strong>：阿斯旺—阿布辛贝随团车（凌晨出发）或包车；卢克索—赫尔格达约 4h</li>
+      <li><strong>Uber/InDrive</strong>：开罗、阿斯旺、卢克索、赫尔格达市内打车主力，价格透明</li>
+      <li><strong>马车/三桅帆船</strong>：卢克索马车、阿斯旺 Felucca，出发前谈好总价避免坐地起价</li>
+      <li><strong>大巴 Go Bus</strong>：跨城巴士便宜，赫尔格达—开罗约 5–6h，仅预算型推荐</li>
+    </ul>
+
+    <h3>14.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>开罗·解放广场/Zamalek</td>
+<td>经济 200–350 / 标准 400–700</td>
+<td>近埃及博物馆与尼罗河，打车方便</td>
+<td>老城街道晚间接头较多</td>
+</tr>
+<tr>
+<td>开罗·吉萨金字塔景观</td>
+<td>标准 500–900</td>
+<td>窗外就是金字塔，日出日落机位</td>
+<td>离市中心远，餐厅选择少</td>
+</tr>
+<tr>
+<td>阿斯旺·尼罗河岸</td>
+<td>经济 200–350 / 标准 400–650</td>
+<td>帆船码头近，河景与日落</td>
+<td>夏季高温，部分酒店旧</td>
+</tr>
+<tr>
+<td>卢克索·东岸</td>
+<td>经济 200–300 / 标准 350–600</td>
+<td>卡纳克/卢克索神庙步行可达</td>
+<td>西岸帝王谷需渡河</td>
+</tr>
+<tr>
+<td>红海·赫尔格达滨海</td>
+<td>标准 500–800 / 全包 800–1500</td>
+<td>全包式度假村，海滩+泳池+餐饮</td>
+<td>离市区远，进出需打车</td>
+</tr>
+<tr>
+<td>尼罗河邮轮</td>
+<td>3 晚约 2000–4000/人</td>
+<td>住着走，含全餐与沿岸神庙</td>
+<td>船舱空间有限，岸上购物贵</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍛 必吃经典</h3>
+        <ul>
+          <li>库莎丽 Koshary：米饭+通心粉+扁豆+炸洋葱国民菜</li>
+          <li>烤肉：Kofta 肉丸串、Shish Tawook 烤鸡肉</li>
+          <li>烤鱼：尼罗河鲈鱼（阿斯旺）与红海海鲜</li>
+          <li>Ful Medames 蚕豆糊 + Aish 埃及大饼</li>
+        </ul>
+        <h3>🥗 在地名物</h3>
+        <ul>
+          <li>塔梅亚 Ta'amiya：炸豆饼（埃及版 falafel）</li>
+          <li>烤乳鸽 Hamam Mahshi：开罗名菜</li>
+          <li>埃及酸奶 Laban 配主食</li>
+          <li>努比亚村落家常菜（阿斯旺）：烤饼+豆汤+酸菜</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🫖 街头体验</h3>
+        <ul>
+          <li>甘蔗汁 Asab：街头鲜榨，一杯 5–15 埃及镑</li>
+          <li>水烟 Shisha：咖啡馆体验（可选）</li>
+          <li>茶 Shay bi'nna'na 薄荷茶、埃及咖啡（带渣）</li>
+          <li>甜品：Basbousa 粗粒麦粉糕、乌姆阿里牛奶布丁</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>开罗：Abou Tarek 库莎丽名店、Zamalek 咖啡街</li>
+          <li>汗哈利利市场周边老字号</li>
+          <li>阿斯旺/卢克索：尼罗河畔餐厅夜景</li>
+          <li>红海度假村：全包式自助（海鲜日）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 街头「鲜榨果汁」确认是否兑水加糖，现榨现喝；② 餐厅菜单分「游客价」与「本地价」很常见，先看菜单标价，结账核对账单（服务费 10–15% 正常，额外小费自愿）；③ 肠胃敏感者前 2 天以熟食为主，水果吃削皮的，饮用水只喝瓶装水（含冰块问清楚来源）；④ 海鲜称重计价，先问每公斤单价再下单。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上）+ 落地签/电子签</li>
+        <li>往返机票 + 尼罗河邮轮/内陆机票确认单</li>
+        <li>美元现金（落地签 25 美元 + 小费零钱）</li>
+        <li>埃及镑小额现金（街头消费与洗手间小费）</li>
+      </ul>
+      <ul>
+        <li>防晒霜（SPF50+）+ 帽子墨镜 + 薄外套（神庙沙漠温差）</li>
+        <li>瓶装水（景区 2 倍价，酒店/超市提前囤）</li>
+        <li>转换插头（220V C/F 型两圆脚）+ 充电宝</li>
+        <li>Google 地图离线包 + 导游/包车联系方式</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>小费与「热心帮助」捆绑</strong>：拍照、带路、讲解、看骆驼都是收费服务，先问价再接受，被纠缠就严肃摇头；② 神庙安检严格且双肩包/三脚架常需寄存，大包尽量留酒店；③ 女性游客建议长裙/长裤+防晒头巾，清真寺内需遮盖头发与肩臂；④ 8–11 月尼罗河邮轮水位波动偶尔改道，行前与旅行社确认当日航线，行程留半天缓冲。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      埃及是「<strong>五千年文明触手可及</strong>」的地方——金字塔站在城市边缘、神庙就立在尼罗河两岸、帝王谷壁画色彩如昨。15 天从开罗一路顺尼罗河南下，坐一次三桅帆船看日落、乘热气球看帝王谷日出、再到红海跳进珊瑚海里，把历史、河、沙漠、海一次串齐。办签简单、预算可控，是第一次出国看「文明古迹」最值得的一站。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#b8850f",
+    "d": 3,
+    "n": "尼罗河谷主线 · 开罗→阿斯旺→卢克索→红海→返开罗",
+    "pts": [
+      [
+        30.0444,
+        31.2357
+      ],
+      [
+        24.0889,
+        32.8998
+      ],
+      [
+        25.6872,
+        32.6396
+      ],
+      [
+        27.2578,
+        33.8116
+      ],
+      [
+        30.0444,
+        31.2357
+      ]
+    ]
+  },
+  {
+    "c": "#1f6fa8",
+    "d": 3,
+    "n": "阿斯旺—阿布辛贝支线（随团车约 3.5h 单程）",
+    "pts": [
+      [
+        24.0889,
+        32.8998
+      ],
+      [
+        22.337,
+        31.6255
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 29.9792,
+    "lng": 31.1342,
+    "name": "吉萨·金字塔群",
+    "t": "D2 全天 · 3–4h",
+    "fee": "约 540 埃镑",
+    "note": "狮身人面像、可骑骆驼"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 30.0478,
+    "lng": 31.2337,
+    "name": "开罗·埃及博物馆",
+    "t": "D3 上午 · 2–3h",
+    "fee": "约 600 埃镑",
+    "note": "图坦卡蒙黄金面具"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 22.337,
+    "lng": 31.6255,
+    "name": "阿布辛贝神庙",
+    "t": "D6 上午 · 2h",
+    "fee": "约 400–600 埃镑",
+    "note": "四尊拉美西斯巨像"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 24.0256,
+    "lng": 32.8839,
+    "name": "阿斯旺·菲莱神庙",
+    "t": "D7 上午 · 1.5h",
+    "fee": "约 450 埃镑",
+    "note": "伊西斯水上神庙"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 25.6872,
+    "lng": 32.6396,
+    "name": "卢克索·卡纳克神庙",
+    "t": "D11 上午 · 2.5h",
+    "fee": "约 450–600 埃镑",
+    "note": "134 根巨柱大厅"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 25.7402,
+    "lng": 32.6014,
+    "name": "卢克索·帝王谷",
+    "t": "D10 上午 · 2–3h",
+    "fee": "约 600 埃镑（含 3 墓）",
+    "note": "图坦卡蒙墓、壁画"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 24.0889,
+    "lng": 32.8998,
+    "name": "阿斯旺·三桅帆船",
+    "t": "D5 傍晚 · 1.5h",
+    "fee": "约 300–500 埃镑/船",
+    "note": "尼罗河日落帆影"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 27.2578,
+    "lng": 33.8116,
+    "name": "红海·赫尔格达",
+    "t": "D13 全天 · 1–2 天",
+    "fee": "浮潜一日游 40–80 美元",
+    "note": "珊瑚花园、沙漠冲沙"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[21.9, 30.6], [31.7, 35.2]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#b8850f\"></span>尼罗河谷主线（开罗→阿斯旺→卢克索→红海）<br><span class=\"sw\" style=\"background:#1f6fa8\"></span>阿斯旺—阿布辛贝支线<br><span class=\"sw dash\"></span>开罗—阿斯旺段为内陆航班（约 1.5h）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

@@ -399,6 +399,7 @@ CSS = """
 JS_TEMPLATE = """
 (function () {
   var body = document.body;
+  var IS_WORLD = __WORLD_MODE__;
 
   function showFallback(mapId, msg) {
     var el = document.getElementById(mapId);
@@ -414,6 +415,14 @@ JS_TEMPLATE = """
     }
 
     function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
       return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
         maxZoom: 18,
         subdomains: ['01', '02', '03', '04'],
@@ -421,7 +430,7 @@ JS_TEMPLATE = """
       });
     }
 
-    // WGS-84 → GCJ-02（火星坐标）纠偏
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
     function transformLat(x, y) {
       var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
       ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
@@ -679,10 +688,11 @@ JS_TEMPLATE = """
 """
 
 
-def build_sidebar():
+def build_sidebar(days):
     """固定 4 组导航"""
+    sec2 = '推荐行程 · %d 天版' % days
     groups = [
-        ('行程规划', [('s1', '1', '核心结论'), ('s2', '2', '推荐行程 · 10 天版'), ('s3', '3', '逐小时时间线')]),
+        ('行程规划', [('s1', '1', '核心结论'), ('s2', '2', sec2), ('s3', '3', '逐小时时间线')]),
         ('沿途看点', [('s4', '4', '景点图鉴'), ('s5', '5', '路线地图')]),
         ('费用备选', [('s6', '6', '预算明细'), ('s7', '7', '备选方案')]),
         ('准备与应对', [('s8', '8', '交通与住宿'), ('s9', '9', '美食清单'), ('s10', '10', '出行贴士')]),
@@ -699,8 +709,9 @@ def build_sidebar():
     return '\n'.join(out)
 
 
-def build_toc():
-    items = ['核心结论', '推荐行程 · 10 天版', '逐小时时间线', '景点图鉴', '路线地图',
+def build_toc(days):
+    sec2 = '推荐行程 · %d 天版' % days
+    items = ['核心结论', sec2, '逐小时时间线', '景点图鉴', '路线地图',
              '预算明细（三档）', '备选方案', '交通与住宿', '美食清单', '出行贴士']
     out = ['    <h2>目录</h2>', '    <ol>']
     for i, name in enumerate(items, 1):
@@ -822,6 +833,7 @@ def render(d):
     theme_css = '\n'.join('    --%s: %s;' % (k, v) for k, v in t.items())
 
     # ---- 地图数据（JSON 注入 JS）----
+    world_mode = 'true' if d.get('mode') == 'world' else 'false'
     routes_js = json.dumps(d['routes'], ensure_ascii=False, indent=2)
     spots_js = json.dumps(d['spotsMain'], ensure_ascii=False, indent=2)
     fit_js = json.dumps(d.get('mapFit', [[30, 100], [40, 125]]), ensure_ascii=False)
@@ -829,6 +841,7 @@ def render(d):
     legend_js = json.dumps(legend_html, ensure_ascii=False)
 
     js = (JS_TEMPLATE
+          .replace('__WORLD_MODE__', world_mode)
           .replace('__ROUTES__', routes_js)
           .replace('__SPOTS__', spots_js)
           .replace('__FIT__', fit_js)
@@ -846,7 +859,7 @@ def render(d):
     if d.get('planInfo'):
         s2 += '\n\n    <div class="callout info">\n      <span class="t">%s</span>\n      %s\n    </div>' % (d['planInfo']['t'], d['planInfo']['b'])
 
-    s3 = '<p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>\n\n' + build_hourline(d['days'])
+    s3 = '<p>以下为 %d 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>\n\n' % len(d['days']) + build_hourline(d['days'])
 
     s4 = ('<p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>\n\n'
           + build_gallery(d['spots'])
@@ -899,8 +912,9 @@ def render(d):
         s10 += '\n\n    <div class="callout key">\n      <span class="t">🌟 一句话总结</span>\n      %s\n    </div>' % d['summary']
 
     sections = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10]
-    sec_titles = d.get('secTitles', ['核心结论', '推荐行程 · 10 天版', '逐小时时间线', '景点图鉴', '路线地图',
-                                     '预算明细（三档）', '备选方案', '交通与住宿', '美食清单', '出行贴士'])
+    default_sec_titles = ['核心结论', '推荐行程 · %d 天版' % len(d['days']), '逐小时时间线', '景点图鉴', '路线地图',
+                          '预算明细（三档）', '备选方案', '交通与住宿', '美食清单', '出行贴士']
+    sec_titles = d.get('secTitles', default_sec_titles)
     sec_html = []
     for i, body in enumerate(sections, 1):
         sec_html.append('  <!-- ============ %d ============ -->\n  <section id="s%d">\n    <h2 class="sec"><span class="no">%d</span>%s</h2>\n\n    %s\n  </section>'
@@ -993,8 +1007,8 @@ def render(d):
         h1=d['h1'],
         sub=d['sub'],
         meta='\n'.join('        <span>%s</span>' % m for m in d['meta']),
-        sidebar=build_sidebar(),
-        toc=build_toc(),
+        sidebar=build_sidebar(len(d['days'])),
+        toc=build_toc(len(d['days'])),
         sections_html=sections_html,
         js=js,
     )

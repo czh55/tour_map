@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 印度 25 天全景攻略 · 金三角恒河拉贾斯坦</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #e35d2b;
+    --red-light: #ef7a3a;
+    --gold: #d9a441;
+    --ink: #3a2c24;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #2d6a8a;
+    --cover1: #8a2c0a;
+    --ov1: rgba(110,30,6,.88);
+    --ov2: rgba(227,93,43,.72);
+    --ov3: rgba(240,140,70,.38);
+    --ov4: rgba(248,190,110,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(227,93,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/india/india-cover.jpg" alt="印度旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 25 天环线 · 金三角 + 拉贾斯坦 + 恒河 + 西海岸</div>
+      <h1>印度 25 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 德里 · 阿格拉 · 斋普尔 · 焦特布尔 · 乌代布尔 · 瓦拉纳西 · 孟买 · 果阿</div>
+      <div class="meta">
+        <span>🛫 行程链：德里 → 阿格拉 → 斋普尔 → 焦特布尔 → 乌代布尔 → 瓦拉纳西 → 孟买 → 返程</span>
+        <span>📅 时间窗口：25 天 24 晚</span>
+        <span>✈️ 北京⇄德里 直飞约 6–7 小时（国航/印航）</span>
+        <span>🛂 签证：印度电子签 e-Visa（30 天单次，约 3–5 个工作日，可线上申请）</span>
+        <span>🕐 时差：印度标准时比北京慢 2.5 小时 · 🔌 230V C/D 型插座（两/三圆脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 25 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 25 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">德里</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">阿格拉</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">斋普尔</span>
+      <span class="arrow">→</span>
+      <span class="node">焦特布尔</span>
+      <span class="arrow">→</span>
+      <span class="node">乌代布尔</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">瓦拉纳西</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">孟买</span>
+      <span class="arrow">→</span>
+      <span class="node">果阿（可选）</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 25 天怎么安排最合理</span>
+      印度旅行是「<strong>地理与精神的双重纵深</strong>」：北方的莫卧儿王朝遗迹（德里、阿格拉、拉贾斯坦）构成文化主脉，恒河边的瓦拉纳西是宗教圣地，孟买则是现代印度缩影。25 天足够把<strong>金三角 + 拉贾斯坦四城 + 恒河 + 西海岸</strong>一次走完，节奏上「每 2 天换一城」，火车与飞机交替衔接。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>印度 e-Visa（电子签）：<strong>线上申请、3–5 个工作日审批</strong>，30 天单次约 25–40 美元；护照有效期需 6 个月以上</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>印度标准时（IST）比北京慢 <strong>2.5 小时</strong>；全国单一时区（无夏令时）</td>
+</tr>
+<tr>
+<td>电源插座</td>
+<td>印度 <strong>C/D 型</strong>（两/三圆脚），230V 50Hz；国内充电器需转换插头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>印度卢比 INR，<strong>1 卢比 ≈ 0.085 元人民币</strong>（1 元 ≈ 11.8 卢比）；小摊现金为主，备 500–1000 卢比零钱</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>德里 3 天 + 阿格拉 2 天 + 斋普尔 3 天 + 焦特布尔 2 天 + 乌代布尔 3 天 + 瓦拉纳西 3 天 + 孟买 4 天 + 果阿 4 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 25 天从孟买/德里返京；孟买直飞北京约 7h，或经德里/迪拜转机</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>德里 → 阿格拉 → 斋普尔 → 焦特布尔 → 乌代布尔 → 瓦拉纳西 → 孟买 → 果阿</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 20000–28000 ／ 标准 33000–45000 ／ 舒适 60000–90000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办 e-Visa ② 订泰姬陵/琥珀堡门票（官网提前 1 天）③ 火车票（IRCTC/代理）提前 1–2 个月抢 Tier-1 卧铺</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11–3 月旱季最佳（泰姬陵晴天、拉贾斯坦 15–25℃）；4–6 月酷热（40℃+）尽量避开；7–9 月雨季（瓦拉纳西涨水、孟买暴雨）</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>大城市信用卡/UPI 普及，小摊现金为主（准备 500–1000 卢比零钱）；换汇找官方点，ATM 认「Exchange」标识</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>饮食卫生是第一道防线</strong>：全程只喝瓶装水（检查瓶盖密封）、不吃路边生食与削皮水果，肠胃药与口服补液盐随身带——这是印度行最重要的经验，没有之一。② <strong>骗子文化务必了解</strong>：泰姬陵/景点外的「导游」「带你免费参观」「珠宝店半价」多为套路，礼貌拒绝即可；打车认 Ola/Uber 明码标价，拒绝先谈价的突突车（或先确认「price fixed」）。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 25 天版</h2>
+
+    <p>以下为 25 天 24 晚的推荐节奏：北段「金三角+拉贾斯坦」用火车衔接（德里→阿格拉→斋普尔→焦特布尔→乌代布尔），中段飞恒河圣地瓦拉纳西，末段飞西海岸孟买与果阿收尾。每日主景点 ≤2 个，热季中午安排室内与休整。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵德里</td>
+<td>北京✈德里（直飞约 6–7h），入住康诺特广场附近，印度门夜景</td>
+<td>德里</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>北德里：红堡 → 贾玛清真寺 → 月光集市街拍</td>
+<td>德里</td>
+<td>莫卧儿日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>南德里：顾特卜塔 → 胡马雍陵 → 印度门/总统府外观</td>
+<td>德里</td>
+<td>世界遗产日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>德里✈阿格拉（火车约 2h），下午泰姬陵日落</td>
+<td>阿格拉</td>
+<td>泰姬陵初见</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>泰姬陵日出 → 阿格拉堡 → 小泰姬陵</td>
+<td>阿格拉</td>
+<td>泰姬陵日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>阿格拉✈斋普尔（火车约 4h），傍晚城市宫殿</td>
+<td>斋普尔</td>
+<td>移师粉城</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>琥珀堡（吉普/大象上堡）→ 水之宫殿 → 阶梯井</td>
+<td>斋普尔</td>
+<td>琥珀堡日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>斋普尔：风之宫 → 简塔·曼塔天文台 → 集市购物</td>
+<td>斋普尔</td>
+<td>粉城漫游</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>斋普尔✈焦特布尔（火车约 5h），下午老城漫步</td>
+<td>焦特布尔</td>
+<td>移师蓝城</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>梅兰加尔古堡（半天，世界级）→ 蓝城小巷街拍</td>
+<td>焦特布尔</td>
+<td>古堡日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>焦特布尔✈乌代布尔（火车约 5–6h），傍晚皮丘拉湖</td>
+<td>乌代布尔</td>
+<td>移师白城</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>乌代布尔：城市宫殿 → 贾格迪什神庙 → 湖畔漫步</td>
+<td>乌代布尔</td>
+<td>宫殿日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>乌代布尔：湖心岛 → 日落游船 → 湖边休闲</td>
+<td>乌代布尔</td>
+<td>湖上日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>乌代布尔✈瓦拉纳西（经德里转机约 5–7h），傍晚恒河畔</td>
+<td>瓦拉纳西</td>
+<td>移师圣地</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>瓦拉纳西：恒河日出船游 → 鹿野苑 → 老城小巷</td>
+<td>瓦拉纳西</td>
+<td>恒河日</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>瓦拉纳西：达萨瓦梅朵夜祭（晚间）→ 白日自由街拍</td>
+<td>瓦拉纳西</td>
+<td>夜祭日</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>瓦拉纳西✈孟买（直飞约 1.5–2h），下午印度门+海滨大道</td>
+<td>孟买</td>
+<td>移师西岸</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>孟买：象岛石窟（渡轮+石窟，世界遗产）</td>
+<td>孟买</td>
+<td>象岛日</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>孟买：威尔士亲王博物馆 → 泰姬玛哈酒店外景 → 珠宝街</td>
+<td>孟买</td>
+<td>博物馆日</td>
+</tr>
+<tr>
+<td>D20</td>
+<td>孟买：达拉维导览（可选）或 宝莱坞电影城 → 海滨购物</td>
+<td>孟买</td>
+<td>城市日</td>
+</tr>
+<tr>
+<td>D21</td>
+<td>孟买✈果阿（约 1.5h），入住北果阿海滩，日落</td>
+<td>果阿</td>
+<td>移师海滩</td>
+</tr>
+<tr>
+<td>D22</td>
+<td>果阿：老果阿教堂群 → 南果阿海滩（帕洛莱姆）</td>
+<td>果阿</td>
+<td>教堂日</td>
+</tr>
+<tr>
+<td>D23</td>
+<td>果阿：海滩水上活动 + 自由放松（瑜伽/落日酒吧）</td>
+<td>果阿</td>
+<td>休闲日</td>
+</tr>
+<tr>
+<td>D24</td>
+<td>果阿✈孟买（转机）或 直达航班，休整购物</td>
+<td>孟买</td>
+<td>返程前</td>
+</tr>
+<tr>
+<td>D25 返程</td>
+<td>孟买✈北京（直飞约 7h 或经德里转机 10–13h），入境到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍果阿（D21–D24）改为孟买+德里深度 4 天；拉贾斯坦也可跳过焦特布尔/乌代布尔之一。首次去印度建议保留瓦拉纳西（恒河是印度精神的灵魂）。排灯节（10–11 月）期间住宿紧张、机票翻倍，需提前 2 个月订。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 25 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达德里</span>
+          <span class="d-desc">印度首日</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–15:00</td><td class="t-what">北京✈德里（直飞约 6–7h，国航/印航；时差比北京慢 2.5h）</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">机场快线/打车到康诺特广场（约 1h，打车 600–900 卢比），入住酒店</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>印度门</b>（免费）：德里地标，日落时金光</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what">晚餐：康诺特广场/萨罗吉尼市场</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">回酒店休息，适应时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">德里机场到市区首选机场快线（约 80 卢比/人）或 Uber 计价（贵但省心）；康诺特广场是市中心，四通八达。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 北德里</span>
+          <span class="d-desc">红堡与清真寺</span>
+          <span class="d-tag ">🏰 莫卧儿日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>红堡</b>（外国人约 600 卢比）：莫卧儿王城，大理石宫殿与花园</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>贾玛清真寺</b>（免费，登塔另收 100 卢比）：印度最大清真寺之一</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：月光集市老字号（羊肉咖喱/烤串）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>月光集市</b>（Chandni Chowk）：香料、纱丽、珠宝街拍</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">红堡广场日落+水景喷泉（免费）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：康诺特广场印度餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">红堡周六闭馆；贾玛清真寺需脱鞋、女性租长袍（约 20 卢比），非穆斯林开放时段有限，先查当日公告。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 南德里</span>
+          <span class="d-desc">世界遗产双塔</span>
+          <span class="d-tag alt">🏛 世界遗产日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>顾特卜塔</b>（外国人约 600 卢比）：73m 红砂岩高塔+铁柱</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what"><b>胡马雍陵</b>（外国人约 600 卢比）：泰姬陵的灵感之源，花园陵墓</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">午餐：莲花寺附近餐厅</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>莲花寺</b>（免费）：巴哈伊教莲花造型地标</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">总统府/国会大厦外观（免费远观）→ 印度门夜景</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：德里市内，准备次日阿格拉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">顾特卜塔是印度最早的伊斯兰纪念塔；胡马雍陵比泰姬陵早建近百年，「陵墓花园」范式被泰姬陵继承。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 移师阿格拉</span>
+          <span class="d-desc">泰姬陵初见</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">德里新德里火车站乘<b>加特快列车</b>到阿格拉（约 2h）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">入住酒店、午餐</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what"><b>阿格拉堡</b>（外国人约 650 卢比）：莫卧儿红砂岩堡垒，远眺泰姬陵</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">酒店休整（热季避开正午）</td></tr>
+          <tr><td class="t-time">16:30–19:30</td><td class="t-what"><b>泰姬陵日落</b>（外国人约 1100 卢比）：白色大理石在夕阳下变色</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：阿格拉老城</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">德里—阿格拉加特快（Gatimaan Express）约 100 分钟；泰姬陵周五闭馆，行程避开。正门排队长，从东门/西门进更快。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 泰姬陵日出</span>
+          <span class="d-desc">世界奇迹</span>
+          <span class="d-tag alt">🕌 泰姬陵日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–07:30</td><td class="t-what"><b>泰姬陵日出</b>（外国人约 1100 卢比）：晨光中纯净的白色大理石，最佳摄影时段</td></tr>
+          <tr><td class="t-time">07:30–10:00</td><td class="t-what">陵园内漫步：中央穹顶、两侧清真寺、月光花园</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">早餐+休息</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what"><b>小泰姬陵</b>（免费）：「黑泰姬陵」传说的另一座精致陵墓</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">老城市场购物（大理石镶嵌盒、皮具）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：阿格拉，准备次日斋普尔</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">泰姬陵日出票（早场）限 3000 张/日，需提前官网预订；门口「导游」套路多，可拒绝或用官方讲解器。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 移师斋普尔</span>
+          <span class="d-desc">粉色之城</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:30</td><td class="t-what">阿格拉✈斋普尔（火车约 4h，或包车 5h）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">入住斋普尔老城酒店，午餐</td></tr>
+          <tr><td class="t-time">12:30–15:00</td><td class="t-what">酒店休整（热季避开正午）</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>城市宫殿</b>（外国人约 500 卢比）：粉色宫殿+服饰博物馆</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>水之宫殿</b>（远观免费）：湖心粉宫日落</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：斋普尔（拉贾斯坦美食）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿格拉—斋普尔火车班次多（4–5h），也可包车走「胜利之门法塔赫布尔西格里」中转（顺路多玩一个世界遗产）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 琥珀堡</span>
+          <span class="d-desc">山巅王宫</span>
+          <span class="d-tag ">🏯 琥珀堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">斋普尔出发，<b>琥珀堡</b>（外国人约 500 卢比，含吉普车/大象上堡另收费）</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">琥珀堡：镜宫、庭园与城墙，俯瞰峡谷</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：琥珀堡山脚餐厅</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">返城，参观<b>阶梯井</b>（免费，经典机位）</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">水之宫殿湖景/山景茶室休整</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：斋普尔，次日风之宫</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">琥珀堡清晨光线最好且人少；大象骑行现在由官方机构管理（需提前预约且按体重定费），也可选吉普车往返。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 粉城漫游</span>
+          <span class="d-desc">风之宫与天文台</span>
+          <span class="d-tag ">🌸 粉城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what"><b>风之宫</b>（外国人约 200 卢比）：953 扇窗的粉红立面，街拍机位在对街咖啡馆</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>简塔·曼塔天文台</b>（外国人约 200 卢比）：世界遗产，巨型日晷</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：Johari 市集附近</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>Johari 市集/巴扎</b>：纱丽、蓝染布、宝石饰品购物</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">城市宫殿花园自由 + 老城城墙散步</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：斋普尔（可看传统舞蹈表演）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">风之宫最佳拍摄点是对街的 Wind View Café 天台；简塔·曼塔天文台是世界最大石制天文台之一，讲解很精彩。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 移师焦特布尔</span>
+          <span class="d-desc">蓝色之城</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–12:00</td><td class="t-what">斋普尔✈焦特布尔（火车约 5h）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">入住焦特布尔酒店，午餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">萨达尔市集（Sardar Market）：香料、手镯、头巾市场</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>老城日落</b>：蓝白相间的房屋屋顶（免费观景）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：焦特布尔屋顶餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">焦特布尔的「蓝城」因婆罗门传统刷蓝（避热驱虫）得名；从梅兰加尔古堡俯瞰老城蓝色屋顶是经典机位。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 梅兰加尔古堡</span>
+          <span class="d-desc">世界级要塞</span>
+          <span class="d-tag alt">🏰 古堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–11:30</td><td class="t-what"><b>梅兰加尔古堡</b>（外国人约 700 卢比）：世界最壮观堡垒之一，宫室+博物馆+城墙</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：古堡观景餐厅（俯瞰蓝城）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">古堡下方 <b>老城蓝巷</b>街拍（免费）</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">贾斯旺特纪念堂（Jaswant Thada，约 50 卢比）：白色大理石纪念堂</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：焦特布尔，准备次日乌代布尔</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">梅兰加尔古堡建议留足半天：城墙环线+博物馆（车辇、摇篮、武器）+多语种讲解器中文可用。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 移师乌代布尔</span>
+          <span class="d-desc">白色之城</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–12:00</td><td class="t-what">焦特布尔✈乌代布尔（火车约 5–6h，或包车 6h）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">入住乌代布尔湖畔酒店（湖景房体验极佳），午餐</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>皮丘拉湖</b>漫步：湖中宫殿外景（Leela Palace）</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>加格曼迪尔岛</b>船游（船票约 200–300 卢比）：湖心岛日落</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：湖畔屋顶餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌代布尔被誉为「东方威尼斯」，城市宫殿与皮丘拉湖构成绝景；湖景酒店溢价明显，至少订一晚体验日出湖景。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 乌代布尔宫殿</span>
+          <span class="d-desc">湖畔白城</span>
+          <span class="d-tag ">🏰 宫殿日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–11:30</td><td class="t-what"><b>乌代布尔城市宫殿</b>（外国人约 500 卢比）：拉贾斯坦最大宫殿群，湖景窗棂</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what">午餐：城市宫殿旁</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>贾格迪什神庙</b>（免费）：17 世纪耆那教雕刻神庙</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what">湖畔步行街 + 巴格奥尔·哈维利（旧官邸博物馆，可选）</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what"><b>皮丘拉湖日落船游</b>（第二次可选，或湖景茶室）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：湖边餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">城市宫殿的孔雀门与湖景拱窗是拍照焦点；乌代布尔画室文化浓厚，可以请画师画 mini 人像画（约 300–800 卢比）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 湖上日</span>
+          <span class="d-desc">湖心与闲适</span>
+          <span class="d-tag alt">🛶 湖上日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what"><b>湖上宫殿外景</b>（Taj Lake Palace，不可入内，湖边拍照）</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what">阿姆拉瓦蒂岛/加格曼迪尔岛船游+岛上午餐（可选）</td></tr>
+          <tr><td class="t-time">12:30–15:00</td><td class="t-what">湖边咖啡馆休整/画室体验</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">城市宫殿旁露天剧场观景台（免费）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>皮丘拉湖日落</b>（推荐船游第 2 次，光线最美）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：乌代布尔，准备次日飞瓦拉纳西</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌代布尔节奏应放缓：湖上落日每天颜色不同，值得两刷；Taj Lake Palace 可预约下午茶（高价但体验独特）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 飞往瓦拉纳西</span>
+          <span class="d-desc">恒河圣地</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–12:30</td><td class="t-what">乌代布尔✈瓦拉纳西（经德里转机，全程约 5–7h）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">入住恒河老城酒店，午餐</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what"><b>恒河畔</b>漫步：高台阶梯（Ghats）与寺庙群</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what"><b>恒河夜祭</b>（达萨瓦梅朵高台，免费）：圣火、香、铃铛的千年仪式</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">晚餐：老城印度菜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">瓦拉纳西是印度最古老的城市之一（恒河边 3000 年历史）；恒河夜祭每晚 6 点前后开始，提前半小时到前排占位。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 恒河日出</span>
+          <span class="d-desc">船游与鹿野苑</span>
+          <span class="d-tag ">🌅 恒河日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–07:30</td><td class="t-what"><b>恒河日出船游</b>（包船约 300–500 卢比）：晨光、沐浴者、晨祭</td></tr>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">早餐+休息</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>鹿野苑</b>（门票约 100 卢比）：佛陀初转法轮地，佛教圣地</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：老城</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>老城小巷</b>：丝绸店、手绘、恒河小吃街拍</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：老城，次日再看夜祭或自由</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">日出船游是瓦拉纳西灵魂体验：恒河晨雾中看信徒沐浴、火葬场（尊重不拍摄）；鹿野苑离城约 10km，突突车 15 分钟。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 夜祭与街拍</span>
+          <span class="d-desc">精神一日</span>
+          <span class="d-tag alt">🪔 夜祭日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">自由：恒河高台慢走，看瑜伽/占卜/理发摊</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">午餐：老城传统塔利（Thali）</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what">购物：恒河丝绸、手工铜器、恒河水瓶（纪念）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">晚餐前休息</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what"><b>恒河夜祭</b>（第二晚，不同高台视角，免费）</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">回酒店，准备次日孟买</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">瓦拉纳西的老城巷子里藏着印度最真实的日常：转经的老人、油灯、鲜花摊；夜祭仪式每晚由婆罗门祭司主持，庄重神圣。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 飞往孟买</span>
+          <span class="d-desc">印度门</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">瓦拉纳西✈孟买（直飞约 1.5–2h）</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">入住孟买南区酒店，午餐</td></tr>
+          <tr><td class="t-time">12:30–15:00</td><td class="t-what"><b>印度门</b>（免费）：泰姬玛哈酒店旁的海门地标</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what"><b>海滨大道</b>（Marine Drive）：孟买「女王项链」日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：孟买滨海餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">孟买是印度最大城市与金融中心，南部老城（Colaba/Fort）游客集中；印度门周六日人多，建议工作日去。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 象岛石窟</span>
+          <span class="d-desc">世界遗产石窟</span>
+          <span class="d-tag ">🗿 象岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">印度门码头乘<b>渡轮</b>到象岛（约 1h，往返约 200–400 卢比）</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>象岛石窟</b>（外国人约 600 卢比）：湿婆神像与石窟雕刻</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">象岛岛上午餐/返程</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">下午休整</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>威尔士亲王博物馆外景</b> → 印度门黄昏</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：Colaba 区</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">象岛石窟建于 5–8 世纪，主洞三面神像（湿婆）是世界级雕刻；渡轮班次有限，注意返程最晚时间。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 孟买博物馆</span>
+          <span class="d-desc">艺术与殖民</span>
+          <span class="d-tag alt">🏛 博物馆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>威尔士亲王博物馆</b>（约 100 卢比）：印度艺术与殖民史</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：Colaba 咖啡馆</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>泰姬玛哈酒店</b>外景（免费，需安检）→ 拱门广场</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>克劳福德市场</b>（免费）：百年铁架市场购物</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：孟买（滨海大道夜景）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">泰姬玛哈酒店是全球最著名酒店之一，正门有安检、公众区需预约；克劳福德市场周日半歇业，工作日去。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 孟买城市日</span>
+          <span class="d-desc">现代印度</span>
+          <span class="d-tag ">🏙 城市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>达拉维</b>导览（可选，含 NGO 向导约 800–1500 卢比）：孟买「亚洲最大贫民窟」的另一面</td></tr>
+          <tr><td class="t-time">11:30–14:00</td><td class="t-what">午餐：孟买海鲜（当地咖喱蟹）</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>宝莱坞电影城</b>参观（可选，约 1500–3000 卢比）或 海滨购物</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>海滨大道</b>日落（第二次）+ 街头小吃</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：孟买，准备次日果阿</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">达拉维导览必须选正规 NGO 组织（尊重隐私、摄影需同意）；孟买海鲜（Bombay Duck 鱼、咖喱蟹）是当地特色。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D21 · 飞往果阿</span>
+          <span class="d-desc">海滩天堂</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">孟买✈果阿（约 1h20，或乘过夜火车）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">入住<b>北果阿</b>海滩酒店（巴加/卡兰古特），午餐</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">海滩自由：游泳、冲浪、躺椅</td></tr>
+          <tr><td class="t-time">17:00–19:30</td><td class="t-what"><b>海滩日落</b> + 沙滩酒吧</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">晚餐：海滩海鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">果阿是印度最欧洲化的地方（前葡萄牙殖民地）：北果阿热闹（派对/酒吧）、南果阿安静（度假/瑜伽），各住一晚体验差异。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D22 · 老果阿教堂</span>
+          <span class="d-desc">世界遗产教堂</span>
+          <span class="d-tag alt">⛪ 教堂日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>老果阿</b>（Old Goa，免费）：圣卡塔琳娜教堂等世界遗产教堂群</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">香料园参观（可选，约 300–500 卢比）</td></tr>
+          <tr><td class="t-time">12:30–14:30</td><td class="t-what">午餐：南果阿海鲜村</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>帕洛莱姆海滩</b>（Palolem）：椰林环绕的南果阿最美海滩</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返北果阿，晚餐：海滩餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">老果阿的教堂群是葡萄牙在亚洲的殖民记忆，圣卡塔琳娜大教堂是世界遗产；南果阿比北果阿安静，适合度假。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D23 · 果阿休闲</span>
+          <span class="d-desc">放空日</span>
+          <span class="d-tag ">🌴 休闲日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">晨间瑜伽（海滩/酒店，可选）</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>海滩水上活动</b>：香蕉船/皮划艇/浮潜（约 500–1500 卢比）</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">午餐+酒店泳池/午睡</td></tr>
+          <tr><td class="t-time">16:30–19:00</td><td class="t-what">沙滩漫步 + 落日酒吧（Feni 果阿米酒，果阿特产）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：果阿葡萄牙融合菜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">果阿行程刻意「无所事事」才是正解：印度 25 天的旅行以海滩收尾，给身体和肠胃一个缓冲。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D24 · 返程前</span>
+          <span class="d-desc">收尾准备</span>
+          <span class="d-tag ">🧳 收尾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">果阿海滩最后一次晨泳/日出</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what">购物：果阿腰果、Feni 酒、印花布</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">果阿✈孟买（转机）或 乘晚班直达，入住转机酒店</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">孟买最后晚餐：滨海大道夜景</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">打包行李，次日返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">果阿—北京无直飞，通常经孟买/德里/迪拜转机；可顺带在孟买机场退税（离境 60 天内购物单票超 5000 卢比可退税）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D25 · 返程</span>
+          <span class="d-desc">回国</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">退房，孟买机场</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">机场免税店最后采购（大吉岭茶、香料、手工银饰）</td></tr>
+          <tr><td class="t-time">11:00–18:00</td><td class="t-what">孟买✈北京（直飞约 7h，印航/国航）或 经德里/迪拜转机 10–13h</td></tr>
+          <tr><td class="t-time">18:00–19:00</td><td class="t-what">入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">孟买—北京直飞航班有限，多数需转机；印度出境无离境税。返京后肠胃注意清淡饮食，恢复期 1–2 天。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-cover.jpg" alt="泰姬陵" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">泰姬陵 <small>外国人约 1100 卢比</small></div>
+          <div class="sc-feat">世界奇迹。<b>日出+日落各看一次</b>，白色大理石随光变色。</div>
+          <div class="sc-meta">📅 日出–日落（周五闭）· ⏱ 3–4h · 🚂 阿格拉 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-1.jpg" alt="德里·红堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">德里·红堡 <small>外国人约 600 卢比</small></div>
+          <div class="sc-feat">莫卧儿王城。<b>大理石宫殿+花园</b>，印度门夜景同赏。</div>
+          <div class="sc-meta">📅 9:30–16:30 · ⏱ 2h · 🚇 月光集市</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-2.jpg" alt="斋普尔·琥珀堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">斋普尔·琥珀堡 <small>外国人约 500 卢比</small></div>
+          <div class="sc-feat">山巅镜宫。<b>吉普/大象上堡+镜宫</b>，粉城名片。</div>
+          <div class="sc-meta">📅 8:00–17:30 · ⏱ 3h · 🚗 斋普尔北 11km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-3.jpg" alt="焦特布尔·蓝城" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">焦特布尔·蓝城 <small>古堡 700 卢比 / 蓝巷免费</small></div>
+          <div class="sc-feat">蓝色之城。<b>梅兰加尔古堡俯瞰蓝巷</b>，街拍圣地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天–1 天 · 🚂 斋普尔 5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-4.jpg" alt="乌代布尔·城市宫殿" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乌代布尔·城市宫殿 <small>外国人约 500 卢比</small></div>
+          <div class="sc-feat">东方威尼斯。<b>湖景宫殿+皮丘拉湖日落</b>，拉贾斯坦最高颜值。</div>
+          <div class="sc-meta">📅 9:00–17:30 · ⏱ 半天 · 🛶 湖上船游</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-5.jpg" alt="瓦拉纳西·恒河" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦拉纳西·恒河 <small>夜祭免费 / 船游 300–500 卢比</small></div>
+          <div class="sc-feat">印度灵魂。<b>日出船游+恒河夜祭</b>，千年宗教现场。</div>
+          <div class="sc-meta">📅 日出/日落 · ⏱ 2–3h · 🌅 高台阶梯</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-6.jpg" alt="孟买·印度门" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">孟买·印度门 <small>免费</small></div>
+          <div class="sc-feat">西岸地标。<b>印度门+泰姬玛哈酒店+海滨大道</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚢 象岛渡轮码头</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/india/india-7.jpg" alt="果阿·海滩" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">果阿·海滩 <small>免费</small></div>
+          <div class="sc-feat">印度欧洲。<b>北果阿热闹/南果阿安静</b>，海滩收尾。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3 天 · ✈ 孟买 1.5h</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（泰姬陵、红堡、琥珀堡、焦特布尔蓝城、乌代布尔、恒河、孟买印度门、果阿海滩均为印度实景），用于页面配图。更多免费景点：印度门、莲花寺、恒河夜祭、贾格迪什神庙、海滨大道、老果阿教堂群。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 印度卢比 ≈ 0.085 元人民币估算。往返国际机票按淡季 3500–5000 元计，国内段 5 程（含转机）合计 2500–4500 元。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（20000–28000）</th>
+<th>标准（33000–45000）</th>
+<th>舒适（60000–90000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄德里 3500–4500</td>
+<td>含孟买往返 4500–6500</td>
+<td>直飞商务/灵活 12000–20000</td>
+</tr>
+<tr>
+<td>国内段机票（5 程）</td>
+<td>2500–4000（提前 1 个月订）</td>
+<td>4000–5500（灵活时段）</td>
+<td>6500–9500（任意时间）</td>
+</tr>
+<tr>
+<td>住宿（24 晚）</td>
+<td>青旅/经济酒店 100–180/晚</td>
+<td>三星/精品酒店 250–500/晚</td>
+<td>遗产酒店/湖景房 800–2500/晚</td>
+</tr>
+<tr>
+<td>交通（火车/包车）</td>
+<td>火车卧铺+突突 1500–2500</td>
+<td>火车+Uber+包车 3000–4500</td>
+<td>全程包车+国内飞 7000–12000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础世界遗产约 800–1500</td>
+<td>含泰姬陵/琥珀堡/象岛 2500–4000</td>
+<td>全含+深度导览 5000–9000</td>
+</tr>
+<tr>
+<td>餐饮（25 天）</td>
+<td>街头+酒店餐 2500–4000</td>
+<td>正常下馆子 6000–9000</td>
+<td>酒店自助+餐厅 15000–25000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 40000 元）</span>
+      往返机票 5500 + 国内段 5 程 4500 + 住宿 24 晚 9000（平均 375/晚）+ 火车/包车 3500 + 门票 3000 + 餐饮 8000 + 签证/杂费 2500 ≈ <strong>36000–40000 元</strong>。印度物价整体便宜，预算大头是国际机票与好住宿；火车 Tier-1 卧铺性价比极高（300 公里约 100–200 元）。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>23.1 精简 15 天版（金三角+恒河）</h3>
+
+
+    <ul>
+
+      <li>D1–D3 德里（红堡+顾特卜塔+印度门）</li>
+
+      <li>D4–D5 阿格拉（泰姬陵日出+日落）</li>
+
+      <li>D6–D8 斋普尔（琥珀堡+风之宫）</li>
+
+      <li>D9–D10 瓦拉纳西（恒河日出+夜祭）</li>
+
+      <li>D11–D13 孟买（象岛+印度门）</li>
+
+      <li>D14–D15 返程</li>
+
+    </ul>
+
+    <h3>23.2 亲子版调整</h3>
+
+
+    <p>带孩子首选安全省力的「金三角直连」：德里—阿格拉—斋普尔（全程 2–4h 火车），砍掉长途跋涉的瓦拉纳西与果阿。保留泰姬陵、琥珀堡（孩子最爱吉普上堡）、莲花寺，住五星连锁（安全卫生有保障）。严格只喝瓶装水、餐厅只吃熟食，备好儿童肠胃药。印度寺庙安检与脱鞋频繁，给孩子穿好脱的鞋。</p>
+
+    <h3>23.3 季节版：排灯节（10–11 月）光影线</h3>
+
+
+    <p>排灯节期间（Diwali，约 10 月底–11 月初）全印点灯庆祝：德里/斋普尔街道灯光如昼、泰姬陵有特别灯光秀、斋普尔琥珀堡有灯光节（限时开放）。此时是印度最美季节（气候宜人+节日氛围），但机票住宿翻倍，务必提前 2 个月订。可替换：若嫌人多，选排灯节后 2–3 周（11 月中旬）错峰出行，天气仍理想。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>24.1 北京 ⇄ 印度 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→德里约 6–7h / 孟买约 7h</td>
+<td>往返 3500–5000 元</td>
+<td>国航/印航，德里、孟买可选</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>10–14h</td>
+<td>3000–4500 元</td>
+<td>经广州/上海/迪拜/曼谷，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>中国到印度无陆路直达，只能飞机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 印度境内交通核心提醒</span>
+      印度境内衔接建议<strong>「3h 以内火车、3h 以上飞机」</strong>：德里—阿格拉 2h、阿格拉—斋普尔 4h、斋普尔—焦特布尔 5h、焦特布尔—乌代布尔 5–6h（火车，提前 1–2 个月抢 Tier-1 卧铺）；乌代布尔—瓦拉纳西—孟买—果阿 用飞机（各 1.5–2h 直飞，转机段 5–7h）。<strong>打车一律 Ola/Uber</strong> 明码标价；突突车先谈价（「price fixed」再上车）。火车站要提前 30 分钟到（查屏+站台确认）。
+    </div>
+
+    <h3>24.2 印度境内交通</h3>
+    <ul>
+      <li><strong>火车</strong>：IRCTC/代理订票，Tier-1/2 卧铺性价比最高，金三角段 2–5h</li>
+      <li><strong>国内航班</strong>：印航/Vistara/靛蓝航空，瓦拉纳西—孟买 1.5h、孟买—果阿 1.5h</li>
+      <li><strong>打车 App</strong>：Ola/Uber（德里/孟买/斋普尔全覆盖），明码标价</li>
+      <li><strong>突突车（Auto）</strong>：短途主力，先谈价「price fixed」，市内 30–100 卢比</li>
+      <li><strong>地铁</strong>：德里地铁（覆盖机场/市区/月光集市），干净准时</li>
+      <li><strong>包车</strong>：拉贾斯坦段可全程包车（约 3500–5500 卢比/天），司机兼导游</li>
+    </ul>
+
+    <h3>24.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>德里·康诺特广场</td>
+<td>经济 120–250 / 标准 300–600</td>
+<td>市中心交通枢纽，餐饮购物方便</td>
+<td>老城环境嘈杂</td>
+</tr>
+<tr>
+<td>阿格拉·泰姬陵东门</td>
+<td>经济 150–300 / 标准 350–700</td>
+<td>步行到泰姬陵看日出</td>
+<td>区域较乱，打车注意</td>
+</tr>
+<tr>
+<td>斋普尔·老城/城市宫殿边</td>
+<td>经济 150–300 / 标准 350–700</td>
+<td>粉色古城步行圈</td>
+<td>老城巷窄车多</td>
+</tr>
+<tr>
+<td>焦特布尔·老城</td>
+<td>经济 100–250 / 标准 300–650</td>
+<td>屋顶餐厅看蓝城</td>
+<td>阶梯多，行李难拖</td>
+</tr>
+<tr>
+<td>乌代布尔·湖畔</td>
+<td>经济 200–400 / 标准 500–1200</td>
+<td>湖景房体验极佳</td>
+<td>湖景溢价明显</td>
+</tr>
+<tr>
+<td>瓦拉纳西·恒河高台</td>
+<td>经济 150–300 / 标准 350–800</td>
+<td>夜祭步行可达</td>
+<td>恒河畔清晨较吵</td>
+</tr>
+<tr>
+<td>孟买·Colaba/南区</td>
+<td>经济 200–400 / 标准 500–1000</td>
+<td>印度门/博物馆步行圈</td>
+<td>南区酒店老旧的多</td>
+</tr>
+<tr>
+<td>果阿·北果阿海滩</td>
+<td>经济 150–300 / 标准 350–800</td>
+<td>海滩酒吧热闹</td>
+<td>旺季一房难求</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍛 必吃经典</h3>
+        <ul>
+          <li>塔利（Thali）：一盘多格的传统套餐</li>
+          <li>咖喱+馕（Naan/烤饼）：北印度绝配</li>
+          <li>比利亚尼（Biryani）：香料炒饭</li>
+          <li>唐杜里烤鸡：炉窑烤制，外焦里嫩</li>
+        </ul>
+        <h3>🦞 在地名物</h3>
+        <ul>
+          <li>北印度：黄油鸡、羊肉咖喱、烤饼</li>
+          <li>南印度：多萨（Dosa）煎饼、米糕</li>
+          <li>孟买：海鲜咖喱蟹、Bombay Duck 鱼</li>
+          <li>果阿：葡式咖喱、Feni 果阿米酒、腰果</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥤 街头与甜点</h3>
+        <ul>
+          <li>拉西（Lassi）：酸奶饮，芒果味经典</li>
+          <li>马萨拉茶（Masala Chai）：香料奶茶</li>
+          <li>印度甜点：Gulab Jamun 糖浆丸子</li>
+          <li>帕尼普里（Pani Puri）：脆球小食（选正规摊）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>德里：康诺特广场/月光集市老字号</li>
+          <li>阿格拉：老城屋顶餐厅</li>
+          <li>斋普尔：Johari 市集周边</li>
+          <li>孟买：Colaba 咖啡馆、滨海大道夜市</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① <strong>喝水只喝密封瓶装水</strong>（检查瓶盖是否二次封口），冰块不碰；② 街头生食、削皮水果、沙拉慎吃，肠胃药/口服补液盐随身；③ 点餐选「完全熟透」食物，海鲜要新鲜现做；④ 餐厅结账看是否含 10% 服务费与 GST 税（多数含），无强制小费但给 5–10% 常见；⑤ 网红「恒河小吃」为信仰体验，卫生风险高，浅尝辄止。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月+）+ e-Visa 打印件</li>
+        <li>Visa/Mastercard 信用卡 + 现金 500–1000 卢比零钱</li>
+        <li>充电转接头（230V C/D 型圆脚）+ 充电宝</li>
+        <li>肠胃药、口服补液盐、防蚊液、防晒霜（印度必备）</li>
+      </ul>
+      <ul>
+        <li>火车票（IRCTC/代理）提前 1–2 个月</li>
+        <li>泰姬陵日出票/琥珀堡官网提前 1 天</li>
+        <li>下载 Ola/Uber 打车 App 并绑卡</li>
+        <li>长裤/遮肩衣（寺庙脱鞋、清真寺长袍）；女性注意着装</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>骗子套路</strong>：景点门口「免费导游/珠宝店半价/帮你买票」一律拒绝，购物砍价对半起；② <strong>饮食卫生</strong>：只喝瓶装水、只吃熟食，这是印度旅行成败的分水岭；③ <strong>礼仪与信仰</strong>：寺庙脱鞋、清真寺女性穿长袍、恒河火葬场不拍照，头顶与脚部为敏感部位；④ 交通：过马路看准（摩托与突突无规则），夜晚不单独走偏僻小巷。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      印度是「<strong>一次旅行、两种震撼</strong>」的目的地——北方的莫卧儿大理石宫殿（泰姬陵、琥珀堡、梅兰加尔古堡）与拉贾斯坦的色彩之城（粉城、蓝城、白城），恒河边持续三千年的宗教仪式（瓦拉纳西），以及西海岸的现代与海滩（孟买、果阿）。25 天一条从宫殿到恒河、从都市到海滩的纵深线，办妥 e-Visa、管住肠胃、习惯「讨价还价」，剩下的就是印度递给你的无尽惊喜。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#e35d2b",
+    "d": 3,
+    "n": "金三角+拉贾斯坦 · 德里→阿格拉→斋普尔→焦特布尔→乌代布尔",
+    "pts": [
+      [
+        28.6129,
+        77.2295
+      ],
+      [
+        27.1751,
+        78.0421
+      ],
+      [
+        26.9239,
+        75.8267
+      ],
+      [
+        26.298,
+        73.0187
+      ],
+      [
+        24.5764,
+        73.6837
+      ]
+    ]
+  },
+  {
+    "c": "#2d6a8a",
+    "d": 3,
+    "n": "恒河+西海岸 · 乌代布尔→瓦拉纳西→孟买→果阿",
+    "pts": [
+      [
+        24.5764,
+        73.6837
+      ],
+      [
+        25.3069,
+        83.0109
+      ],
+      [
+        18.922,
+        72.8347
+      ],
+      [
+        15.5544,
+        73.7517
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 27.1751,
+    "lng": 78.0421,
+    "name": "阿格拉·泰姬陵",
+    "t": "D4–D5 · 1 天",
+    "fee": "1100 卢比",
+    "note": "日出+日落两刷"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 28.6562,
+    "lng": 77.241,
+    "name": "德里·红堡",
+    "t": "D2 上午 · 2h",
+    "fee": "600 卢比",
+    "note": "贾玛清真寺同逛"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 26.9856,
+    "lng": 75.8507,
+    "name": "斋普尔·琥珀堡",
+    "t": "D7 上午 · 3h",
+    "fee": "500 卢比",
+    "note": "吉普上堡+镜宫"
+  },
+  {
+    "num": 4,
+    "prio": "nice",
+    "lat": 26.298,
+    "lng": 73.0187,
+    "name": "焦特布尔·梅兰加尔古堡",
+    "t": "D10 上午 · 半天",
+    "fee": "700 卢比",
+    "note": "俯瞰蓝城"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 24.5764,
+    "lng": 73.6837,
+    "name": "乌代布尔·城市宫殿",
+    "t": "D12 上午 · 半天",
+    "fee": "500 卢比",
+    "note": "皮丘拉湖船游"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 25.3069,
+    "lng": 83.0109,
+    "name": "瓦拉纳西·恒河",
+    "t": "D15–16 · 2 天",
+    "fee": "夜祭免费",
+    "note": "日出船游+夜祭"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 18.922,
+    "lng": 72.8347,
+    "name": "孟买·印度门",
+    "t": "D17 下午 · 1–2h",
+    "fee": "免费",
+    "note": "海滨大道日落"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 15.5544,
+    "lng": 73.7517,
+    "name": "果阿·海滩",
+    "t": "D21–23 · 3 天",
+    "fee": "免费",
+    "note": "北果阿/南果阿"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[8.0, 68.0], [35.0, 90.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#e35d2b\"></span>金三角+拉贾斯坦（德里→乌代布尔）<br><span class=\"sw\" style=\"background:#2d6a8a\"></span>恒河+西海岸（瓦拉纳西→孟买→果阿）<br><span class=\"sw dash\"></span>乌代布尔—瓦拉纳西、瓦拉纳西—孟买为国内航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

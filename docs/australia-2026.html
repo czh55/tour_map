@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 澳大利亚 25 天全景攻略 · 悉尼墨尔本凯恩斯</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #a64a24;
+    --red-light: #c05f30;
+    --gold: #d9a441;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #1f6fa8;
+    --cover1: #6e2a0e;
+    --ov1: rgba(90,35,10,.88);
+    --ov2: rgba(166,74,36,.72);
+    --ov3: rgba(215,120,60,.38);
+    --ov4: rgba(235,170,90,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(166,74,36,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/australia/australia-cover.jpg" alt="澳大利亚旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 25 天环线 · 东海岸 + 内陆红土 + 大堡礁</div>
+      <h1>澳大利亚 25 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 悉尼 · 蓝山 · 墨尔本 · 大洋路 · 凯恩斯 · 乌鲁鲁 · 黄金海岸 · 珀斯</div>
+      <div class="meta">
+        <span>🛫 行程链：悉尼 → 蓝山 → 墨尔本 → 大洋路 → 凯恩斯 → 乌鲁鲁 → 黄金海岸 → 返程</span>
+        <span>📅 时间窗口：25 天 24 晚</span>
+        <span>✈️ 北京⇄悉尼 直飞约 11 小时（南航/国航）</span>
+        <span>🛂 签证：澳大利亚 600 类旅游签证（电子递交，约 2–4 周出签）</span>
+        <span>🕐 时差：东岸 +2h、西岸 +0h · 🔌 240V I 型插座（三斜扁脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 25 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 25 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">悉尼</span>
+      <span class="arrow">→</span>
+      <span class="node">蓝山</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">墨尔本</span>
+      <span class="arrow">→</span>
+      <span class="node">大洋路</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">凯恩斯</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">乌鲁鲁</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">黄金海岸</span>
+      <span class="arrow">→</span>
+      <span class="node">珀斯（可选）</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 25 天怎么安排最合理</span>
+      澳大利亚是「<strong>一国双面</strong>」：东海岸是都市与海滩（悉尼、墨尔本、黄金海岸），东北是大堡礁与热带雨林（凯恩斯），内陆是红土与巨岩（乌鲁鲁）。25 天刚好把<strong>东岸城市带、大堡礁、乌鲁鲁和西部珀斯</strong>一次走完，节奏上「每 2–3 天飞一次」，与国内航班密度完美匹配。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>澳大利亚 600 类旅游签证：<strong>电子递交（ImmiAccount）</strong>，无需面签，约 2–4 周出签，单次/多次可停留 3–6 个月；护照有效期覆盖行程即可</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>东岸（悉尼/墨尔本）比北京快 2h，西岸（珀斯）与北京无时差；黄金海岸/凯恩斯为东岸时区</td>
+</tr>
+<tr>
+<td>电源插座</td>
+<td>澳大利亚 <strong>I 型</strong>（三个斜扁脚），240V 50Hz；国内充电器需转换插头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>澳元 AUD，<strong>1 澳元 ≈ 4.7 元人民币</strong>；当地信用卡全覆盖（可小额 tap 支付），现金备 200–300 澳元应急</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>悉尼 4 天 + 蓝山 1 天 + 墨尔本/大洋路 5 天 + 凯恩斯 3 天 + 乌鲁鲁 3 天 + 黄金海岸 3 天 + 珀斯 5 天 + 返程缓冲</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 25 天从珀斯/悉尼返京；珀斯有直飞（约 8.5h）或经广州转机</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>悉尼 → 蓝山 → 墨尔本 → 大洋路 → 凯恩斯 → 乌鲁鲁 → 黄金海岸 → 珀斯</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 30000–40000 ／ 标准 46000–60000 ／ 舒适 80000–120000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办 600 签证 ② 订国内段机票（墨尔本—凯恩斯—乌鲁鲁—黄金海岸，提前 1 个月）③ 大堡礁/乌鲁鲁住宿提前 1–2 个月</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>南半球与北半球相反：12–2 月夏季（悉尼海滩、乌鲁鲁白天热）、6–8 月冬季（黄金海岸避寒、乌鲁鲁凉爽）；10–11 月与 3–4 月最佳</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>Visa/Mastercard 全面覆盖（可小额 tap 支付），现金备 200–300 澳元应急；服务行业小费不强制</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证是最大前置</strong>：600 签证虽电子化，但资料要严谨（流水、在职证明），且<strong>批准后入境卡要如实申报食物/药品</strong>，澳洲海关极严，带违禁品最高罚 2000+ 澳元。② <strong>澳洲靠左行驶、国土极大</strong>：国内城市间以飞机为主（墨尔本—凯恩斯 3h），自驾仅限大洋路/大堡礁短途；租车注意左舵驾驶与野生动物（袋鼠过马路）。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 25 天版</h2>
+
+    <p>以下为 25 天 24 晚的推荐节奏：东岸按「悉尼→墨尔本→凯恩斯」推进，再飞乌鲁鲁看红土，最后回黄金海岸收尾；珀斯为可选项（时间够加 5 天）。每日主景点 ≤2 个，长途段用国内航班衔接。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵悉尼</td>
+<td>北京✈悉尼（直飞约 11h，时差 +2h），入住市区，傍晚环形码头看歌剧院夜景</td>
+<td>悉尼</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>悉尼歌剧院外观+内部导览 → 海港大桥步行/攀登 → 岩石区周末市集</td>
+<td>悉尼</td>
+<td>歌剧院日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>邦迪海滩 → 邦迪到库吉海滨步道 → 塔龙加动物园（看袋鼠考拉）</td>
+<td>悉尼</td>
+<td>海滩+动物园</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>悉尼鱼市早餐 → 情人港 → 悉尼塔/植物园 → 达令港夜景</td>
+<td>悉尼</td>
+<td>都市漫游</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>蓝山一日：三姐妹峰 → 缆车/索道 → 卢拉小镇 → 回悉尼</td>
+<td>悉尼</td>
+<td>蓝山日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>悉尼✈墨尔本（约 1.5h），入住市中心，弗林德斯街站+联邦广场</td>
+<td>墨尔本</td>
+<td>移师墨尔本</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>墨尔本市区：涂鸦街 → 圣保罗大教堂 → 皇家拱廊 → 维多利亚女王市场</td>
+<td>墨尔本</td>
+<td>市区漫游</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>大洋路 D1：吉朗 → 洛恩 → 阿波罗湾，宿大洋路小镇</td>
+<td>大洋路</td>
+<td>大洋路自驾</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>大洋路 D2：十二门徒 → 伦敦桥 → 坎贝尔港 → 返墨尔本</td>
+<td>墨尔本</td>
+<td>十二门徒</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>墨尔本：菲利普岛企鹅归巢（傍晚出发）或 市区购物日</td>
+<td>墨尔本</td>
+<td>企鹅日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>墨尔本✈凯恩斯（约 3h），入住海滨，散步海滨大道</td>
+<td>凯恩斯</td>
+<td>飞往凯恩斯</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>大堡礁一日：绿岛/摩尔礁船游 → 浮潜/玻璃底船 → 自助午餐</td>
+<td>凯恩斯</td>
+<td>大堡礁日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>库兰达雨林：空中缆车 → 雨林火车 → 蝴蝶园 → 土著表演</td>
+<td>凯恩斯</td>
+<td>库兰达日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>凯恩斯✈乌鲁鲁（经布里斯班/悉尼转机约 5–7h），入住度假村</td>
+<td>乌鲁鲁</td>
+<td>飞往红土</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>乌鲁鲁：巨岩徒步 → 文化中心 → 日落观景台（红酒配落日）</td>
+<td>乌鲁鲁</td>
+<td>乌鲁鲁日落</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>乌鲁鲁日出 → 卡塔丘塔（风之谷）徒步 → 星空晚餐（可选）</td>
+<td>乌鲁鲁</td>
+<td>卡塔丘塔</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>乌鲁鲁✈黄金海岸/布里斯班（转机约 4–6h），入住冲浪者天堂</td>
+<td>黄金海岸</td>
+<td>移师黄金海岸</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>黄金海岸：冲浪者天堂海滩 → 可伦宾野生动物园（抱考拉）</td>
+<td>黄金海岸</td>
+<td>海滩+动物园</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>黄金海岸：主题乐园（梦幻世界/华纳电影世界）或 出海观鲸（季节）</td>
+<td>黄金海岸</td>
+<td>乐园日</td>
+</tr>
+<tr>
+<td>D20</td>
+<td>黄金海岸→布里斯班一日：南岸公园 → 故事桥 → 皇后街购物 → 返程</td>
+<td>黄金海岸</td>
+<td>布里斯班日</td>
+</tr>
+<tr>
+<td>D21</td>
+<td>黄金海岸✈珀斯（直飞约 5.5h），入住市区，天鹅河畔散步</td>
+<td>珀斯</td>
+<td>飞往珀斯</td>
+</tr>
+<tr>
+<td>D22</td>
+<td>珀斯：国王公园 → 天鹅河 → 城市海滩/科茨洛海滩</td>
+<td>珀斯</td>
+<td>珀斯市区</td>
+</tr>
+<tr>
+<td>D23</td>
+<td>罗特尼斯岛一日：渡轮上岛 → 骑行环岛 → 短尾矮袋鼠合照</td>
+<td>珀斯</td>
+<td>罗特尼斯岛</td>
+</tr>
+<tr>
+<td>D24</td>
+<td>珀斯周边：尖峰石阵（沙漠石灰岩柱）或 天鹅谷酒庄一日</td>
+<td>珀斯</td>
+<td>周边日</td>
+</tr>
+<tr>
+<td>D25 返程</td>
+<td>珀斯✈北京（直飞约 8.5h 或 经广州转机 12–15h），入境到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍珀斯（D21–D24）改为黄金海岸+布里斯班深度 4 天；乌鲁鲁也可缩为 2 天（日落+日出）。带孩子家庭推荐保留塔龙加/可伦宾动物园与梦幻世界，砍掉乌鲁鲁徒步与罗特尼斯岛骑行。澳大利亚国庆节（1/26）期间住宿紧张，提前订。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 25 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达悉尼</span>
+          <span class="d-desc">南半球首日</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–20:00</td><td class="t-what">北京✈悉尼（直飞约 11h，南航/国航；时差 +2h，基本无感）</td></tr>
+          <tr><td class="t-time">20:30–21:30</td><td class="t-what">机场火车/打车到市区（机场线约 20 澳元），入住市中心酒店</td></tr>
+          <tr><td class="t-time">21:30–23:00</td><td class="t-what">环形码头（Circular Quay）：悉尼歌剧院夜景首见</td></tr>
+          <tr><td class="t-time">23:00</td><td class="t-what">回酒店休息，适应南半球季节</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">悉尼夏季（12–2 月）炎热、冬季（6–8 月）温和；机场到市区首选机场线火车（T8），打车约 50–60 澳元。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 悉尼歌剧院</span>
+          <span class="d-desc">港湾地标日</span>
+          <span class="d-tag ">🎭 歌剧院日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>悉尼歌剧院</b>：外观拍照+内部 1 小时导览（成人约 45 澳元，中文场次提前订）</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>海港大桥</b>：桥面步行（免费）或 攀登体验（约 250–400 澳元，可选）</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：环形码头/岩石区</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>岩石区</b>（免费）：周末市集、老仓库街拍、当代艺术馆</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">悉尼港渡轮（约 10 澳元）：看歌剧院与大桥最佳水景</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：环形码头海鲜/达令港</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">歌剧院内部导览强烈推荐（不进去只拍照等于白来）；海港大桥攀登需 3h 且天气敏感，可选桥下步道替代。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 邦迪海滩</span>
+          <span class="d-desc">海滩与动物园</span>
+          <span class="d-tag ">🏖 海滩日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">市区乘公交/火车到<b>邦迪海滩</b>（约 40min）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>邦迪到库吉海滨步道</b>（免费，约 6km/2h）：悬崖海岸线，冰水池拍照</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：邦迪海滩咖啡/汉堡</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>塔龙加动物园</b>（成人约 52 澳元）：袋鼠、考拉、鸭嘴兽，海港景观一流</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">达令港码头日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：达令港餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">邦迪海滩有鲨鱼网泳区，夏季人非常多；塔龙加动物园可从环形码头乘渡轮直达（门票+船票套票更划算）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 悉尼都市漫游</span>
+          <span class="d-desc">鱼市与公园</span>
+          <span class="d-tag ">🏙 都市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what"><b>悉尼鱼市场</b>（免费入场）：现开生蚝、炸鱼薯条早餐</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>皇家植物园</b>（免费）：麦考利夫人角拍歌剧院+大桥同框</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：植物园边/唐人街</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>悉尼塔</b>（观景台约 35 澳元）或 州立美术馆（免费）</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">维多利亚女王大厦（免费，购物+建筑）、唐人街小吃</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：唐人街或岩石区，准备次日蓝山</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">麦考利夫人角（Mrs Macquarie's Chair）是歌剧院+大桥同框的唯一机位；悉尼鱼市 11 点后人山人海，早点去。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 蓝山</span>
+          <span class="d-desc">世界遗产峡谷</span>
+          <span class="d-tag alt">🏔 蓝山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">悉尼自驾/乘火车到蓝山（约 1.5–2h，火车到卡通巴 Katoomba）</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>三姐妹峰</b>（免费）：回声角观景台，看砂岩柱林</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：卡通巴镇</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>蓝山缆车/索道</b>（往返约 52 澳元）：空中缆车+世界上最陡的索道</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">卢拉（Leura）小镇花园街拍，返悉尼</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：悉尼晚餐，次日飞墨尔本</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蓝山 5–11 月偶有云雾（更有仙气）、雨后最清晰；Scenic World 套票含三程缆车，体力好可走雨林步道连接。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 移师墨尔本</span>
+          <span class="d-desc">文化之都</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">悉尼机场乘机（墨尔本约 1.5h，提前订 400–800 元）</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">机场线进城，入住市中心/弗林德斯街附近</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what"><b>弗林德斯街车站</b>+<b>联邦广场</b>（免费）：墨尔本地标会面点</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">午餐：联邦广场/唐人街</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>圣保罗大教堂</b>（免费）→ 皇家拱廊街拍</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：墨尔本小巷餐厅（小巷文化是特色）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">墨尔本以「小巷咖啡文化」闻名，霍西尔巷（涂鸦街）、皇家拱廊都值得走；市中心电车免费区（Free Tram Zone）随便坐。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 墨尔本市区</span>
+          <span class="d-desc">涂鸦与市场</span>
+          <span class="d-tag ">🎨 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>霍西尔巷涂鸦街</b>（免费）：世界级街头艺术巷</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>维多利亚女王市场</b>（免费入场）：南半球最大露天市场，试吃奶酪果酱</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：市场里吃海鲜/咖喱角</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>墨尔本博物馆+皇家展览馆</b>（博物馆约 20 澳元）或 州立图书馆</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">亚拉河南岸步道 → 尤里卡大厦 88 层观景台（约 28 澳元）看日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：南岸/唐人街</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">霍西尔巷的涂鸦每季度更新，是最佳拍照点；女王市场周三/周五晚有夜市（夏季）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 大洋路 D1</span>
+          <span class="d-desc">最美海岸公路</span>
+          <span class="d-tag ">🚗 自驾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">墨尔本出发沿大洋路（Great Ocean Road）西行，途经冲浪小镇<b>托基</b></td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">安格尔西岛灯塔+海滩（考拉出没）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：阿波罗湾渔村海鲜</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">大奥特韦国家公园：雨林徒步看巨大桉树</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">宿阿波罗湾/坎贝尔港，海边看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大洋路全程约 240km，自驾单程 4h+，沿途弯道多、注意靠左行驶；大奥特韦雨林木栈道必走。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 十二门徒</span>
+          <span class="d-desc">海岸奇观</span>
+          <span class="d-tag ">🌊 十二门徒日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:30</td><td class="t-what">坎贝尔港出发看<b>十二门徒</b>日出（免费）：石灰岩柱群海景</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">吉布森台阶下海滩 → 伦敦桥 → 沉船海岸</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：坎贝尔港</td></tr>
+          <tr><td class="t-time">12:30–16:00</td><td class="t-what">返程墨尔本（约 4h），途中可停 格洛普角</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">回墨尔本休息，晚餐：墨尔本牛排</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">自由活动/夜游亚拉河</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">十二门徒目前剩 7–8 根石柱（陆续倒塌是自然规律），清晨人最少；直升机俯瞰（约 145 澳元）是经典体验，视预算选。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 菲利普岛企鹅</span>
+          <span class="d-desc">企鹅归巢</span>
+          <span class="d-tag alt">🐧 企鹅日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">墨尔本出发前往菲利普岛（约 2h），途中布莱尔高里看考拉保护区</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：岛上海鲜</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what">丘吉尔岛传统农庄（约 17 澳元）→ 诺比斯角海豹观景台</td></tr>
+          <tr><td class="t-time">17:30–21:00</td><td class="t-what"><b>企鹅归巢</b>（普通看台约 40 澳元）：夜幕下小蓝企鹅摇摇摆摆上岸，禁止拍照闪光灯</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">返回墨尔本（约 2h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">企鹅归巢看台分普通/地下/升级区，夏季天黑晚（21 点后），冬季 17:30 就开始；全程绝对禁止拍照/摄像，以免伤企鹅眼睛。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 飞往凯恩斯</span>
+          <span class="d-desc">热带北昆士兰</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">墨尔本✈凯恩斯（约 3h，提前订 600–1200 元）</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">入住凯恩斯海滨酒店，漫步海滨大道（免费泳池区）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：凯恩斯码头区</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">凯恩斯植物园（免费，热带雨林植物）或 市政游泳池</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">日落码头 → 夜市小吃</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：夜市/海滨餐厅，准备次日大堡礁</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">凯恩斯是典型热带气候（雨季 12–3 月多阵雨、旱季 5–10 月最舒适）；潜水/船游都在码头集合，酒店尽量选海滨区。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 大堡礁</span>
+          <span class="d-desc">世界最大珊瑚礁</span>
+          <span class="d-tag ">🐠 大堡礁日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:00</td><td class="t-what">码头登船（Quicksilver/Sunlover 等船公司），含早餐</td></tr>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what">快船前往<b>摩尔礁/绿岛</b>（约 1.5–2h 航程），海上平台浮潜+玻璃底船</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">海上平台自助午餐（含在船票内）</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what">深潜体验（额外约 100–150 澳元，可选项）或 继续浮潜</td></tr>
+          <tr><td class="t-time">16:00–18:30</td><td class="t-what">返航凯恩斯码头</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：凯恩斯海鲜/牛排</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大堡礁一日游船票约 180–250 澳元（含浮潜装备+午餐）；晕船者提前吃晕船药，浪大时外堡礁颠簸明显；防晒霜选「珊瑚安全」型（reef-safe）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 库兰达雨林</span>
+          <span class="d-desc">雨林与火车</span>
+          <span class="d-tag alt">🚡 库兰达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">凯恩斯出发：<b>库兰达空中缆车</b>（Skyrail，成人约 55 澳元）：从山脚到雨林腹地</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what">缆车中途停靠巴伦瀑布站：雨林栈道+瀑布观景</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">库兰达小镇午餐：雨林咖啡+袋鼠肉可选</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>雨林火车</b>（约 50 澳元）：怀旧蒸汽火车沿悬崖山谷返回凯恩斯；或 蝴蝶园/考拉园</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">返凯恩斯，晚餐：码头区</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">自由活动/早休息，次日飞乌鲁鲁</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">缆车+火车联票约 120–130 澳元最划算；雨季（12–3 月）缆车可能因雷雨暂停，注意天气与官网通知。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 飞往乌鲁鲁</span>
+          <span class="d-desc">红土中心</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–12:00</td><td class="t-what">凯恩斯✈乌鲁鲁（无直飞，经布里斯班/悉尼转机，全程约 5–7h）</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">入住艾尔斯岩度假村（Yulara，距巨岩 20km），午餐</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">度假村文化中心+免费日落观景台热身</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐：度假村餐厅（有澳式烧烤夜）</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">早休息，为次日日出做准备</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌鲁鲁机场很小，仅澳航/维珍经停；度假村 Yulara 是唯一住宿点（酒店/露营），自驾车加油仅在度假村。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 乌鲁鲁日落</span>
+          <span class="d-desc">世界最大单体岩石</span>
+          <span class="d-tag ">🪨 乌鲁鲁日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–08:00</td><td class="t-what"><b>乌鲁鲁日出</b>（日出观景台）：巨岩从黑到红变色</td></tr>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>乌鲁鲁基徒步</b>（免费，约 2h 环线）：沙漠橡树+岩石纹理，途中可看原住民岩画</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">库尼亚步道（Kuniya Walk）：水潭与壁画</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：度假村</td></tr>
+          <tr><td class="t-time">15:30–19:30</td><td class="t-what"><b>日落观景台</b>（约 15 澳元接送）：红酒+奶酪配巨石落日（经典项目）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：度假村自助/星空晚餐（可选 200+ 澳元）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌鲁鲁旺季（6–8 月冬季）白天约 20℃、早晚 5℃，温差大；日出日落时分人山人海，观景台提前 30 分钟占位。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 卡塔丘塔</span>
+          <span class="d-desc">风之谷徒步</span>
+          <span class="d-tag alt">🏜 卡塔丘塔日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–07:00</td><td class="t-what">日出观景台：乌鲁鲁+卡塔丘塔同框</td></tr>
+          <tr><td class="t-time">07:30–10:30</td><td class="t-what"><b>卡塔丘塔风之谷徒步</b>（免费，约 3h 环线）：红色圆顶巨石群</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">瓦帕峡谷（Walpa Gorge）短步道</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：度假村</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">自由：骑行/直升机俯瞰乌鲁鲁（可选，约 350 澳元）</td></tr>
+          <tr><td class="t-time">18:00–21:00</td><td class="t-what"><b>星空晚餐</b>（可选，约 250–350 澳元）：沙漠晚餐+南半球银河</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卡塔丘塔由 36 个圆顶岩石组成，风之谷徒步体力要求中等；澳洲内陆紫外线极强，全天防晒+2L 水/人必备。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 移师黄金海岸</span>
+          <span class="d-desc">冲浪者天堂</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–12:00</td><td class="t-what">乌鲁鲁✈黄金海岸/布里斯班（转机，全程约 4–6h）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">入住冲浪者天堂（Surfers Paradise），午餐：海滩边</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>冲浪者天堂海滩</b>（免费）：金色沙滩+高层天际线</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">卡维尔大道（Cavill Ave）购物+街头表演</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：海滩餐厅/牛排</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">黄金海岸以冲浪、主题乐园、海滩闻名，是澳洲家庭度假首选；冲浪者天堂沙滩背后就是商业街，吃住行集中。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 海滩与动物园</span>
+          <span class="d-desc">抱考拉</span>
+          <span class="d-tag ">🐨 动物园日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>可伦宾野生动物园</b>（成人约 59 澳元）：抱考拉（另收费）、喂袋鼠、剪羊毛秀</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">返海滩，午餐：冲浪者天堂</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what"><b>冲浪体验课</b>（约 60–80 澳元，含教练）或 海滩放松</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">海边日落散步 → 傍晚卡维尔大道晚餐</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">自由活动/夜生活</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">可伦宾的「抱考拉+合影」是经典体验（昆州允许抱，新州禁止）；动物园 10 点前人少，考拉刚睡醒最配合。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 主题乐园</span>
+          <span class="d-desc">乐园全日</span>
+          <span class="d-tag ">🎢 乐园日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–17:00</td><td class="t-what"><b>梦幻世界</b>（Dreamworld，约 90 澳元）或 <b>华纳兄弟电影世界</b>（约 99 澳元）：过山车+电影主题区</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">园内午餐</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">继续项目：激流勇进/儿童区/飞行影院</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what">返冲浪者天堂，晚餐：牛排馆</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">早休息，次日布里斯班</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">主题乐园票价常年浮动，官网提前订比现场便宜；3–5 月与 9–10 月人少、排队短，旺季（12–1 月）建议买快通。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 布里斯班一日</span>
+          <span class="d-desc">昆州首府</span>
+          <span class="d-tag ">🏙 布里斯班日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">黄金海岸乘火车/自驾到布里斯班（约 1h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>南岸公园</b>（免费）：人工沙滩+摩天轮，故事桥远眺</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：南岸美食街</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>皇后街购物中心</b> → 布里斯班市政厅钟楼</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">故事桥（可选攀爬）或 河滨步道日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐后返黄金海岸</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">布里斯班全年阳光充足，南岸公园是免费玩水圣地；周末南岸有集市，故事桥攀登约 160 澳元（可选）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D21 · 飞往珀斯</span>
+          <span class="d-desc">西部边城</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">黄金海岸/布里斯班✈珀斯（直飞约 5.5h，跨一个时区 +0h 时差）</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">机场线进城，入住市中心/伊丽莎白码头</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what">午餐：天鹅河畔餐厅</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>天鹅河步行道</b>（免费）：河畔新貌+北桥区街拍</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>伊丽莎白码头</b>黄昏，看天鹅河日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：北桥区（珀斯唐人街）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">珀斯与北京几乎无时差（AWST=UTC+8），作息无缝衔接；珀斯是澳洲最孤独的大城市（离最近大城市 2000km+），但非常宜居。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D22 · 珀斯市区</span>
+          <span class="d-desc">国王公园</span>
+          <span class="d-tag ">🌳 珀斯日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>国王公园</b>（免费）：世界最大市区公园之一，看天鹅河+城市天际线</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：公园咖啡/海伊街</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>珀斯铸币局</b>（约 19 澳元）→ 圣乔治大教堂</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>科茨洛海滩</b>（免费）：西海岸日落经典（夕阳落海）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：海滩区海鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国王公园的 DNA 螺旋桥与玻璃桥是拍照热点；科茨洛海滩日落时海面泛金光，是全澳最佳日落海滩之一。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D23 · 罗特尼斯岛</span>
+          <span class="d-desc">短尾矮袋鼠</span>
+          <span class="d-tag alt">🚲 罗特尼斯岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">弗里曼特尔港乘渡轮（约 25min，往返约 90 澳元）</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>罗特尼斯岛骑行</b>（租车约 35 澳元/天）：环岛海景+粉红湖（非澳洲粉湖）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：岛上餐厅/野餐</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>短尾矮袋鼠</b>（Quokka）：微笑合影（全球最快乐动物），禁止触碰喂食</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">返航弗里曼特尔，顺访弗里曼特尔市场/监狱（可选）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：弗里曼特尔/珀斯</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">罗特尼斯岛禁止机动车，骑行是标配（也可乘岛内巴士）；短尾矮袋鼠聚集在游客中心附近，自拍杆+低机位出片。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D24 · 珀斯周边</span>
+          <span class="d-desc">沙漠与酒庄</span>
+          <span class="d-tag ">🏜 周边日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–10:00</td><td class="t-what">珀斯出发自驾到<b>尖峰石阵</b>（约 2.5h）：数千根石灰岩柱矗立沙漠</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what">尖峰石阵景区步行/自驾环线（门票约 17 澳元/车）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：兰斯林/塞万提斯小镇</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">返程途经<b>天鹅谷</b>（Swan Valley）：品酒+巧克力工厂</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：天鹅谷酒庄晚餐/珀斯市区</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">打包行李，次日返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">尖峰石阵在兰斯林沙漠（Pinnacles Desert），清晨/黄昏光影最佳；自驾往返约 5h，也可选当地一日游团。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D25 · 返程</span>
+          <span class="d-desc">回国</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">退房，珀斯市区最后采购（袋鼠肉干/澳宝/UGG 等伴手礼）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">机场线到珀斯机场</td></tr>
+          <tr><td class="t-time">13:00–21:30</td><td class="t-what">珀斯✈北京（直飞约 8.5h，南航/澳航季节航线）或 经广州/香港转机 12–15h</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">珀斯—北京直飞航线季节性运营，冬季（北半球）常需转机；澳洲离境无离境税，机场退税（TRS）可退商品 GST（离境 60 天内、单张发票超 300 澳元）。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-cover.jpg" alt="悉尼歌剧院" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">悉尼歌剧院 <small>外观免费 / 导览 45 澳元</small></div>
+          <div class="sc-feat">世界遗产地标。<b>内部导览+海港大桥同框</b>，日落时分最美。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 2–3h · 🚇 环形码头站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-1.jpg" alt="悉尼·海港大桥" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">悉尼·海港大桥 <small>桥面免费 / 攀登 250 澳元起</small></div>
+          <div class="sc-feat">悉尼名片。<b>桥面步行+攀登体验</b>，俯瞰歌剧院。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–3h · 🚇 岩石区步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-2.jpg" alt="邦迪海滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">邦迪海滩 <small>免费</small></div>
+          <div class="sc-feat">澳洲海滩文化。<b>邦迪—库吉步道+冰水池</b>，冲浪圣地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–4h · 🚌 公交 333 路</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-3.jpg" alt="凯恩斯·大堡礁" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">凯恩斯·大堡礁 <small>一日船游 180–250 澳元</small></div>
+          <div class="sc-feat">世界自然遗产。<b>浮潜+玻璃底船</b>，珊瑚与热带鱼。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚢 码头集合</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-4.jpg" alt="大洋路·十二门徒" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">大洋路·十二门徒 <small>免费（直升机另计）</small></div>
+          <div class="sc-feat">海岸奇观。<b>日出日落+直升机俯瞰</b>，石灰岩柱群。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–4h · 🚗 墨尔本自驾 4h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-5.jpg" alt="乌鲁鲁·艾尔斯岩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乌鲁鲁·艾尔斯岩 <small>公园通票约 38 澳元/3 天</small></div>
+          <div class="sc-feat">世界最大单体岩石。<b>日出日落变色+星空</b>，原住民圣地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · ✈ 悉尼/墨尔本转机</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-6.jpg" alt="蓝山·三姐妹峰" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蓝山·三姐妹峰 <small>观景免费 / 缆车 52 澳元</small></div>
+          <div class="sc-feat">世界遗产峡谷。<b>三姐妹峰+空中缆车</b>，桉树山谷。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 半天 · 🚗 悉尼自驾 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/australia/australia-7.jpg" alt="墨尔本市区" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">墨尔本市区 <small>免费（观景台另计）</small></div>
+          <div class="sc-feat">咖啡与涂鸦。<b>霍西尔巷+联邦广场</b>，南半球艺术之都。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚋 免费电车区</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（悉尼歌剧院、邦迪海滩、大堡礁、十二门徒、乌鲁鲁、蓝山、墨尔本均为澳大利亚实景），用于页面配图。更多免费景点：皇家植物园、岩石区市集、国王公园、南岸公园、冲浪者天堂海滩。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 澳元 ≈ 4.7 元人民币估算。往返国际机票按淡季 4000–6000 元计，国内段 5 程合计 3500–5500 元。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（30000–40000）</th>
+<th>标准（46000–60000）</th>
+<th>舒适（80000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄悉尼 4000–5500</td>
+<td>含珀斯往返 6000–8000</td>
+<td>直飞商务/灵活 15000–25000</td>
+</tr>
+<tr>
+<td>国内段机票（5 程）</td>
+<td>3500–5000（提前 1 个月订）</td>
+<td>5000–6500（灵活时段）</td>
+<td>8000–12000（任意时间）</td>
+</tr>
+<tr>
+<td>住宿（24 晚）</td>
+<td>青旅/汽车旅馆 300–450/晚</td>
+<td>三星/公寓酒店 500–850/晚</td>
+<td>度假村/海景房 1200–2500/晚</td>
+</tr>
+<tr>
+<td>交通（租车等）</td>
+<td>公交+大洋路 1 段租车 2500–3500</td>
+<td>大洋路/罗特尼斯租车 4000–5500</td>
+<td>全段自驾+包车 8000–13000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 1500–2500</td>
+<td>含大堡礁/动物园/乐园 4000–6000</td>
+<td>全含+攀登+直升机 9000–15000</td>
+</tr>
+<tr>
+<td>餐饮（25 天）</td>
+<td>超市+简餐 4500–6000</td>
+<td>正常下馆子 8000–11000</td>
+<td>牛排/海鲜/酒庄 18000–28000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 52000 元）</span>
+      往返机票 7000 + 国内段 5 程 5500 + 住宿 24 晚 15000（平均 620/晚）+ 租车/渡轮 4500 + 门票 5000 + 餐饮 9500 + 签证/杂费 2500 ≈ <strong>46000–52000 元</strong>。大头是住宿与机票；国内段（墨尔本—凯恩斯—乌鲁鲁—黄金海岸）提前 2 个月订能省 1500–2500 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>23.1 精简 16 天版（东岸+大堡礁）</h3>
+
+
+    <ul>
+
+      <li>D1–D4 悉尼（歌剧院+邦迪+鱼市）</li>
+
+      <li>D5 蓝山</li>
+
+      <li>D6–D8 墨尔本+大洋路</li>
+
+      <li>D9–D11 凯恩斯大堡礁+库兰达</li>
+
+      <li>D12–D14 黄金海岸+布里斯班</li>
+
+      <li>D15–D16 返程（可飞乌鲁鲁 2 天替代珀斯）</li>
+
+    </ul>
+
+    <h3>23.2 亲子版调整</h3>
+
+
+    <p>带孩子推荐：塔龙加动物园（悉尼）+可伦宾野生动物园（黄金海岸，抱考拉）+梦幻世界+布里斯班南岸公园免费玩水；砍掉乌鲁鲁徒步与罗特尼斯岛骑行（岛内巴士代替）。昆州/新州动物园儿童多有优惠，大堡礁船游有家庭套餐。注意澳洲海滩夏季防晒、水母防护。</p>
+
+    <h3>23.3 季节版：冬季（6–8 月）避寒线</h3>
+
+
+    <p>北半球冬季去澳洲正好避寒：黄金海岸 20℃+、大堡礁旱季水下最清澈，乌鲁鲁白天 20℃ 徒步舒适；可加凯恩斯—汉密尔顿岛大堡礁跳岛（冬季是观鲸季）。若想体验澳洲冬季的雪，去悉尼南部的雪山（斯雷德博/佩里舍滑雪，6–9 月）。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>24.1 北京 ⇄ 澳大利亚 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→悉尼约 11h / 珀斯约 8.5h</td>
+<td>往返 4000–6000 元</td>
+<td>国航/南航/澳航，悉尼、墨尔本、珀斯可选</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>13–18h</td>
+<td>3500–5500 元</td>
+<td>经广州/香港/新加坡/吉隆坡，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>中国到澳洲无陆路，只能飞机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 澳大利亚境内交通核心提醒</span>
+      澳洲国土面积大，<strong>城市间主要靠飞机</strong>：悉尼—墨尔本 1.5h、墨尔本—凯恩斯 3h、凯恩斯—乌鲁鲁 5–7h（转机）、黄金海岸—珀斯 5.5h，提前 1 个月订国内段单程约 400–900 元。<strong>自驾仅推荐大洋路与大堡礁短途</strong>，注意靠左行驶（驾驶位在右侧）。<strong>公共交通</strong>：悉尼 Opal 卡、墨尔本 Myki 卡（市中心免费电车）、黄金海岸轻轨。<strong>过境与安检</strong>：澳洲国内航班也需安检，液体限制同国际。
+    </div>
+
+    <h3>24.2 澳大利亚境内交通</h3>
+    <ul>
+      <li><strong>国内航班</strong>：悉尼—墨尔本 1.5h、墨尔本—凯恩斯 3h、黄金海岸—珀斯 5.5h，提前订 400–900 元</li>
+      <li><strong>城市交通卡</strong>：悉尼 Opal（上限封顶）、墨尔本 Myki（免费电车区）、黄金海岸 go card 轻轨</li>
+      <li><strong>租车自驾</strong>：大洋路/珀斯周边，紧凑型约 70–100 澳元/天，靠左行驶+野生动物避让</li>
+      <li><strong>渡轮</strong>：悉尼港渡轮（10 澳元）、罗特尼斯岛往返 90 澳元</li>
+      <li><strong>长途巴士</strong>：Greyhound 覆盖东岸（悉尼—墨尔本约 12h），便宜但耗时</li>
+      <li><strong>观光火车</strong>：悉尼—墨尔本 The Overland（约 10h）、凯恩斯库兰达蒸汽火车（特色体验）</li>
+    </ul>
+
+    <h3>24.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>悉尼·环形码头/岩石区</td>
+<td>经济 500–800 / 标准 900–1500</td>
+<td>歌剧院大桥步行可达</td>
+<td>旺季极贵，房间小</td>
+</tr>
+<tr>
+<td>悉尼·达令港</td>
+<td>经济 450–700 / 标准 800–1300</td>
+<td>夜景与餐厅多</td>
+<td>离环形码头稍远</td>
+</tr>
+<tr>
+<td>墨尔本·市中心/弗林德斯街</td>
+<td>经济 400–650 / 标准 700–1200</td>
+<td>电车免费区全覆盖</td>
+<td>周末酒吧街略吵</td>
+</tr>
+<tr>
+<td>凯恩斯·海滨大道</td>
+<td>经济 400–650 / 标准 700–1200</td>
+<td>码头集合方便，泳池多</td>
+<td>雨季闷热</td>
+</tr>
+<tr>
+<td>乌鲁鲁·艾尔斯岩度假村</td>
+<td>经济 600–900 / 标准 1000–1800</td>
+<td>进公园唯一住宿点</td>
+<td>价格高，旺季爆满</td>
+</tr>
+<tr>
+<td>黄金海岸·冲浪者天堂</td>
+<td>经济 400–650 / 标准 700–1200</td>
+<td>海滩+商圈集中</td>
+<td>游客多，停车贵</td>
+</tr>
+<tr>
+<td>珀斯·市中心/伊丽莎白码头</td>
+<td>经济 400–650 / 标准 700–1200</td>
+<td>天鹅河景观，新城区</td>
+<td>离海滩较远</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>澳式牛排/羊排：墨尔本、黄金海岸牛排馆</li>
+          <li>海鲜：悉尼鱼市生蚝、凯恩斯珊瑚鳟、珀斯岩龙虾</li>
+          <li>炸鱼薯条：海边标配（Fish & Chips）</li>
+          <li>肉派/香肠卷：澳式国民小吃</li>
+        </ul>
+        <h3>🍷 咖啡与酒</h3>
+        <ul>
+          <li>澳式咖啡文化：墨尔本小巷咖啡馆（Flat White）</li>
+          <li>澳洲葡萄酒：天鹅谷、亚拉河谷酒庄品酒</li>
+          <li>精酿啤酒：各城酿酒厂</li>
+          <li>果园水果：凯恩斯热带水果拼盘</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🐨 在地名物</h3>
+        <ul>
+          <li>袋鼠肉：餐厅常备（瘦而嫩）</li>
+          <li>鳄鱼肉/鸸鹋肉：北领地餐厅</li>
+          <li>澳式 BBQ：度假村烧烤夜</li>
+          <li>Tim Tam 巧克力饼干、Vegemite 酱</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>悉尼：岩石区市集、唐人街、达令港</li>
+          <li>墨尔本：霍西尔巷周边小巷餐厅、女王市场</li>
+          <li>凯恩斯：码头夜市、海滨大道</li>
+          <li>珀斯：北桥区、天鹅谷酒庄</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 澳洲餐厅普遍不强制小费（与美不同），刷卡即可；② 部分餐厅收取「公共假日附加费」（Public Holiday Surcharge 10–15%），看清账单；③ 海鲜「时价」（market price）菜单要问清克重与总价；④ 超市（Woolworths/Coles）的烤鸡、沙拉、即食餐品质高，赶路神器；便利店选 7-Eleven。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期覆盖行程）+ 600 类签证</li>
+        <li>Visa/Mastercard 信用卡（tap 支付普及）+ 现金 200–300 澳元</li>
+        <li>充电转接头（240V I 型三斜扁脚）+ 充电宝</li>
+        <li>防晒：SPF50+ 防晒霜、太阳镜、遮阳帽（澳洲紫外线极强）</li>
+      </ul>
+      <ul>
+        <li>国内段机票 5 程提前 1 个月订</li>
+        <li>大堡礁船游/库兰达缆车/企鹅归巢/动物园提前订</li>
+        <li>下载离线地图（国家公园与内陆无信号）</li>
+        <li>租车确认靠左驾驶+全险；入境如实申报药品食物</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>靠左行驶</strong>：自驾务必适应右侧驾驶位与左行规则，市区环岛礼让右侧车；② <strong>入境海关极严</strong>：肉类、蛋奶、种子植物、部分药品禁带，申报不清最高罚款 2000+ 澳元；③ <strong>野生动物</strong>：黄昏/清晨开车注意袋鼠横穿，园区内保持距离不投喂；④ 阳光与海洋安全：游泳选有救生员海滩（红黄旗之间），浮潜穿水母衣。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      澳大利亚是「<strong>一片大陆、两种色彩</strong>」的目的地——东海岸的碧海白沙滩（悉尼、墨尔本、黄金海岸）、东北的大堡礁与热带雨林（凯恩斯）、内陆的红土与巨岩（乌鲁鲁），以及西部的孤独海湾（珀斯）。25 天一条从都市到荒野的纵贯线，签证是唯一的硬门槛，办好 600 签、订好国内段，剩下就是跟着澳洲的阳光慢慢走。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#a64a24",
+    "d": 3,
+    "n": "东岸主线 · 悉尼→蓝山→墨尔本→大洋路→凯恩斯→黄金海岸",
+    "pts": [
+      [
+        -33.8688,
+        151.2093
+      ],
+      [
+        -33.7338,
+        150.3109
+      ],
+      [
+        -37.8136,
+        144.9631
+      ],
+      [
+        -38.6558,
+        143.1047
+      ],
+      [
+        -16.9186,
+        145.7781
+      ],
+      [
+        -28.0022,
+        153.4304
+      ]
+    ]
+  },
+  {
+    "c": "#1f6fa8",
+    "d": 3,
+    "n": "内陆+西部支线 · 凯恩斯→乌鲁鲁→珀斯",
+    "pts": [
+      [
+        -16.9186,
+        145.7781
+      ],
+      [
+        -25.3444,
+        131.0369
+      ],
+      [
+        -31.9523,
+        115.8613
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -33.8568,
+    "lng": 151.2153,
+    "name": "悉尼·歌剧院",
+    "t": "D2 上午 · 3h",
+    "fee": "导览 45 澳元",
+    "note": "内部导览、海港大桥同框"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -33.8908,
+    "lng": 151.2743,
+    "name": "悉尼·邦迪海滩",
+    "t": "D3 上午 · 3h",
+    "fee": "免费",
+    "note": "邦迪—库吉步道"
+  },
+  {
+    "num": 3,
+    "prio": "nice",
+    "lat": -33.7338,
+    "lng": 150.3109,
+    "name": "蓝山·三姐妹峰",
+    "t": "D5 全天 · 1 天",
+    "fee": "缆车 52 澳元",
+    "note": "三姐妹峰、空中缆车"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -37.8136,
+    "lng": 144.9631,
+    "name": "墨尔本·弗林德斯街",
+    "t": "D6–D7 · 2 天",
+    "fee": "免费",
+    "note": "涂鸦街、联邦广场、女王市场"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -38.6558,
+    "lng": 143.1047,
+    "name": "大洋路·十二门徒",
+    "t": "D8–D9 · 2 天",
+    "fee": "免费",
+    "note": "十二门徒、伦敦桥"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": -16.7586,
+    "lng": 145.9727,
+    "name": "凯恩斯·大堡礁",
+    "t": "D12 全天 · 1 天",
+    "fee": "船游 180–250 澳元",
+    "note": "摩尔礁浮潜"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": -25.3444,
+    "lng": 131.0369,
+    "name": "乌鲁鲁·艾尔斯岩",
+    "t": "D15–16 · 2 天",
+    "fee": "通票 38 澳元/3 天",
+    "note": "日出日落、卡塔丘塔"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": -28.0022,
+    "lng": 153.4304,
+    "name": "黄金海岸·冲浪者天堂",
+    "t": "D18 全天 · 1 天",
+    "fee": "免费",
+    "note": "海滩、可伦宾动物园"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-39.5, 112.5], [-10.0, 154.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#a64a24\"></span>东岸主线（悉尼→黄金海岸）<br><span class=\"sw\" style=\"background:#1f6fa8\"></span>内陆+西部支线（凯恩斯→乌鲁鲁→珀斯）<br><span class=\"sw dash\"></span>悉尼—墨尔本、黄金海岸—珀斯等为国内航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

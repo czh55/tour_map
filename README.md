@@ -8,16 +8,17 @@
 tour_map/
 ├── docs/                          # GitHub Pages 部署源（/docs）
 │   ├── index.html                 # 入口页（项目导航，由 guides.json 自动生成卡片）
-│   ├── guides.json                # 攻略索引（34 篇：3 篇专题 + 31 省）
+│   ├── guides.json                # 攻略索引（44 篇：3 篇专题 + 31 省 + 10 国）
 │   ├── kailash-kora-2026.html     # 专题攻略（冈仁波齐转山）
 │   ├── <province>-2026.html       # 31 省 10 天全景攻略（数据生成）
+│   ├── <country>-2026.html        # 10 国国际攻略试点（20–30 天，数据生成）
 │   ├── WORKFLOW.md                # 制作工作流（权威，下个项目照此执行）
-│   ├── images/                    # 景点图片（Unsplash License，本地化，按省分目录）
+│   ├── images/                    # 景点图片（Unsplash License，本地化，按省/国分目录）
 │   ├── fonts/                     # 手写体字体（MaShanZheng 楷书，本地化）
-│   └── leaflet/                   # 地图库（Leaflet 本地文件 + 高德瓦片）
+│   └── leaflet/                   # 地图库（Leaflet 本地文件 + 高德/腾讯瓦片）
 ├── scripts/
-│   ├── build_guide.py             # 攻略 HTML 生成器（JSON → HTML）
-│   └── data/<province>.json       # 各省攻略数据（结构对齐 beijing.json）
+│   ├── build_guide.py             # 攻略 HTML 生成器（JSON → HTML，支持国内/国际双模式）
+│   └── data/<slug>.json           # 各省/国攻略数据（结构对齐 beijing.json / japan.json）
 └── README.md
 ```
 
@@ -26,6 +27,13 @@ tour_map/
 - 每省一份 10 天 9 晚全景攻略，含交互地图（Leaflet + GCJ-02 纠偏）、景点图鉴、三档预算、备选方案、美食与出行贴士。
 - 数据驱动：改 `scripts/data/<province>.json` 后运行 `python3 scripts/build_guide.py` 即可重新生成 HTML。
 - 收录于 `docs/guides.json`，门户 `index.html` 自动渲染卡片并支持搜索/标签筛选。
+
+## 国际攻略试点（10 国）
+
+- 首批 10 个热门大国（日本/泰国/土耳其/法国/西班牙/意大利/埃及/美国/澳大利亚/印度），天数按国土面积与可玩性分配（15–30 天），北京出发、人民币预算。
+- **国际模式**：JSON 顶层 `"mode": "world"` 即启用——底图自动切换为腾讯全球瓦片（国内可访问、GCJ-02 坐标系），标题/文案按实际天数动态生成。
+- 样板：`scripts/data/japan.json`（20 天），新国照此结构扩写；运行 `python3 scripts/build_guide.py japan.json` 重渲染。
+- 每国含：签证/时差/电源/货币四要素、20 天级逐日时间线、交互地图、景点图鉴、三档预算、备选方案、美食与出行贴士。
 
 ## 核心经验
 

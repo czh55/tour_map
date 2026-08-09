@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 土耳其 20 天全景攻略 · 伊斯坦布尔卡帕多奇亚</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #a63d2b;
+    --red-light: #c05030;
+    --gold: #d9a441;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #1d6fa3;
+    --cover1: #6e2413;
+    --ov1: rgba(96,28,12,.88);
+    --ov2: rgba(166,61,43,.72);
+    --ov3: rgba(210,110,60,.38);
+    --ov4: rgba(230,150,80,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(166,61,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/turkey/turkey-cover.jpg" alt="土耳其旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 20 天环线 · 欧亚大陆桥</div>
+      <h1>土耳其 20 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 伊斯坦布尔 · 番红花城 · 卡帕多奇亚 · 棉花堡 · 以弗所 · 地中海</div>
+      <div class="meta">
+        <span>🛫 行程链：伊斯坦布尔 → 番红花城 → 卡帕多奇亚 → 棉花堡 → 以弗所 → 费特希耶 → 返程</span>
+        <span>📅 时间窗口：20 天 19 晚</span>
+        <span>✈️ 北京⇄伊斯坦布尔 直飞约 10 小时</span>
+        <span>🛂 签证：电子签 e-Visa（约 60 美元，停留 30 天，24h 出签）</span>
+        <span>🕐 时差 -5 小时 · 🔌 220V C/F 型插座（欧标两圆脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 20 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 20 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">伊斯坦布尔</span>
+      <span class="arrow">→</span>
+      <span class="node">番红花城</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">卡帕多奇亚</span>
+      <span class="arrow">→</span>
+      <span class="node">棉花堡</span>
+      <span class="arrow">→</span>
+      <span class="node">以弗所</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">费特希耶</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 20 天怎么安排最合理</span>
+      土耳其是「<strong>一国之境、东西方文明的十字路口</strong>」：伊斯坦布尔横跨欧亚，卡帕多奇亚有童话般的洞穴与热气球，棉花堡是雪白的钙华温泉，爱琴海与地中海沿岸躺着以弗所与蔚蓝海岸。20 天刚好把<strong>古城文化 + 安纳托利亚内陆 + 爱琴海地中海</strong>一次走完，节奏上先城市后内陆再海岸，体力曲线「高—中—缓」。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国公民办<strong>土耳其电子签 e-Visa</strong>：官网在线申请，单次入境停留 30 天，费用约 60 美元，一般 24 小时内出签，出签后打印随身携带</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>比北京慢 5 小时（UTC+3），倒时差安排头两天晚睡晚起更从容</td>
+</tr>
+<tr>
+<td>电源插座</td>
+<td>220V，C/F 型插座（欧标两圆脚），需带转换插头，无需变压</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>土耳其里拉（TRY），1 里拉 ≈ 0.2 元人民币；热气球等大额项目多按欧元计价</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>伊斯坦布尔 5 天 + 番红花城安卡拉 2 天 + 卡帕多奇亚 3 天 + 科尼亚棉花堡 2 天 + 以弗所 2 天 + 爱琴海地中海 4 天 + 返程</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>伊斯坦布尔直飞北京约 10h；返程日留足机场时间，旺季提前 1 个月订票</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>伊斯坦布尔 → 番红花城 → 卡帕多奇亚 → 棉花堡 → 以弗所 → 费特希耶 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 14000–19000 ／ 标准 21000–28000 ／ 舒适 36000–50000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办电子签（24h 出签也要提前 1 周）② 订卡帕多奇亚热气球 ③ 订伊斯坦布尔—费特希耶机票</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>4–6 月、9–11 月春秋季最佳；7–8 月地中海酷热；12–2 月卡帕可看雪但热气球常取消</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>里拉现金 + Visa/Master 卡；热气球等大额项目多按欧元计价</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>热气球是「看天吃饭」</strong>：卡帕多奇亚热气球冬季与大风天常临时取消，尽量排 2 个清晨备选，且选含「改期/退款」条款的运营商（旺季 120–200 欧元/人）。② 土耳其横跨欧亚、地形狭长，<strong>城际交通动辄 3–6 小时大巴</strong>，别把多个城市塞进一天，本方案每段只安排一个主目的地。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 20 天版</h2>
+
+    <p>以下为 20 天 19 晚的推荐节奏：伊斯坦布尔 5 天打底，经安纳托利亚内陆（番红花城/安卡拉/卡帕多奇亚/科尼亚）南下，再沿爱琴海地中海海岸线收尾。每日主景点 ≤2 个，交通以长途大巴 + 包车 + 国内航班为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵伊斯坦布尔</td>
+<td>北京✈伊斯坦布尔（约 10h），入住老城区，傍晚圣索菲亚/蓝色清真寺夜景</td>
+<td>伊斯坦布尔</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>蓝色清真寺 → 圣索菲亚大教堂 → 地下水宫 → 香料市场</td>
+<td>伊斯坦布尔</td>
+<td>老城核心</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>托普卡帕宫 → 博斯普鲁斯海峡游船 → 加拉太塔日落</td>
+<td>伊斯坦布尔</td>
+<td>皇宫+海峡</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>大巴扎 → 独立大街 → 塔克西姆广场 → 加拉塔区</td>
+<td>伊斯坦布尔</td>
+<td>新城烟火</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>伊斯坦布尔→番红花城：奥斯曼古镇漫步、商队驿站</td>
+<td>番红花城</td>
+<td>古镇一日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>番红花城→安卡拉：国父陵 → 安纳托利亚文明博物馆</td>
+<td>安卡拉</td>
+<td>首都中转</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>安卡拉→卡帕多奇亚：入住格雷梅洞穴酒店，日落观景台</td>
+<td>卡帕多奇亚</td>
+<td>飞地卡帕</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>热气球日出 → 格雷梅露天博物馆 → 乌奇希萨尔城堡</td>
+<td>卡帕多奇亚</td>
+<td>热气球日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>爱情谷徒步 → 代林库尤地下城 → 精灵烟囱</td>
+<td>卡帕多奇亚</td>
+<td>奇特地貌</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>卡帕→科尼亚：梅夫拉那博物馆 → 老城漫步</td>
+<td>科尼亚</td>
+<td>旋转舞故乡</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>科尼亚→棉花堡：钙华池泡温泉日落</td>
+<td>棉花堡</td>
+<td>白色温泉</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>希拉波利斯古城 → 前往以弗所（塞尔丘克）</td>
+<td>以弗所</td>
+<td>古城双日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>以弗所古城：图书馆 → 大剧场 → 阿尔忒弥斯遗址</td>
+<td>以弗所</td>
+<td>罗马遗址</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>以弗所→博德鲁姆：城堡 → 港口漫步 → 爱琴海晚餐</td>
+<td>博德鲁姆</td>
+<td>爱琴海日</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>博德鲁姆→费特希耶：码头老城漫步</td>
+<td>费特希耶</td>
+<td>地中海日</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>厄吕代尼兹死海：沙滩游泳 → 滑翔伞（可选）</td>
+<td>费特希耶</td>
+<td>死海日</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>十二岛游船：跳岛浮潜</td>
+<td>费特希耶</td>
+<td>跳岛日</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>费特希耶✈伊斯坦布尔：苏莱曼尼耶清真寺 → 巴拉特街区</td>
+<td>伊斯坦布尔</td>
+<td>重返伊城</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>自由日：王子群岛 / 博物馆 / 大巴扎购物补货</td>
+<td>伊斯坦布尔</td>
+<td>机动购物</td>
+</tr>
+<tr>
+<td>D20 返程</td>
+<td>伊斯坦布尔✈北京（直飞约 10h），入境到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍番红花城（D5–D6 合并为伊斯坦布尔—安卡拉直达）或科尼亚；时间宽裕可加卡什/安塔利亚沿海段（费特希耶后沿 D400 公路到安塔利亚）。带娃家庭建议砍掉 6h 长途段，伊斯坦布尔 6 天 + 卡帕 3 天 + 费特希耶 4 天更轻松。热气球不适合 6 岁以下儿童。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 20 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达伊斯坦布尔</span>
+          <span class="d-desc">入住老城区</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–13:30</td><td class="t-what">北京✈伊斯坦布尔（直飞约 10h，比北京慢 5 小时）。落地伊斯坦布尔机场（IST）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">入境（出示电子签 e-Visa 打印件与返程机票），换少量里拉，买 Istanbulkart 交通卡</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what">机场大巴/出租车到老城区（Sultanahmet），入住酒店休整</td></tr>
+          <tr><td class="t-time">18:00–21:00</td><td class="t-what">傍晚散步：<b>圣索菲亚与蓝色清真寺亮灯夜景</b>，苏丹艾哈迈德广场，晚餐土耳其烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">电子签务必出签后打印 1–2 份随身带；伊斯坦布尔堵车严重，从 IST 机场到老城区预留 1–1.5h。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 老城核心</span>
+          <span class="d-desc">蓝色清真寺 + 圣索菲亚</span>
+          <span class="d-tag ">🏛 拜占庭日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what"><b>蓝色清真寺</b>（免费）：六宣礼塔与 2 万片伊兹尼克蓝瓷砖，着装需遮肩遮膝</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>圣索菲亚大教堂</b>（约 750 里拉）：拜占庭穹顶与马赛克，排队 30–60min，早到</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：苏丹艾哈迈德区烤肉店</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>地下水宫</b>（约 350 里拉）：美杜莎石柱与光影，凉爽避暑</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>香料市场（埃及市场）</b>（免费）：香料、软糖、土耳其茶铺，傍晚人少好逛</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣索菲亚周二闭馆；清真寺礼拜时间（周五正午）游客停止入内，出发前查开放时段。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 托普卡帕宫 + 海峡</span>
+          <span class="d-desc">皇宫 + 博斯普鲁斯</span>
+          <span class="d-tag alt">🏰 皇宫日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>托普卡帕宫</b>（约 750 里拉，含后宫另计）：奥斯曼苏丹宫殿，珍宝馆与御膳房，海景露台</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：皇宫附近或香料市场小吃</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>博斯普鲁斯海峡游船</b>（约 250–500 里拉，约 1.5–2h 往返）：欧亚两岸、多尔玛巴赫切宫外观</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">加拉塔大桥漫步：桥上钓鱼人 + 烤鱼三明治 Balık Ekmek</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what"><b>加拉太塔</b>（约 650 里拉）：日落登顶俯瞰金角湾与老城，晚餐周边街区</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">托普卡帕宫珍宝馆排队久，建议 8:30 开馆就进；海峡游船有短程（1.5h）与全日（6h）两种，短程足够看两岸。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 新城区</span>
+          <span class="d-desc">大巴扎 + 独立大街</span>
+          <span class="d-tag ">🛍 新城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>大巴扎</b>（免费）：世界最大室内市集，61 条巷子，地毯/灯具/陶瓷，砍价对半起</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：大巴扎周边烤肉或薄饼</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>独立大街 + 塔克西姆广场</b>（免费）：复古有轨电车、甜品店、艺术街区</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>加拉塔区</b>（免费）：老石楼小巷、观景咖啡馆、街头艺人</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：土耳其海鲜或<strong>旋转舞演出</strong>（可选，约 300–500 里拉）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大巴扎周日关闭；独立大街上钱包手机防盗，人流密集处注意；土耳其咖啡与苹果茶体验别错过。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 前往番红花城</span>
+          <span class="d-desc">奥斯曼古镇</span>
+          <span class="d-tag alt">🏘 古镇日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">伊斯坦布尔乘长途大巴/包车前往番红花城（约 6h，中途服务区休息）</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what"><b>番红花城老城区</b>（免费）：奥斯曼白墙木屋（Konak）与鹅卵石巷，世界遗产古镇</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">入住传统民宿 Konak，晚餐：当地家常菜与番红花茶</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">古镇夜游：灯笼照明的小巷，安静如童话</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">番红花城是番红花（藏红花）产地得名，秋季可逛番红花集市；古镇坡多，穿舒适平底鞋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 安卡拉中转</span>
+          <span class="d-desc">国父陵 + 文明博物馆</span>
+          <span class="d-tag ">🏛 首都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>番红花城</b>：Cinci Han 商队驿站（约 5 欧元参观）、钟楼、番红花集市晨逛</td></tr>
+          <tr><td class="t-time">11:00–14:00</td><td class="t-what">午餐后乘大巴前往安卡拉（约 3h）</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>国父陵 Anıtkabir</b>（免费）：土耳其国父凯末尔陵墓与卫兵换岗</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what">安卡拉城堡区/老城漫步，晚餐：首都烤肉店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国父陵 15:00 左右有卫兵换岗仪式；安卡拉作为中转一晚即可，重心留给卡帕多奇亚。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 前往卡帕多奇亚</span>
+          <span class="d-desc">格雷梅洞穴酒店</span>
+          <span class="d-tag alt">🛫 卡帕日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>安纳托利亚文明博物馆</b>（约 250 里拉）：石器到奥斯曼的文物走廊</td></tr>
+          <tr><td class="t-time">11:00–15:00</td><td class="t-what">午餐后乘大巴/包车前往卡帕多奇亚格雷梅（约 3.5h）</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">入住<b>格雷梅洞穴酒店</b>，房间是凿岩而居的洞穴房</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>格雷梅日落观景台</b>：俯瞰「仙人烟囱」与峡谷，预订次日热气球</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">洞穴酒店石屋保温性好但潮湿，选带地暖/除湿的；热气球旺季（5–10 月）至少提前 2 周订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 热气球日</span>
+          <span class="d-desc">热气球 + 露天博物馆</span>
+          <span class="d-tag ">🎈 热气球日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:00</td><td class="t-what"><b>热气球日出飞行</b>（约 120–200 欧元/人，含酒店接送）：上百只气球升空，卡帕名片</td></tr>
+          <tr><td class="t-time">07:30</td><td class="t-what">回到酒店早餐，休息</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>格雷梅露天博物馆</b>（约 450 里拉）：洞穴教堂与千年壁画（黑暗教堂另购票）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：格雷梅镇瓦罐牛肉 Testi Kebab</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>乌奇希萨尔城堡</b>（约 100 里拉）+ <b>鸽子谷</b>（免费）：登顶看全景</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">格雷梅镇晚餐 + 夜观星（光污染少）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">热气球天气不佳会顺延到次日清晨，行程务必留 1 个清晨缓冲；露天博物馆 8:30 开门，早到避开团客。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 奇特地貌</span>
+          <span class="d-desc">爱情谷 + 地下城</span>
+          <span class="d-tag alt">⛰ 地质日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–11:00</td><td class="t-what"><b>爱情谷/玫瑰谷徒步</b>（免费）：日出后光线最佳，或租 ATV 越野车（约 400–600 里拉/2h）</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：格雷梅镇</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what"><b>代林库尤地下城</b>（约 300 里拉）：8 层地下城市，通道低矮需低头；顺路看<b>精灵烟囱</b></td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">观景台日落 + 陶瓷/地毯手作店</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：烤肉拼盘，品尝土耳其红茶收尾</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">地下城幽闭空间，恐高/幽闭恐惧症者慎入，通道仅一人宽；ATV 尘土大，戴护目镜与口罩。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 科尼亚</span>
+          <span class="d-desc">旋转舞故乡</span>
+          <span class="d-tag ">🕌 苏菲日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">格雷梅乘大巴前往科尼亚（约 3h）</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what"><b>梅夫拉那博物馆</b>（约 250 里拉）：旋转舞创始人鲁米陵墓，蓝色瓷砖穹顶</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">科尼亚老城漫步：阿兹兹清真寺、丝绸巴扎</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what">晚餐：科尼亚特色烤肉 + 博兹（发酵谷物饮），宿科尼亚</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">科尼亚是保守穆斯林城市，着装偏保守（女士头巾可选，遮肩遮膝）；周五下午鲁米陵墓参观人多。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 棉花堡</span>
+          <span class="d-desc">钙华池温泉</span>
+          <span class="d-tag alt">🤍 白色温泉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">科尼亚乘大巴前往棉花堡（约 4–5h）</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">途中服务区午餐：土耳其烤肉卷/汤饭</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what"><b>棉花堡钙华池</b>（约 700 里拉，含希拉波利斯）：<strong>赤脚入池</strong>，白色梯田 + 温泉</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">宿棉花堡温泉酒店，泡温泉缓解连日疲劳</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">棉花堡禁止穿鞋入池（白梯田会染色），池边有存鞋处；傍晚光线柔和、游客散去最美。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 希拉波利斯 + 前往以弗所</span>
+          <span class="d-desc">古城遗址</span>
+          <span class="d-tag ">🏛 遗址日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>希拉波利斯古城遗址</b>（含在棉花堡门票内）：罗马剧场、古温泉池（可下水）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐后乘大巴前往塞尔丘克（以弗所门户，约 2.5–3h）</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">入住塞尔丘克小镇，逛周末市场/以弗所考古博物馆（若时间）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：塞尔丘克烤肉，宿塞尔丘克</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">希拉波利斯的「古董泳池」（克娄巴特拉池）需另购票；塞尔丘克是安静小镇，离以弗所 20 分钟步行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 以弗所古城</span>
+          <span class="d-desc">罗马遗址一日</span>
+          <span class="d-tag alt">🏟 以弗所日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what"><b>以弗所古城</b>（约 750 里拉）：塞尔苏斯图书馆、大剧场、大理石大道，世界最大罗马古城之一</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：塞尔丘克镇</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>圣约翰教堂 + 阿尔忒弥斯神庙遗址</b>（约 150 里拉）：古代世界七大奇迹之一只剩一根柱</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>以弗所考古博物馆</b>（约 100 里拉）：阿尔忒弥斯雕像等精品</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：爱琴海烤鱼，宿塞尔丘克/库萨达斯</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">以弗所 8 点开门就进，主路逆行一圈约 3h；夏季正午暴晒，务必带水与遮阳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 博德鲁姆</span>
+          <span class="d-desc">爱琴海度假</span>
+          <span class="d-tag ">⛵ 爱琴海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">塞尔丘克乘小巴/巴士前往博德鲁姆（约 2.5h，可途经库萨达斯）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">入住博德鲁姆海滨酒店，午餐：码头海鲜</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>博德鲁姆城堡</b>（约 250 里拉）：圣彼得城堡与水下考古博物馆；港口帆船林立</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what">爱琴海日落晚餐：烤鱼、章鱼、白葡萄酒，海滨漫步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">博德鲁姆是爱琴海度假重镇，7–8 月一房难求要提前订；城堡周二闭馆，避开。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 前往费特希耶</span>
+          <span class="d-desc">地中海度假</span>
+          <span class="d-tag alt">🛫 地中海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">博德鲁姆乘巴士/自驾沿爱琴海—地中海海岸线前往费特希耶（约 4h）</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what">入住费特希耶酒店</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>费特希耶老城 + 码头</b>（免费）：地中海蓝湾、海滨步道、鱼市</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">晚餐：鱼市现选海鲜 + 土耳其披萨 Lahmacun</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">费特希耶是地中海滑翔伞与跳岛游基地；住宿选海边 1–2 公里内，出行方便。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 死海厄吕代尼兹</span>
+          <span class="d-desc">沙滩 + 滑翔伞</span>
+          <span class="d-tag ">🪂 死海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">到<b>厄吕代尼兹（死海）</b>（距费特希耶约 20min）：蓝绿宝石色的泻湖</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">死海沙滩游泳、躺椅发呆，水极清</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：海滩餐厅</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what"><b>滑翔伞</b>（可选，约 700–1000 里拉含照片视频）：从巴巴达格山飞下，降落在海滩</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返回费特希耶，晚餐自由安排</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">滑翔伞对天气要求高（风太大/太小都取消），留机动时间；恐高者可在海滩看别人飞，同样出片。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 十二岛游船</span>
+          <span class="d-desc">跳岛浮潜</span>
+          <span class="d-tag alt">🏝 跳岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30</td><td class="t-what">费特希耶码头登船：<b>十二岛游船</b>（约 400–600 里拉，含午餐与浮潜装备）</td></tr>
+          <tr><td class="t-time">10:00–16:00</td><td class="t-what">跳岛：喀斯特小岛间停靠游泳、浮潜、甲板日光浴</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返回码头，上岸休整</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">告别晚餐：费特希耶烤鱼 + 土耳其冰淇淋收尾</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">游船淡季（10 月后）班次减少，提前 1 天确认；船上风大带外套，浮潜注意防晒。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 重返伊斯坦布尔</span>
+          <span class="d-desc">苏莱曼尼耶 + 巴拉特</span>
+          <span class="d-tag ">🛫 返伊日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">费特希耶✈伊斯坦布尔（经达拉曼机场约 1.5h）或大巴+转机</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">入住伊斯坦布尔，午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>苏莱曼尼耶清真寺</b>（免费）：山顶大寺，俯瞰金角湾最佳视角</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>巴拉特街区</b>（免费）：彩色房子、复古咖啡馆、爬坡小巷</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">晚餐：伊斯坦布尔风味收官</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">费特希耶最近的机场是达拉曼（Dalaman），航班少；也可改乘夜班大巴（约 10h）省一晚住宿。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 自由日 + 购物</span>
+          <span class="d-desc">机动 + 大巴扎补货</span>
+          <span class="d-tag ">🛍 机动日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">自由安排：<b>王子群岛</b>马车环岛 / <b>纯真博物馆</b> / 卡迪柯伊市场</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：市场小吃</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>大巴扎/香料市场补货</b>：茶叶、软糖、地毯、彩灯、手工皂</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">博斯普鲁斯夜景告别晚餐，打包行李</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">王子群岛周末人多，工作日更舒服；土耳其特产：苹果茶、番红花、玫瑰水、湿巾、蓝眼睛挂件。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 返程</span>
+          <span class="d-desc">伊斯坦布尔✈北京</span>
+          <span class="d-tag return">🚀 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">退房，乘机场大巴/出租车到伊斯坦布尔机场（IST）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">办理值机、退税与安检，机场内免税店最后补货</td></tr>
+          <tr><td class="t-time">13:00–23:00</td><td class="t-what">伊斯坦布尔✈北京（直飞约 10h），机上休息</td></tr>
+          <tr><td class="t-time">23:30</td><td class="t-what">入境到家，行程结束</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伊斯坦布尔机场很大，国际出发至少提前 3h 到；电子签在机场排队时出示打印件更顺畅。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-1.jpg" alt="伊斯坦布尔·圣索菲亚大教堂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伊斯坦布尔·圣索菲亚大教堂 <small>约 750 里拉</small></div>
+          <div class="sc-feat">1500 年历史穹顶。<b>拜占庭马赛克 + 奥斯曼米哈拉布</b>共存的奇迹。</div>
+          <div class="sc-meta">📅 周二闭馆 · ⏱ 1.5–2h · 🚊 T1 苏丹艾哈迈德站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-2.jpg" alt="伊斯坦布尔·蓝色清真寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伊斯坦布尔·蓝色清真寺 <small>免费</small></div>
+          <div class="sc-feat">六宣礼塔与伊兹尼克蓝瓷砖。<b>2 万片蓝彩</b>得名，老城地标。</div>
+          <div class="sc-meta">📅 礼拜时段外开放 · ⏱ 1h · 🚊 T1 苏丹艾哈迈德站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-3.jpg" alt="伊斯坦布尔·博斯普鲁斯海峡" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伊斯坦布尔·博斯普鲁斯海峡 <small>游船约 250–500 里拉</small></div>
+          <div class="sc-feat">欧亚分界海峡。<b>游船穿越欧亚大桥</b>，看两岸皇宫与清真寺。</div>
+          <div class="sc-meta">📅 每日班次 · ⏱ 1.5–2h · 🚢 埃米诺努码头出发</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-4.jpg" alt="卡帕多奇亚·热气球" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">卡帕多奇亚·热气球 <small>约 120–200 欧元/人</small></div>
+          <div class="sc-feat">上百只热气球升空。<b>日出飞越仙人烟囱</b>，土耳其第一体验。</div>
+          <div class="sc-meta">📅 每日日出班次 · ⏱ 1h · 🚐 酒店接送</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-5.jpg" alt="卡帕多奇亚·格雷梅露天博物馆" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">卡帕多奇亚·格雷梅露天博物馆 <small>约 450 里拉</small></div>
+          <div class="sc-feat">凿岩而居的洞穴教堂。<b>千年壁画与隐居修道院</b>，世界遗产。</div>
+          <div class="sc-meta">📅 8:00–19:00 · ⏱ 1.5–2h · 🚶 格雷梅镇步行/打车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-6.jpg" alt="棉花堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">棉花堡 <small>约 700 里拉（含希拉波利斯）</small></div>
+          <div class="sc-feat">雪白钙华梯田。<b>赤脚泡温泉看日落</b>，如梦似幻。</div>
+          <div class="sc-meta">📅 8:00–20:00 · ⏱ 3–4h · 🚌 代尼兹利转小巴</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-7.jpg" alt="以弗所古城" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">以弗所古城 <small>约 750 里拉</small></div>
+          <div class="sc-feat">世界最大罗马古城之一。<b>塞尔苏斯图书馆 + 大剧场</b>。</div>
+          <div class="sc-meta">📅 8:00 起 · ⏱ 3h · 🚶 塞尔丘克步行 20min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/turkey/turkey-cover.jpg" alt="费特希耶·厄吕代尼兹死海" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">费特希耶·厄吕代尼兹死海 <small>免费（滑翔伞另计）</small></div>
+          <div class="sc-feat">蓝绿宝石色泻湖。<b>滑翔伞降落在海滩</b>，地中海名片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚌 费特希耶小巴 20min</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（圣索菲亚、蓝色清真寺、博斯普鲁斯、卡帕多奇亚热气球、格雷梅洞穴教堂、棉花堡、以弗所、费特希耶海滩等均为土耳其实景），用于页面配图。更多免费/低成本景点：地下水宫、大巴扎、苏莱曼尼耶清真寺、格雷梅日落观景台、鸽子谷、费特希耶老城。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 土耳其里拉 ≈ 0.2 元人民币估算，里拉汇率波动大；热气球等按欧元计价项目已折算人民币。往返机票按淡季直飞 4500–6000 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（14000–19000）</th>
+<th>标准（21000–28000）</th>
+<th>舒适（36000–50000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄伊斯坦布尔 4500–5500</td>
+<td>直飞往返 5500–7000</td>
+<td>直飞+升舱 10000–15000</td>
+</tr>
+<tr>
+<td>住宿（19 晚）</td>
+<td>青旅/民宿 250–400/晚</td>
+<td>三星/特色民宿 450–800/晚</td>
+<td>洞穴酒店/海滨度假 1200–2500/晚</td>
+</tr>
+<tr>
+<td>境内交通</td>
+<td>长途大巴+小巴 1500–2200</td>
+<td>大巴+2 段机票+包车 3000–4500</td>
+<td>全段包车/租车 8000–12000</td>
+</tr>
+<tr>
+<td>门票与体验</td>
+<td>基础景点约 800–1200</td>
+<td>含热气球约 2500–3500</td>
+<td>热气球+滑翔伞+全遗址 5000–7000</td>
+</tr>
+<tr>
+<td>餐饮（20 天）</td>
+<td>烤肉+街头 3000–4000</td>
+<td>正常下馆子 4500–6500</td>
+<td>海鲜大餐+景观餐厅 10000–15000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 24000 元）</span>
+      往返机票 6000 + 住宿 19 晚 8500（平均 450/晚）+ 境内交通 3500 + 门票与热气球 3000 + 餐饮 5000 + 杂费 800 ≈ <strong>21000–24000 元</strong>。热气球是最大单项（约 1000–1500 元），行程中用预算换体验就在这里。长途段多，务必提前订大巴票避免满员。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>19.1 只看精华的 12 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D4 伊斯坦布尔（同主行程）</li>
+
+      <li>D5–D6 卡帕多奇亚热气球+露天博物馆</li>
+
+      <li>D7–D8 棉花堡+以弗所</li>
+
+      <li>D9–D10 费特希耶死海+滑翔伞</li>
+
+      <li>D11 飞回伊斯坦布尔</li>
+
+      <li>D12 返程</li>
+
+    </ul>
+
+    <h3>19.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：伊斯坦布尔留 6 天（圣索菲亚+地下水宫+渡轮+海洋馆），卡帕只玩格雷梅露天博物馆与 ATV（不适合小童），砍科尼亚；棉花堡对娃新奇但池边滑，全程看护。热气球 6 岁以下不建议，改乘格雷梅观景台看气球升空。长途大巴改为包车/自驾更灵活，两段间至少留半天缓冲。</p>
+
+    <h3>19.3 冬季雪国版（12–2 月）</h3>
+
+
+    <p>卡帕多奇亚冬季可看「雪中仙人烟囱」，但热气球取消率高（备 3 个清晨机动）；地中海段冬季海风大，费特希耶滑翔伞与跳岛停运，可砍掉换成伊斯坦布尔深度 + 布尔萨滑雪。冬季酒店与机票便宜 30–50%，里拉购汇成本也更低。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>20.1 北京 ⇄ 土耳其 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→伊斯坦布尔约 10h</td>
+<td>往返 4500–7000 元</td>
+<td>土耳其航空/国航，落地伊斯坦布尔机场（IST）</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>13–18h</td>
+<td>3500–5500 元</td>
+<td>经莫斯科/迪拜/多哈，便宜但费时</td>
+</tr>
+<tr>
+<td>国内航线</td>
+<td>费特希耶—伊斯坦布尔约 1.5h</td>
+<td>单程 400–800 元</td>
+<td>达拉曼机场出发，班次少需早订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 土耳其境内交通核心提醒</span>
+      城际主力是<strong>长途大巴</strong>（Metro / Kamil Koç / Pamukkale 公司，App 可在线购票，中途有休息站）；番红花城、卡帕、以弗所一带<strong>包车/租车更省心</strong>（山路多，自驾注意里程）。伊斯坦布尔市内用 Istanbulkart 交通卡，地铁/有轨电车/渡轮通用。热气球与滑翔伞运营商会到酒店接送，无需自备交通。
+    </div>
+
+    <h3>20.2 土耳其境内交通</h3>
+    <ul>
+      <li><strong>伊斯坦布尔地铁/有轨电车</strong>：T1 老城线串联蓝色清真寺/圣索菲亚/托普卡帕宫，Istanbulkart 一卡通用</li>
+      <li><strong>伊斯坦布尔渡轮</strong>：横跨博斯普鲁斯海峡，单程约 15–25 里拉，还能看两岸</li>
+      <li><strong>长途大巴</strong>：伊斯坦布尔—番红花城约 6h、番红花城—安卡拉约 3h、安卡拉—格雷梅约 3.5h</li>
+      <li><strong>长途大巴</strong>：格雷梅—科尼亚约 3h、科尼亚—棉花堡约 4–5h、棉花堡—以弗所约 2.5–3h</li>
+      <li><strong>小巴/巴士</strong>：以弗所—博德鲁姆约 2.5h、博德鲁姆—费特希耶约 4h</li>
+      <li><strong>国内航班</strong>：达拉曼（费特希耶）—伊斯坦布尔约 1.5h</li>
+      <li><strong>出租车</strong>：伊斯坦布尔起步价约 60 里拉，堵车贵，尽量地铁+渡轮</li>
+    </ul>
+
+    <h3>20.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>伊斯坦布尔·老城苏丹艾哈迈德</td>
+<td>经济 300–500 / 标准 500–900</td>
+<td>景点步行可达，氛围浓</td>
+<td>坡多，旺季贵</td>
+</tr>
+<tr>
+<td>伊斯坦布尔·贝伊奥卢/加拉塔</td>
+<td>标准 500–1000</td>
+<td>夜生活+海峡景</td>
+<td>离老城远一程</td>
+</tr>
+<tr>
+<td>番红花城·古镇民宿 Konak</td>
+<td>300–600</td>
+<td>奥斯曼木屋体验</td>
+<td>设施古旧</td>
+</tr>
+<tr>
+<td>卡帕多奇亚·格雷梅洞穴酒店</td>
+<td>600–1500（含早）</td>
+<td>洞穴房+露台观热气球</td>
+<td>潮湿，隔音一般</td>
+</tr>
+<tr>
+<td>棉花堡·温泉酒店</td>
+<td>400–800</td>
+<td>泡温泉便利</td>
+<td>可选少</td>
+</tr>
+<tr>
+<td>塞尔丘克/库萨达斯</td>
+<td>经济 300–500</td>
+<td>以弗所近，安静</td>
+<td>夜晚选择少</td>
+</tr>
+<tr>
+<td>博德鲁姆/费特希耶海滨</td>
+<td>标准 500–1200</td>
+<td>地中海度假</td>
+<td>旺季一房难求</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍢 必吃经典</h3>
+        <ul>
+          <li>烤肉串/多纳尔烤肉 Döner</li>
+          <li>土耳其披萨 Lahmacun</li>
+          <li>酸奶浓汤 Yayla Çorbası</li>
+          <li>土耳其红茶 + 苹果茶</li>
+        </ul>
+        <h3>🥘 在地名物</h3>
+        <ul>
+          <li>瓦罐牛肉 Testi Kebab（卡帕多奇亚）</li>
+          <li>棉花堡温泉蛋</li>
+          <li>以弗所产区葡萄/果酒</li>
+          <li>费特希耶烤鱼、爱琴海章鱼</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥙 街头小吃</h3>
+        <ul>
+          <li>Simit 芝麻圈面包</li>
+          <li>烤玉米/烤栗子</li>
+          <li>土耳其冰淇淋 Dondurma（表演式）</li>
+          <li>贻贝饭 Midye Dolma</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>伊斯坦布尔香料市场周边、独立大街</li>
+          <li>格雷梅镇烤肉店</li>
+          <li>塞尔丘克/库萨达斯海边</li>
+          <li>博德鲁姆渔港、费特希耶鱼市</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 餐厅看菜单标价，部分店对游客用「双菜单」，先确认再点；② 海鲜沿岸吃，内陆菜式以烤肉为主；③ 标注 EUR 的菜单要算清汇率再决定；④ 街头土耳其冰淇淋表演最后会「抛给你」，价格先谈好；⑤ 斋月（2026 年约 2–3 月）白天餐厅减少，备好零食，尊重当地习俗。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上）+ 电子签 e-Visa 打印件</li>
+        <li>里拉现金 + 少量欧元（热气球等）+ Visa/Master 卡</li>
+        <li>转换插头（欧标 C/F 两圆脚）+ 充电宝</li>
+        <li>防晒霜 + 墨镜 + 帽子（地中海紫外线强）</li>
+      </ul>
+      <ul>
+        <li>热气球提前 1–2 周预订（含改期条款）</li>
+        <li>下载 Google 地图离线包 + 城际大巴 App</li>
+        <li>轻便热水壶（土耳其茶文化，随处可续杯）</li>
+        <li>常用药 + 肠胃药 + 晕车药</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>清真寺着装</strong>：男女都需遮肩遮膝，女性带一条头巾更从容，进殿脱鞋；② <strong>热气球看天吃饭</strong>：冬季与大风天取消率极高，行程留 2 个清晨机动，选含改期/退款条款的运营商；③ 里拉汇率波动大，大额消费刷卡、现金少量多次在正规兑换点换；④ 大巴扎等地砍价是文化，不买也礼貌婉拒，谨防「热情导游」带进高价店。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      土耳其是「<strong>东西方文明的十字路口</strong>」——伊斯坦布尔的穹顶与海峡、卡帕多奇亚的洞穴与热气球、棉花堡的白色温泉、以弗所的罗马废墟、爱琴海地中海的蔚蓝，20 天刚好串成一条从欧亚之都到地中海海岸的环线。电子签 24 小时出签，说走就走；剩下的就是把热气球订好，一路慢慢看。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#a63d2b",
+    "d": 3,
+    "n": "主环线 · 伊斯坦布尔→番红花城→安卡拉→卡帕多奇亚→科尼亚→棉花堡→以弗所→博德鲁姆→费特希耶",
+    "pts": [
+      [
+        41.0086,
+        28.9802
+      ],
+      [
+        41.2437,
+        32.6929
+      ],
+      [
+        39.9255,
+        32.837
+      ],
+      [
+        38.6434,
+        34.8293
+      ],
+      [
+        37.8709,
+        32.5049
+      ],
+      [
+        37.9208,
+        29.119
+      ],
+      [
+        37.9398,
+        27.341
+      ],
+      [
+        37.0344,
+        27.4305
+      ],
+      [
+        36.6213,
+        29.1163
+      ]
+    ]
+  },
+  {
+    "c": "#1d6fa3",
+    "d": 3,
+    "n": "爱琴海海岸线 · 以弗所→博德鲁姆→费特希耶",
+    "pts": [
+      [
+        37.9398,
+        27.341
+      ],
+      [
+        37.0344,
+        27.4305
+      ],
+      [
+        36.6213,
+        29.1163
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 41.0086,
+    "lng": 28.9802,
+    "name": "伊斯坦布尔·圣索菲亚",
+    "t": "D2 上午 · 2h",
+    "fee": "约 750 里拉",
+    "note": "拜占庭穹顶、马赛克"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 41.0054,
+    "lng": 28.9768,
+    "name": "伊斯坦布尔·蓝色清真寺",
+    "t": "D2 上午 · 1h",
+    "fee": "免费",
+    "note": "六宣礼塔、蓝瓷砖"
+  },
+  {
+    "num": 3,
+    "prio": "nice",
+    "lat": 41.2437,
+    "lng": 32.6929,
+    "name": "番红花城·奥斯曼古镇",
+    "t": "D5 下午 · 半天",
+    "fee": "免费",
+    "note": "白墙木屋、商队驿站"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 38.6744,
+    "lng": 34.84,
+    "name": "卡帕多奇亚·热气球",
+    "t": "D8 清晨 · 1h",
+    "fee": "约 120–200 欧元",
+    "note": "日出飞越仙人烟囱"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 38.6411,
+    "lng": 34.8451,
+    "name": "卡帕多奇亚·格雷梅露天博物馆",
+    "t": "D8 上午 · 2h",
+    "fee": "约 450 里拉",
+    "note": "洞穴教堂千年壁画"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 37.9208,
+    "lng": 29.119,
+    "name": "棉花堡·钙华池",
+    "t": "D11 下午 · 3h",
+    "fee": "约 700 里拉",
+    "note": "赤脚温泉白梯田"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 37.9398,
+    "lng": 27.341,
+    "name": "以弗所古城",
+    "t": "D13 上午 · 3h",
+    "fee": "约 750 里拉",
+    "note": "塞尔苏斯图书馆、大剧场"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 36.5453,
+    "lng": 29.1549,
+    "name": "费特希耶·死海",
+    "t": "D16 全天 · 1 天",
+    "fee": "免费（滑翔伞另计）",
+    "note": "蓝绿泻湖、滑翔伞"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[35.0, 25.5], [42.5, 45.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#a63d2b\"></span>主环线（伊斯坦布尔→费特希耶）<br><span class=\"sw\" style=\"background:#1d6fa3\"></span>爱琴海海岸线（以弗所→博德鲁姆→费特希耶）<br><span class=\"sw dash\"></span>费特希耶—伊斯坦布尔段为航班返程</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

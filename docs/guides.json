@@ -544,5 +544,185 @@
       "千岛湖",
       "乌镇"
     ]
+  },
+  {
+    "slug": "japan-2026",
+    "title": "2026 日本 20 天全景攻略 · 东京京都大阪北海道",
+    "cover": "images/japan/japan-cover.jpg",
+    "html": "japan-2026.html",
+    "date": "2026-08",
+    "destination": "日本",
+    "days": 20,
+    "difficulty": "东亚环线",
+    "summary": "东京→富士山→京都→奈良→大阪→广岛→北海道，20 天本州+北海道大环线",
+    "tags": [
+      "日本",
+      "樱花",
+      "富士山",
+      "温泉",
+      "世界遗产"
+    ]
+  },
+  {
+    "slug": "thailand-2026",
+    "title": "2026 泰国 15 天全景攻略 · 曼谷清迈普吉",
+    "cover": "images/thailand/thailand-cover.jpg",
+    "html": "thailand-2026.html",
+    "date": "2026-08",
+    "destination": "泰国",
+    "days": 15,
+    "difficulty": "东南亚",
+    "summary": "曼谷→大城→清迈→清莱→普吉岛，15 天寺庙海岛双线",
+    "tags": [
+      "泰国",
+      "海岛",
+      "寺庙",
+      "夜市",
+      "性价比"
+    ]
+  },
+  {
+    "slug": "turkey-2026",
+    "title": "2026 土耳其 20 天全景攻略 · 伊斯坦布尔卡帕多奇亚",
+    "cover": "images/turkey/turkey-cover.jpg",
+    "html": "turkey-2026.html",
+    "date": "2026-08",
+    "destination": "土耳其",
+    "days": 20,
+    "difficulty": "欧亚交汇",
+    "summary": "伊斯坦布尔→卡帕多奇亚热气球→棉花堡→以弗所→地中海，20 天欧亚之旅",
+    "tags": [
+      "土耳其",
+      "热气球",
+      "棉花堡",
+      "伊斯坦布尔",
+      "地中海"
+    ]
+  },
+  {
+    "slug": "france-2026",
+    "title": "2026 法国 20 天全景攻略 · 巴黎南法深度游",
+    "cover": "images/france/france-cover.jpg",
+    "html": "france-2026.html",
+    "date": "2026-08",
+    "destination": "法国",
+    "days": 20,
+    "difficulty": "西欧",
+    "summary": "巴黎→卢瓦尔河谷→圣米歇尔山→普罗旺斯→蔚蓝海岸，20 天艺术与田园",
+    "tags": [
+      "法国",
+      "巴黎",
+      "普罗旺斯",
+      "薰衣草",
+      "米其林"
+    ]
+  },
+  {
+    "slug": "spain-2026",
+    "title": "2026 西班牙 20 天全景攻略 · 马德里巴塞罗那安达卢西亚",
+    "cover": "images/spain/spain-cover.jpg",
+    "html": "spain-2026.html",
+    "date": "2026-08",
+    "destination": "西班牙",
+    "days": 20,
+    "difficulty": "伊比利亚",
+    "summary": "马德里→巴塞罗那高迪→塞维利亚弗拉明戈→格拉纳达，20 天热情南欧",
+    "tags": [
+      "西班牙",
+      "巴塞罗那",
+      "高迪",
+      "弗拉明戈",
+      "阿尔罕布拉宫"
+    ]
+  },
+  {
+    "slug": "italy-2026",
+    "title": "2026 意大利 20 天全景攻略 · 罗马佛罗伦萨威尼斯",
+    "cover": "images/italy/italy-cover.jpg",
+    "html": "italy-2026.html",
+    "date": "2026-08",
+    "destination": "意大利",
+    "days": 20,
+    "difficulty": "地中海古国",
+    "summary": "罗马→庞贝→佛罗伦萨→托斯卡纳→五渔村→威尼斯，20 天文艺复兴之旅",
+    "tags": [
+      "意大利",
+      "罗马",
+      "威尼斯",
+      "佛罗伦萨",
+      "托斯卡纳"
+    ]
+  },
+  {
+    "slug": "egypt-2026",
+    "title": "2026 埃及 15 天全景攻略 · 开罗卢克索尼罗河",
+    "cover": "images/egypt/egypt-cover.jpg",
+    "html": "egypt-2026.html",
+    "date": "2026-08",
+    "destination": "埃及",
+    "days": 15,
+    "difficulty": "尼罗河文明",
+    "summary": "开罗金字塔→阿斯旺→尼罗河邮轮→卢克索→红海，15 天文明之旅",
+    "tags": [
+      "埃及",
+      "金字塔",
+      "尼罗河",
+      "红海",
+      "古文明"
+    ]
+  },
+  {
+    "slug": "usa-2026",
+    "title": "2026 美国 30 天全景攻略 · 东西海岸大环线",
+    "cover": "images/usa/usa-cover.jpg",
+    "html": "usa-2026.html",
+    "date": "2026-08",
+    "destination": "美国",
+    "days": 30,
+    "difficulty": "北美大陆",
+    "summary": "纽约→华盛顿→尼亚加拉→芝加哥→大峡谷→洛杉矶→旧金山→黄石，30 天横贯",
+    "tags": [
+      "美国",
+      "纽约",
+      "国家公园",
+      "好莱坞",
+      "自驾"
+    ]
+  },
+  {
+    "slug": "australia-2026",
+    "title": "2026 澳大利亚 25 天全景攻略 · 悉尼墨尔本凯恩斯",
+    "cover": "images/australia/australia-cover.jpg",
+    "html": "australia-2026.html",
+    "date": "2026-08",
+    "destination": "澳大利亚",
+    "days": 25,
+    "difficulty": "南半球",
+    "summary": "悉尼→大洋路→凯恩斯大堡礁→乌鲁鲁→黄金海岸，25 天反季节之旅",
+    "tags": [
+      "澳大利亚",
+      "悉尼",
+      "大堡礁",
+      "乌鲁鲁",
+      "大洋路"
+    ]
+  },
+  {
+    "slug": "india-2026",
+    "title": "2026 印度 25 天全景攻略 · 金三角恒河拉贾斯坦",
+    "cover": "images/india/india-cover.jpg",
+    "html": "india-2026.html",
+    "date": "2026-08",
+    "destination": "印度",
+    "days": 25,
+    "difficulty": "南亚文明",
+    "summary": "德里→泰姬陵→斋普尔→焦特布尔→瓦拉纳西恒河→孟买，25 天深度",
+    "tags": [
+      "印度",
+      "泰姬陵",
+      "恒河",
+      "拉贾斯坦",
+      "世界遗产"
+    ]
   }
 ]

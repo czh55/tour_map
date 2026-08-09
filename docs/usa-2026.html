@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 美国 30 天全景攻略 · 东西海岸大环线</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #b3261e;
+    --red-light: #cf3a2a;
+    --gold: #e0a93c;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #1f3a93;
+    --cover1: #74130e;
+    --ov1: rgba(100,16,10,.88);
+    --ov2: rgba(179,38,30,.72);
+    --ov3: rgba(220,90,50,.38);
+    --ov4: rgba(240,150,70,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(179,38,30,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/usa/usa-cover.jpg" alt="美国旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 30 天大环线 · 东岸 + 中西部 + 西岸</div>
+      <h1>美国 30 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 纽约 · 华盛顿 · 尼亚加拉 · 芝加哥 · 拉斯维加斯 · 大峡谷 · 洛杉矶 · 旧金山 · 黄石</div>
+      <div class="meta">
+        <span>🛫 行程链：纽约 → 华盛顿 → 尼亚加拉 → 芝加哥 → 拉斯维加斯 → 大峡谷 → 洛杉矶 → 旧金山 → 黄石 → 返程</span>
+        <span>📅 时间窗口：30 天 29 晚</span>
+        <span>✈️ 北京⇄纽约 直飞约 13–14 小时（跨太平洋）</span>
+        <span>🛂 签证：美国 B1/B2 十年多次签证，面试+EVUS 登记（关键）</span>
+        <span>🕐 时差：东部 -12h、西部 -15h（夏令时 -11/-14h）· 🔌 120V A/B 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 30 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 30 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">纽约</span>
+      <span class="arrow">→</span>
+      <span class="node">费城/华盛顿</span>
+      <span class="arrow">→</span>
+      <span class="node">波士顿</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">尼亚加拉</span>
+      <span class="arrow">→</span>
+      <span class="node">芝加哥</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">拉斯维加斯</span>
+      <span class="arrow">→</span>
+      <span class="node">大峡谷</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">洛杉矶</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">旧金山</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">黄石</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 30 天怎么安排最合理</span>
+      美国是「<strong>横跨时区的国家公园+大都市综合体</strong>」：东岸是历史与都会（纽约、华盛顿、波士顿），中西部是工业与摩天楼（芝加哥），西部是沙漠乐园（拉斯维加斯、大峡谷）与太平洋城市带（洛杉矶、旧金山），再向北飞入黄石看地热奇观。30 天刚好把<strong>东西海岸一条大环线走完</strong>，全程以「城市 2–3 天 + 国家公园 2–3 天」的节奏推进，途中多段国内航班转场。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>美国 B1/B2 <strong>十年多次签证</strong>：需 DS-160 表 + 面签，出签后出发前 72h 内做 <strong>EVUS 登记</strong>（有效 2 年）；首次面签建议提前 2–3 个月</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>美东（纽约/华盛顿）比北京慢 13h（夏令时 12h）；美西（洛杉矶/旧金山）慢 16h（夏令时 15h）；芝加哥/黄石居中</td>
+</tr>
+<tr>
+<td>电源插座</td>
+<td>美国 <strong>A/B 型</strong>（两/三扁脚），120V 60Hz；国内两扁脚充电器可直接用，三脚需转换</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>美元 USD，<strong>1 美元 ≈ 7.2 元人民币</strong>；当地几乎全刷卡，现金备 200 美元应急</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>东岸 9 天（纽约→华盛顿→波士顿→尼亚加拉）+ 中西部 7 天（芝加哥→拉斯维加斯→大峡谷）+ 西岸 10 天（洛杉矶→旧金山→黄石）+ 4 天返程缓冲</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 30 天从旧金山/盐湖城转机返京；跨太平洋航班旺季（6–8 月）提前 2 个月订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>纽约 → 费城/华盛顿 → 波士顿 → 尼亚加拉 → 芝加哥 → 拉斯维加斯 → 大峡谷 → 洛杉矶 → 旧金山 → 黄石</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 42000–55000 ／ 标准 65000–85000 ／ 舒适 110000–160000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办 B1/B2 签证+EVUS ② 订国内段机票（纽约→华盛顿等，提前 1 个月便宜）③ 黄石/大峡谷住宿提前 2–3 个月（国家公园内房源紧俏）</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>5–6 月、9–10 月气候最佳；7–8 月炎热但黄石/大峡谷峡谷内早晚凉；12–2 月黄石雪大封路多，尼亚加拉可看冰瀑</td>
+</tr>
+<tr>
+<td>支付与小费</td>
+<td>几乎全程刷卡（Visa/Mastercard），现金备 200 美元应急；餐厅/打车/酒店需付 15–20% 小费（美国特色）</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证与 EVUS 是最大前置</strong>：B1/B2 虽给十年多次，但每次停留上限 6 个月，30 天行程完全够用；重点在面签通过率与 EVUS 登记，护照有效期至少需覆盖返程后 6 个月。② <strong>美国公共交通依赖车</strong>：城市之间主要靠飞机（国内段 1–2h）+ 租车自驾（大峡谷/黄石必须自驾或参团），西部城市停车费高、路网复杂，建议纽约/波士顿靠地铁，西部租车。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 30 天版</h2>
+
+    <p>以下为 30 天 29 晚的推荐节奏：东岸按「纽约→华盛顿→波士顿→尼亚加拉」推进，中西部飞芝加哥与拉斯维加斯，西岸自驾洛杉矶—旧金山，最后飞黄石收尾。每日主景点 ≤2 个，长途段用国内航班衔接。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵纽约</td>
+<td>北京✈纽约（直飞约 13–14h，倒时差 -12h），入住曼哈顿中城，傍晚时代广场灯光</td>
+<td>纽约</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>自由女神像+埃利斯岛（渡轮上岛）→ 华尔街铜牛 → 三一教堂</td>
+<td>纽约</td>
+<td>自由女神日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>世贸中心遗址+One World 观景台 → 布鲁克林大桥步行 → 金融区</td>
+<td>纽约</td>
+<td>金融区一日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>时代广场 → 中央公园（骑马/骑行）→ 大都会艺术博物馆（门票建议价）</td>
+<td>纽约</td>
+<td>都市核心</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>MoMA 现代艺术博物馆 → 第五大道 → 洛克菲勒中心顶 → 百老汇音乐剧</td>
+<td>纽约</td>
+<td>艺术与百老汇</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>纽约→费城（巴士/火车 2h）：独立宫+自由钟 → 黄昏抵华盛顿</td>
+<td>华盛顿</td>
+<td>移师费城</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>华盛顿国家广场一日：林肯纪念堂 → 反思池 → 华盛顿纪念碑 → 国会山外观</td>
+<td>华盛顿</td>
+<td>国家广场</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>白宫外观 → 史密森博物馆群（航空航天/自然历史免费）→ 潮汐湖樱花（春季）</td>
+<td>华盛顿</td>
+<td>博物馆日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>华盛顿→波士顿（火车约 7h 或飞 1.5h），傍晚昆西市场吃龙虾卷</td>
+<td>波士顿</td>
+<td>移师波士顿</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>波士顿自由之路：公园街教堂 → 老州议会 → 宪法号军舰 → 邦克山</td>
+<td>波士顿</td>
+<td>自由之路</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>哈佛大学+麻省理工（剑桥校区）→ 波士顿公共花园 → 后湾街拍</td>
+<td>波士顿</td>
+<td>名校日</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>波士顿→布法罗（飞约 1.5h）→ 尼亚加拉瀑布城，晚间瀑布灯光</td>
+<td>尼亚加拉</td>
+<td>飞往瀑布</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>尼亚加拉大瀑布：雾中少女号游船 → 风洞之旅 → 观景塔全景</td>
+<td>尼亚加拉</td>
+<td>瀑布全日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>尼亚加拉→芝加哥（飞约 2h），傍晚千禧公园云门（大豆子）</td>
+<td>芝加哥</td>
+<td>移师芝加哥</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>芝加哥：芝加哥河游船建筑之旅 → 密歇根湖滨 → 华丽一英里购物</td>
+<td>芝加哥</td>
+<td>建筑之都</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>芝加哥艺术博物馆（印象派馆藏）→ 威利斯大厦 103 层天空观景台</td>
+<td>芝加哥</td>
+<td>艺术与高空</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>芝加哥→拉斯维加斯（飞约 4h），傍晚长街霓虹夜景</td>
+<td>拉斯维加斯</td>
+<td>飞往赌城</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>拉斯维加斯：长街各主题酒店 → 百乐宫音乐喷泉 → 大转轮（High Roller）</td>
+<td>拉斯维加斯</td>
+<td>赌城一日</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>拉斯维加斯→大峡谷南缘（自驾 4.5h），下午光明天使观景台看日落</td>
+<td>大峡谷</td>
+<td>自驾峡谷</td>
+</tr>
+<tr>
+<td>D20</td>
+<td>大峡谷南缘日出 → 步道徒步（光明天使小径 1–2h）→ 直升机可选</td>
+<td>大峡谷</td>
+<td>峡谷全日</td>
+</tr>
+<tr>
+<td>D21</td>
+<td>大峡谷→旗杆市→飞洛杉矶（经凤凰城转机），傍晚好莱坞星光大道</td>
+<td>洛杉矶</td>
+<td>飞往洛杉矶</td>
+</tr>
+<tr>
+<td>D22</td>
+<td>洛杉矶：好莱坞标志 → 格里菲斯天文台 → 比弗利山庄 → 圣莫尼卡海滩日落</td>
+<td>洛杉矶</td>
+<td>好莱坞日</td>
+</tr>
+<tr>
+<td>D23</td>
+<td>好莱坞环球影城全天（哈利波特/侏罗纪等），晚上圣费尔南多谷晚餐</td>
+<td>洛杉矶</td>
+<td>乐园日</td>
+</tr>
+<tr>
+<td>D24</td>
+<td>洛杉矶：迪士尼乐园（可选）或 盖蒂中心+威尼斯海滩慢游</td>
+<td>洛杉矶</td>
+<td>乐园/艺术</td>
+</tr>
+<tr>
+<td>D25</td>
+<td>洛杉矶→旧金山（一号公路自驾或飞 1.5h），傍晚渔人码头</td>
+<td>旧金山</td>
+<td>移师湾区</td>
+</tr>
+<tr>
+<td>D26</td>
+<td>旧金山：金门大桥（最佳机位）→ 九曲花街 → 渔人码头+恶魔岛可选</td>
+<td>旧金山</td>
+<td>金门日</td>
+</tr>
+<tr>
+<td>D27</td>
+<td>旧金山→硅谷：斯坦福大学 → 谷歌园区 → 苹果访客中心 → 返市区</td>
+<td>旧金山</td>
+<td>硅谷日</td>
+</tr>
+<tr>
+<td>D28</td>
+<td>旧金山→博兹曼（飞约 2.5h）→ 西黄石，晚上野生动植物初见</td>
+<td>黄石</td>
+<td>飞往黄石</td>
+</tr>
+<tr>
+<td>D29</td>
+<td>黄石国家公园：老忠实间歇泉 → 大棱镜温泉 → 黄石大峡谷瀑布</td>
+<td>黄石</td>
+<td>黄石地热</td>
+</tr>
+<tr>
+<td>D30 返程</td>
+<td>黄石→博兹曼/盐湖城✈北京（转机约 20–24h），入境到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍波士顿（D9–D11 并入纽约/华盛顿）与迪士尼（D24）；夏威夷作为可选项见备选方案。带孩子家庭建议减少驾车段（大峡谷/黄石改参团）。国家公园内住宿（黄石老忠实旅馆、大峡谷园内酒店）每年 6–10 月一房难求，务必提前 3 个月抢。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 30 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达纽约</span>
+          <span class="d-desc">跨太平洋首日</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–21:00</td><td class="t-what">北京✈纽约（直飞约 13–14h，跨国际日期变更线）。建议选 JFK/纽瓦克入境，机场快轨进曼哈顿</td></tr>
+          <tr><td class="t-time">21:30–22:30</td><td class="t-what">入住曼哈顿中城酒店，便利店买 MetroCard 地铁卡</td></tr>
+          <tr><td class="t-time">22:30–00:30</td><td class="t-what">时代广场（免费）：纽约夜生活的第一步，灯牌与街头艺人</td></tr>
+          <tr><td class="t-time">00:30</td><td class="t-what">回酒店休息，强制倒时差（与北京 -12h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">纽约地铁 24 小时运营，初次乘坐注意分 Express 与 Local；曼哈顿酒店价格高，可考虑新泽西泽西城（Path 快轨 25 分钟进曼哈顿）性价比更高。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 自由女神像</span>
+          <span class="d-desc">渡轮上岛</span>
+          <span class="d-tag ">🗽 自由女神日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:30</td><td class="t-what">炮台公园（Battery Park）乘 Statue Cruises 渡轮（往返约 25 美元，含自由女神岛+埃利斯岛）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>自由女神像</b>：登岛环行+基座博物馆；登皇冠需提前 1 个月官网抢票（附加费）</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">自由岛野餐/小卖部午餐</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what"><b>埃利斯岛移民博物馆</b>（免费）：美国移民史第一站</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">返曼哈顿：华尔街铜牛（免费）+ 三一教堂（免费）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：华尔街附近或回中城，早休息倒时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">自由女神渡轮班次多但旺季排队 1h+，建议网上提前买票并预约时段；登皇冠名额极少，只开放很小区域。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 世贸中心与布鲁克林大桥</span>
+          <span class="d-desc">金融区一日</span>
+          <span class="d-tag ">🏙 金融区日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>911 纪念馆+世贸中心遗址</b>（纪念馆成人约 33 美元）：双子塔倒映水池</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>One World Trade Center 观景台</b>（约 42 美元）：360° 看纽约全城</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：金融区餐车/牛排馆</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>布鲁克林大桥</b>（免费）步行：从曼哈顿走到布鲁克林，看曼哈顿天际线</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">布鲁克林 DUMBO 区（网红机位）+ 返程</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：中城牛排/意餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">布鲁克林大桥最佳拍摄位在 DUMBO 的华盛顿街与海滨公园；桥面人行道早晨与傍晚人少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 时代广场与中央公园</span>
+          <span class="d-desc">都市核心一日</span>
+          <span class="d-tag ">🌆 曼哈顿日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>时代广场</b>（免费）：白天看 TOYS'R'US/迪士尼商店，人相对少</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>中央公园</b>（免费）：草莓地、贝塞斯达露台、大草坪，可租自行车骑行</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：公园边或哥伦比亚圆环餐厅</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>大都会艺术博物馆</b>（门票建议价约 30 美元）：埃及馆、欧洲绘画、丹铎神庙</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">晚餐：上东区 Brasserie 或日料</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">回酒店（可选：洛克菲勒中心顶层夜景）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大都会门票为「建议价」（recommended price），可酌情支付；周四晚部分区域延长开放。中央公园东南角游客最多，北段更安静。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · MoMA 与百老汇</span>
+          <span class="d-desc">艺术与戏剧日</span>
+          <span class="d-tag alt">🎭 百老汇日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>MoMA 现代艺术博物馆</b>（成人约 25 美元）：梵高《星空》、莫奈睡莲、毕加索</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：中城沙拉/汉堡（Shake Shack）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>第五大道</b>（免费）：蒂芙尼、卡地亚橱窗，苹果第五大道店</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">可选：高线公园（High Line，免费）或 圣帕特里克大教堂</td></tr>
+          <tr><td class="t-time">18:00–22:00</td><td class="t-what"><b>百老汇音乐剧</b>（热门剧目 100–250 美元）：狮子王/汉密尔顿/魔法坏女巫，建议提前买票或 TKTS 半价亭</td></tr>
+          <tr><td class="t-time">22:30</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">TKTS 售票亭（时代广场与林肯中心）当天剩票 5–7 折，热门剧建议提前 2 周官网订；百老汇周三/周日有日场。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 费城独立宫</span>
+          <span class="d-desc">移师首都</span>
+          <span class="d-tag ">🚄 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">纽约乘 Megabus/Amtrak 到费城（约 2h，巴士 20–40 美元）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>独立宫</b>（免费，需预约）：独立宣言与美国宪法签署地</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what"><b>自由钟</b>（免费）：费城精神象征，旁边游客中心</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：费城芝士牛排（Pat's/Geno's 经典对决）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">费城艺术博物馆台阶（洛奇雕像）→ 老城区街拍</td></tr>
+          <tr><td class="t-time">16:00–19:30</td><td class="t-what">火车/巴士到华盛顿（约 2.5h），入住白宫附近</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">晚餐：华盛顿联合车站周边</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">独立宫门票需在国家公园官网提前预约（免费）；费城—华盛顿火车 Amtrak 约 2.5h，比巴士贵但准时。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 国家广场</span>
+          <span class="d-desc">华盛顿核心一日</span>
+          <span class="d-tag ">🏛 国家广场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>林肯纪念堂</b>（免费）：远望华盛顿纪念碑与国会山轴线</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what">反思池 + 二战纪念碑（免费）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>华盛顿纪念碑</b>外观（登顶需提前预约门票）+ 午餐国家广场草坪</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>美国国会大厦</b>（免费导览需官网预约）→ 国会图书馆外观</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">国家档案馆（免费，看独立宣言原件）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：Penn Quarter 或唐人街，早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">华盛顿纪念碑与国会导览都要提前 1–2 周官网抢票；国家广场暴晒无遮阳，夏季带水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 白宫与史密森</span>
+          <span class="d-desc">博物馆日</span>
+          <span class="d-tag ">🏛 史密森日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>白宫</b>（外观，内部参观需提前 21–90 天通过国会议员申请）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>国家航空航天博物馆</b>（免费）：莱特飞机、阿波罗指挥舱</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：史密森城堡附近</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>国家自然历史博物馆</b>（免费）：希望之星蓝钻、恐龙厅</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">潮汐湖（Tidal Basin，春季樱花道）+ 杰斐逊纪念堂</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：乔治城水岸餐厅，饭后河边散步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">史密森博物馆群全部免费且大多 10:00–17:30；航空航天馆新馆已开放，人最多，建议开门就到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 移师波士顿</span>
+          <span class="d-desc">东岸北段</span>
+          <span class="d-tag alt">🚄 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–15:00</td><td class="t-what">华盛顿✈波士顿（约 1.5h，提前订 1000–1500 元）或 Amtrak（约 7h）</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">入住市中心/后湾，漫步<strong>波士顿公共花园</strong>（免费，天鹅船）</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><b>昆西市场+法尼尔厅</b>（免费）：龙虾卷、蛤蜊浓汤、波士顿烘焙豆</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">晚餐：昆西市场小吃巡礼</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">回酒店休整</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">波士顿出租车/地铁方便；龙虾卷旺季（6–9 月）约 25–35 美元，昆西市场的可媲美海景餐厅。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 自由之路</span>
+          <span class="d-desc">美国革命之路</span>
+          <span class="d-tag ">🇺🇸 自由之路日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>自由之路起点</b>：公园街教堂 → 老州议会（红砖小道全长 4km）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">老北教堂 → 保罗·列维尔故居（约 6 美元）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：北端区意餐（那不勒斯披萨）</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>宪法号帆船</b>（免费，美国海军最老现役舰）+ 邦克山纪念碑</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">查尔斯河滨步道散步</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：北端区或后湾，早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">自由之路地面有红色砖线引导，跟着走不迷路；宪法号冬季闭馆检修，提前查开放日。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 哈佛与 MIT</span>
+          <span class="d-desc">名校一日</span>
+          <span class="d-tag ">🎓 名校日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:00</td><td class="t-what">地铁红线到哈佛广场</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>哈佛大学</b>（免费）：约翰·哈佛雕像、怀德纳图书馆、校园漫步</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：哈佛广场学生食堂/中东卷饼</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>麻省理工 MIT</b>（免费）：大圆顶、无限长廊、查尔斯河畔看天际线</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">后湾（Back Bay）街区：维多利亚式褐石房街拍</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">晚餐：后湾日料或海鲜，早休息次日飞布法罗</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">哈佛与 MIT 都免费开放但室内多需预约；查尔斯河划船是夏季热门，可租皮划艇。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 飞向尼亚加拉</span>
+          <span class="d-desc">北境瀑布前夜</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">波士顿✈布法罗（约 1.5h，提前订 800–1400 元）</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what">机场租车/接驳到尼亚加拉瀑布城（约 40min）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">入住瀑布景观酒店，午餐：瀑布区美式牛排</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>尼亚加拉瀑布州立公园</b>（免费）：美国瀑布+新娘面纱瀑布观景台</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">山羊岛（Goat Island）步行环线看马蹄瀑布侧面</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what">晚间<strong>瀑布灯光秀</strong>（夏季每晚彩色灯光，免费）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">尼亚加拉瀑布城夏季晚间灯光秀很壮观；美国侧观瀑比加拿大侧方便（免签证过境）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 瀑布全日</span>
+          <span class="d-desc">雾中少女号</span>
+          <span class="d-tag ">🌊 瀑布全日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what"><b>雾中少女号游船</b>（约 26 美元）：冲进马蹄瀑布水雾，穿雨衣</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>风洞之旅</b>（约 23 美元）：下到瀑布底部步道近距离接触</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：观景塔旋转餐厅（Buffalo 辣鸡翅发源地）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">乘船<strong>尼亚加拉瀑布景观塔</strong>全景，或直升机俯瞰（约 130 美元）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">Niagara Gorge 峡谷步道徒步</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：瀑布区晚餐，早休息次日飞芝加哥</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">雾中少女号与风洞都需要官网提前订时段；夏季水汽大，手机相机套防水袋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 移师芝加哥</span>
+          <span class="d-desc">风城初见</span>
+          <span class="d-tag ">🚄 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">布法罗✈芝加哥（约 2h，提前订 800–1200 元）</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">入住市中心/河畔，漫步芝加哥河滨步道</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what"><b>千禧公园</b>（免费）：云门「大豆子」、皇冠喷泉、露天音乐厅</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">午餐：千禧公园旁</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>格兰特公园</b>（免费）→ 白金汉喷泉 → 密歇根湖滨</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">晚餐：河畔牛排馆，夜游芝加哥河</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">千禧公园大豆子最佳机位在西北角拍摄反射；芝加哥河游船夏季每晚有建筑灯光之旅。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 建筑之都</span>
+          <span class="d-desc">芝加哥河与华丽一英里</span>
+          <span class="d-tag ">🏢 建筑日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>芝加哥河建筑游船</b>（约 50 美元）：摩天楼发源地的经典航线</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>华丽一英里</b>（免费）：密歇根大道购物街，水塔广场</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：深盘披萨（芝加哥名物）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>约翰·汉考克中心 94 层观景台</b>（约 35 美元）或 360 CHICAGO</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">芝加哥剧院区外观 + 河畔黄昏</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：深盘披萨补足/意餐，早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">芝加哥建筑游船夏季班次密（每 30 分钟一班），官网购票免排队；深盘披萨两人吃一块就够。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 艺术博物馆</span>
+          <span class="d-desc">芝加哥文化日</span>
+          <span class="d-tag alt">🎨 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>芝加哥艺术博物馆</b>（成人约 32 美元）：梵高自画像、修拉《大碗岛的星期天》、美国馆</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：博物馆 café 或唐人街</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>威利斯大厦 103 层天空观景台</b>（约 40 美元）：玻璃观景台悬空俯瞰全城</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">林肯公园动物园（免费）或 Navy Pier 摩天轮（约 25 美元）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：Navy Pier 或 意大利村，早休息次日飞拉斯维加斯</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">威利斯大厦天空观景台旺季排队 1h+，提前网上购票选日出/日落时段；芝加哥艺术博物馆周四晚延长开放。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 飞向拉斯维加斯</span>
+          <span class="d-desc">赌城之夜</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">芝加哥✈拉斯维加斯（约 4h，跨两个时区，提前订 1000–1800 元）</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">入住长街酒店，午餐：酒店自助餐（拉斯维加斯特色，30–60 美元）</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what"><b>长街巡游</b>（免费）：威尼斯人运河、巴黎铁塔、卢克索金字塔外观</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>百乐宫音乐喷泉</b>（免费，每 30 分钟一场）+ 温室花园</td></tr>
+          <tr><td class="t-time">19:30–22:00</td><td class="t-what"><b>High Roller 大转轮</b>（约 40 美元）：世界最高摩天轮夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">拉斯维加斯各赌场酒店的自助餐性价比高（可当正餐）；长街打车/步行都方便，晚间的街头表演很多。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 赌城一日</span>
+          <span class="d-desc">娱乐与表演</span>
+          <span class="d-tag ">🎰 赌城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what">自由活动：可选 7 大赌场酒店深度打卡（每家都有主题景观）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：Bellagio Buffet 或 纽约纽约餐厅</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">可选：太阳马戏团 O 秀（约 150–250 美元）下午场，或 枪械射击/直升机体验</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">Fremont Street 老城区：天幕灯光秀+街头艺人（免费）</td></tr>
+          <tr><td class="t-time">19:00–22:00</td><td class="t-what">晚餐+长街夜景漫步，看 Mirage 火山喷发秀（免费）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">O 秀、KA 秀等大型演出需提前 1–2 周订票；赌场区域未成年人不得停留，带孩子选白天主题店更合适。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 自驾大峡谷</span>
+          <span class="d-desc">亚利桑那荒野</span>
+          <span class="d-tag ">🚗 自驾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:30</td><td class="t-what">拉斯维加斯租车自驾→大峡谷南缘（约 4.5h，途经胡佛水坝眺望点）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">入住大峡谷南缘园内酒店/图萨扬镇，午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>马瑟角</b>（免费）：大峡谷第一眼，壮阔全景</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>光明天使观景台</b>看日落（免费）：峡谷染成金红色</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大峡谷南缘全年开放，园内住宿（大峡谷旅馆）需提前 3–6 个月预订；图萨扬镇在公园外 1 英里，选择更多。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 峡谷全日</span>
+          <span class="d-desc">日出与步道</span>
+          <span class="d-tag ">🏔 峡谷日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–07:00</td><td class="t-what">大峡谷南缘日出（沙漠观景台 Desert View 或 马瑟角）</td></tr>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">酒店早餐，整理装备</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>光明天使步道徒步</b>（免费，1–2h 往返 Ooh Aah Point）或 沿 Rim Trail 漫步</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：峡谷边餐厅</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">可选：直升机俯瞰大峡谷（约 250–350 美元）或 印第安向导+穿越沙漠瞭望塔</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">晚餐：图萨扬镇，早休息次日飞洛杉矶</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">光明天使步道越往下越陡，量力而行；大峡谷海拔 2100m，注意防晒补水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D21 · 移师洛杉矶</span>
+          <span class="d-desc">天使之城</span>
+          <span class="d-tag alt">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:30</td><td class="t-what">大峡谷出发前往旗杆市（Flagstaff，约 1.5h）</td></tr>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what">旗杆市✈洛杉矶（经凤凰城转机，约 3.5h）</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">入住好莱坞/圣莫尼卡，午餐：In-N-Out 汉堡（加州名物）</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>好莱坞星光大道</b>（免费）：星星寻宝+中国戏院手印</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what"><b>格里菲斯天文台</b>（免费）：日落与洛杉矶全景夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">洛杉矶交通拥堵严重，尽量住在核心区步行可达的地方；格里菲斯天文台周末人满为患，建议日落前 1h 到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D22 · 好莱坞日</span>
+          <span class="d-desc">影视之城</span>
+          <span class="d-tag ">🎬 好莱坞日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what"><b>好莱坞标志</b>（免费）：从 Lake Hollywood Park 或 格里菲斯山径拍最佳</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>比弗利山庄</b>（免费）：罗迪欧大道橱窗+明星豪宅区车游</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：比弗利/西好莱坞餐厅</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>圣莫尼卡码头</b>（免费）：66 号公路终点、太平洋游乐园摩天轮</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">威尼斯海滩（免费）：海滨步道、街头艺人</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：圣莫尼卡海鲜，看太平洋日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">好莱坞标志近年禁止近距离攀爬，官方观景点在 Lake Hollywood Park 或 Griffith Observatory；停车贵，公共交通（Metro）周日高峰可用。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D23 · 环球影城</span>
+          <span class="d-desc">乐园全日</span>
+          <span class="d-tag ">🎢 乐园日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">环球影城开门前到（好莱坞环球影城），门票约 130–180 美元（含马里奥园区）</td></tr>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what">哈利波特魔法世界：霍格沃茨城堡+黄油啤酒</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">园内午餐：三把扫帚/洛杉矶烤肉</td></tr>
+          <tr><td class="t-time">13:00–17:00</td><td class="t-what">侏罗纪世界激流勇进 → 变形金刚3D → 小黄人（用 Early Access 规划动线）</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">影城之旅（Studio Tour）：真实片场+金刚/速度与激情 4D</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：环球影城外 CityWalk</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">好莱坞环球影城比奥兰多小但项目经典；马里奥园区需 app 抢入场券（入园即抢）；单日游建议买早鸟票。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D24 · 乐园/艺术自由日</span>
+          <span class="d-desc">可调行程</span>
+          <span class="d-tag alt">🎯 自由日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what">方案 A：<b>迪士尼乐园</b>（阿纳海姆，单日约 150 美元）；方案 B：<b>盖蒂中心</b>（免费，艺术+花园）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：所去园区/博物馆</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">继续乐园或 方案 B：威尼斯海滩慢游/好莱坞标志再拍一次</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">自由购物：罗迪欧大道或奥特莱斯</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：洛杉矶韩式烤肉（K-town）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">迪士尼乐园与环球影城距离约 40min，别安排连续两天；若对乐园无兴趣，盖蒂中心+海滩组合更轻松。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D25 · 一号公路或飞旧金山</span>
+          <span class="d-desc">湾区初见</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">洛杉矶出发：方案 A 沿<strong>1 号公路自驾</strong>（大苏尔段需 7–8h 边走边玩）或 方案 B 飞旧金山（约 1.5h）</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">（自驾线）圣芭芭拉/丹麦村午餐；飞行线：入住旧金山渔人码头区</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>渔人码头</b>（免费）：39 号码头海狮+螃蟹餐</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">九曲花街（免费）：全球最弯曲街道，开车/步行体验</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：渔人码头海鲜或中国城</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">1 号公路大苏尔段偶有滑坡绕行，出发前查路况；自驾线时间紧，若不赶路建议选飞行线+旧金山城内深度。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D26 · 金门大桥</span>
+          <span class="d-desc">旧金山名片</span>
+          <span class="d-tag ">🌉 金门日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what"><b>金门大桥</b>（免费）：最佳机位 Baker Beach 或 大桥南端游客中心</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">大桥步行过桥（约 30min）看海湾全景，或骑行（租车约 40 美元/天）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：马林县小镇或回渔人码头</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>恶魔岛</b>（船票+门票约 50 美元，提前 1–2 周订）：越狱传奇监狱岛</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">艺术宫（免费）→ 电报山看科伊特塔</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：中国城/北滩意餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">恶魔岛票特别抢手，务必提前官网订；金门大桥早晨多雾、中午雾散，上午 10 点后光线最好。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D27 · 硅谷日</span>
+          <span class="d-desc">科技圣地</span>
+          <span class="d-tag alt">💻 硅谷日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">旧金山租车/包车南下硅谷（约 1h）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>斯坦福大学</b>（免费）：纪念教堂、胡佛塔、校园漫步</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：帕洛阿尔托大学城</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>谷歌园区</b>（外观+访客中心商店）→ <b>苹果访客中心</b>（可看乔布斯剧院外观）</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">返旧金山，可选：穆尔森林红杉或 双子峰看日落</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：旧金山晚餐，准备次日飞黄石</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">谷歌/苹果总部内部不对游客开放，只能访客中心与外观打卡；斯坦福胡佛塔可登顶（免费）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D28 · 飞往黄石</span>
+          <span class="d-desc">国家公园前夜</span>
+          <span class="d-tag ">🛫 移师日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">旧金山✈博兹曼（约 2.5h，提前订 1500–2500 元）</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">博兹曼机场租车，午餐：小镇简餐</td></tr>
+          <tr><td class="t-time">12:30–16:30</td><td class="t-what">自驾到西黄石（约 1.5h）或北门加德纳（约 1h），入住</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">黄昏进园（免费门票 35 美元/车/7 天）：麦迪逊河看野牛/麋鹿</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：西黄石镇，准备次日地热巡游</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">黄石门票按车收取（约 35 美元/7 天），同行可拼车；博兹曼与西黄石之间夏季早晚看野生动物概率高。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D29 · 黄石地热</span>
+          <span class="d-desc">间歇泉与温泉</span>
+          <span class="d-tag ">♨️ 黄石日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>老忠实间歇泉</b>（免费）：看喷发时间表（约每 90 分钟一次）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>大棱镜温泉</b>（免费）：世界第三大温泉，俯瞰栈道最佳</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：老忠实旅馆餐厅</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>黄石大峡谷</b>（免费）：艺术家角看下瀑布 308 英尺</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">诺里斯间歇泉盆地（免费）：黄石最热的地热区</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：返回西黄石/园内餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大棱镜最佳观赏时段为中午（太阳直射色彩最艳）；园区内手机信号差，下载离线地图，加油站少需提前加油。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D30 · 返程</span>
+          <span class="d-desc">回国</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–07:00</td><td class="t-what">退房，最后一次野生动物巡游（早上的公园最活跃）</td></tr>
+          <tr><td class="t-time">07:30–09:30</td><td class="t-what">自驾返博兹曼机场（约 1.5h），还车</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">博兹曼✈西雅图/盐湖城/旧金山 转机</td></tr>
+          <tr><td class="t-time">14:00–次日 17:00</td><td class="t-what">旧金山/西雅图✈北京（约 12–13h，跨太平洋），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程建议留足 2–3h 转机缓冲（美国国内段+国际段衔接）；黄石—北京无直飞，多为西海岸转机一次。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-cover.jpg" alt="纽约·自由女神像" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">纽约·自由女神像 <small>渡轮 25 美元起</small></div>
+          <div class="sc-feat">美国象征。<b>登岛+埃利斯岛</b>，清晨人少、光线最美。</div>
+          <div class="sc-meta">📅 08:30–16:30 · ⏱ 3–4h · 🚢 炮台公园渡轮</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-1.jpg" alt="纽约·时代广场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">纽约·时代广场 <small>免费</small></div>
+          <div class="sc-feat">世界十字路口。<b>霓虹灯牌+百老汇</b>，夜晚最出片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 地铁 42 街</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-2.jpg" alt="大峡谷国家公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">大峡谷国家公园 <small>35 美元/车/7 天</small></div>
+          <div class="sc-feat">世界自然遗产。<b>南缘日出日落+光明天使步道</b>，此生必看。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚗 拉斯维加斯自驾 4.5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-3.jpg" alt="旧金山·金门大桥" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">旧金山·金门大桥 <small>免费</small></div>
+          <div class="sc-feat">工程奇迹。<b>晨雾与日落</b>不同光影，步行过桥体验最佳。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚌 市内巴士/骑行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-4.jpg" alt="洛杉矶·好莱坞" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">洛杉矶·好莱坞 <small>免费（观景台另计）</small></div>
+          <div class="sc-feat">电影圣地。<b>好莱坞标志+星光大道+格里菲斯天文台</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚗 自驾或 Metro</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-5.jpg" alt="拉斯维加斯·长街" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">拉斯维加斯·长街 <small>免费（表演另计）</small></div>
+          <div class="sc-feat">不夜城。<b>音乐喷泉+火山秀+摩天轮</b>，霓虹夜景全球无双。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚇 步行/免费 Tram</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-6.jpg" alt="尼亚加拉大瀑布" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">尼亚加拉大瀑布 <small>游船 26 美元起</small></div>
+          <div class="sc-feat">北美最大瀑布。<b>雾中少女号+晚间灯光</b>，震撼水雾。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚗 布法罗自驾 40min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/usa/usa-7.jpg" alt="黄石·大棱镜温泉" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">黄石·大棱镜温泉 <small>公园票 35 美元/车</small></div>
+          <div class="sc-feat">地球调色盘。<b>老忠实+大棱镜+黄石大峡谷</b>地热三连。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚗 自驾园内</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（自由女神、时代广场、大峡谷、金门大桥、好莱坞、拉斯维加斯、尼亚加拉、黄石大棱镜均为美国实景），用于页面配图。更多免费景点：中央公园、华盛顿史密森博物馆群、芝加哥千禧公园、波士顿自由之路。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 美元 ≈ 7.2 元人民币估算。往返国际机票按淡季 5000–8000 元计，国内段 5 程合计 4000–6000 元。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（42000–55000）</th>
+<th>标准（65000–85000）</th>
+<th>舒适（110000–160000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄纽约/旧金山 5000–7000</td>
+<td>含洛杉矶/旧金山 7000–10000</td>
+<td>直飞商务 20000–30000</td>
+</tr>
+<tr>
+<td>国内段机票（5 程）</td>
+<td>4000–5500（提前 1 个月订）</td>
+<td>5500–7500（灵活时段）</td>
+<td>9000–14000（任意时间）</td>
+</tr>
+<tr>
+<td>住宿（29 晚）</td>
+<td>青旅/汽车旅馆 350–500/晚</td>
+<td>三星/连锁酒店 650–1000/晚</td>
+<td>四五星/度假村 1500–3000/晚</td>
+</tr>
+<tr>
+<td>交通（租车等）</td>
+<td>地铁公交+1 段租车 3000–4500</td>
+<td>租车 4 段+地铁 5000–7000</td>
+<td>全段租车+包车 9000–15000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 1500–2500</td>
+<td>含环球影城/大峡谷/黄石 4000–6000</td>
+<td>全含+演出+直升机 9000–15000</td>
+</tr>
+<tr>
+<td>餐饮（30 天）</td>
+<td>快餐+超市 5000–6500</td>
+<td>正常下馆子 9000–12000</td>
+<td>米其林/牛排馆 20000–30000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 72000 元）</span>
+      往返机票 8500 + 国内段 5 程 6500 + 住宿 29 晚 21000（平均 720/晚）+ 租车/地铁 6000 + 门票 5000 + 餐饮 10000 + 签证/EVUS/杂费 2500 ≈ <strong>65000–72000 元</strong>。大头是住宿与国际机票；国内段机票提前 2 个月订能省 1500–2500 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>28.1 精简 20 天版（东西海岸速览）</h3>
+
+
+    <ul>
+
+      <li>D1–D5 纽约（含自由女神+大都会）</li>
+
+      <li>D6–D7 华盛顿</li>
+
+      <li>D8–D9 尼亚加拉</li>
+
+      <li>D10–D11 芝加哥（或直飞西部砍掉）</li>
+
+      <li>D12–D15 拉斯维加斯+大峡谷</li>
+
+      <li>D16–D18 洛杉矶+环球影城</li>
+
+      <li>D19–D20 旧金山金门大桥，返程</li>
+
+    </ul>
+
+    <h3>28.2 亲子版调整</h3>
+
+
+    <p>带孩子推荐：纽约自然科学馆+中央公园动物园，波士顿科学博物馆，洛杉矶迪士尼+环球影城二选一（保留乐园体验），砍掉长距离自驾（大峡谷/黄石改跟团或国内航班）。12 岁以下儿童多数景点免票/半价；国家公园对儿童免费。迪士尼与环球影城各需 1 天，别连续两天。</p>
+
+    <h3>28.3 季节版：冬季黄石+夏威夷（12–2 月）</h3>
+
+
+    <p>冬季黄石路面积雪，仅开放北门（狼群观赏+雪地摩托），可把黄石段替换为夏威夷：檀香山威基基海滩+钻石头山+珍珠港 5–6 天，气候温暖避寒；或拉斯维加斯周边红岩峡谷。尼亚加拉冬季看冰瀑（瀑布部分结冰）也壮观。美东冬季冷（-5℃ 至 5℃），注意保暖。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>29.1 北京 ⇄ 美国 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→纽约约 13–14h / 旧金山约 11–12h</td>
+<td>往返 5000–9000 元</td>
+<td>国航/美联航/达美，东岸西岸多城市可达</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>15–20h</td>
+<td>4000–7000 元</td>
+<td>经香港/东京/首尔转机，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>中国到美国无陆路，只能飞机/邮轮</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美国境内交通核心提醒</span>
+      美国幅员辽阔，<strong>城市间主要靠飞机</strong>：纽约—华盛顿 1.5h、波士顿—布法罗 1.5h、芝加哥—拉斯维加斯 4h，提前 1 个月订国内段单程约 800–1500 元。<strong>国家公园必须租车</strong>（大峡谷、黄石园内无公共交通），租车注意选全险+ETC；纽约/波士顿/芝加哥市内靠地铁（MetroCard/CharlieCard/Ventra）比打车快。<strong>美国给小费</strong>：餐厅 15–20%、打车 10–15%、酒店行李每件 1–2 美元。
+    </div>
+
+    <h3>29.2 美国境内交通</h3>
+    <ul>
+      <li><strong>国内航班</strong>：纽约—华盛顿 1.5h、波士顿—布法罗 1.5h、芝加哥—拉斯维加斯 4h、旧金山—博兹曼 2.5h，提前订单程 800–1500 元</li>
+      <li><strong>Amtrak 火车</strong>：东岸走廊（纽约—费城—华盛顿）约 2.5–3h，舒适但较贵</li>
+      <li><strong>市内地铁</strong>：纽约 MetroCard、波士顿 CharlieCard、华盛顿 SmartTrip，单程 2–3 美元</li>
+      <li><strong>租车自驾</strong>：大峡谷/黄石必需，紧凑型约 60–80 美元/天（含保险），注意异地还车费</li>
+      <li><strong>共享打车</strong>：Uber/Lyft 覆盖全美，曼哈顿打车比地铁贵 3–5 倍，仅应急/夜间用</li>
+      <li><strong>长途巴士</strong>：Megabus/Greyhound 纽约—费城 20–40 美元，比火车便宜</li>
+    </ul>
+
+    <h3>29.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>纽约·曼哈顿中城</td>
+<td>经济 600–900 / 标准 1000–1800</td>
+<td>核心区，景点步行可达</td>
+<td>全美最贵，房间小</td>
+</tr>
+<tr>
+<td>纽约·泽西城</td>
+<td>经济 400–600 / 标准 700–1100</td>
+<td>PATH 25 分钟进曼哈顿，性价比高</td>
+<td>通勤 25–30min</td>
+</tr>
+<tr>
+<td>华盛顿·白宫周边</td>
+<td>经济 500–800 / 标准 800–1400</td>
+<td>国家广场步行可达</td>
+<td>周末政区较安静</td>
+</tr>
+<tr>
+<td>波士顿·市中心/后湾</td>
+<td>经济 500–800 / 标准 800–1400</td>
+<td>自由之路与名校近</td>
+<td>老旧建筑多</td>
+</tr>
+<tr>
+<td>拉斯维加斯·长街</td>
+<td>经济 300–600 / 标准 700–1200</td>
+<td>赌城核心，酒店奢华</td>
+<td>周末贵，赌场嘈杂</td>
+</tr>
+<tr>
+<td>大峡谷·南缘园内</td>
+<td>标准 1200–2500</td>
+<td>日出日落最佳</td>
+<td>需提前 3–6 个月抢房</td>
+</tr>
+<tr>
+<td>旧金山·渔人码头</td>
+<td>经济 600–900 / 标准 900–1500</td>
+<td>湾区景点集中</td>
+<td>海风大，停车贵</td>
+</tr>
+<tr>
+<td>黄石·西黄石镇</td>
+<td>经济 600–900 / 标准 1000–1800</td>
+<td>进园方便，选择多</td>
+<td>夏季爆满需提前订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍔 必吃经典</h3>
+        <ul>
+          <li>美式牛排：纽约/芝加哥厚切肋眼、菲力</li>
+          <li>汉堡：In-N-Out（加州）、Shake Shack（东岸）</li>
+          <li>费城芝士牛排：Pat's/Geno's 牛肉芝士三明治</li>
+          <li>深盘披萨：芝加哥 Lou Malnati's/Giordano's</li>
+        </ul>
+        <h3>🍽 街头与移民风味</h3>
+        <ul>
+          <li>纽约热狗（街头）、比萨（意裔社区）</li>
+          <li>纽约唐人街/小意大利：云吞面、提拉米苏</li>
+          <li>洛杉矶 K-town 韩式烤肉、墨西哥卷 Tacos</li>
+          <li>西海岸越南粉、日本拉面（硅谷区）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🦞 在地名物</h3>
+        <ul>
+          <li>波士顿龙虾卷+蛤蜊浓汤（昆西市场）</li>
+          <li>水牛城辣鸡翅：Buffalo Wild Wings</li>
+          <li>加州海鲜：圣莫尼卡螃蟹、旧金山珍宝蟹</li>
+          <li>拉斯维加斯赌场自助餐：Bellagio/Wynn 30–60 美元吃到饱</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>纽约：上东区 brasserie、切尔西市场、唐人街</li>
+          <li>芝加哥：深盘披萨+河畔牛排馆</li>
+          <li>旧金山：渔人码头螃蟹、中国城</li>
+          <li>拉斯维加斯：赌场自助餐+名人主厨餐厅</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① <strong>小费是硬性支出</strong>：餐厅账单 15–20%，刷卡时直接选小费比例，不付会遭白眼；② 部分餐厅标注「market price」（时价）的海鲜，问清再点；③ 美国餐厅份量巨大，点菜按人数-1 原则；④ 超市/便利店（Trader Joe's、Whole Foods）的预制菜品质高，赶路时效率神器。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期覆盖返程后 6 个月）+ B1/B2 签证 + EVUS 登记</li>
+        <li>Visa/Mastercard 信用卡（无密码即可刷）+ 现金 200–300 美元</li>
+        <li>充电转接头（120V A/B 型两扁脚）+ 充电宝</li>
+        <li>流量卡/eSIM（ATT/T-Mobile 美国卡）</li>
+      </ul>
+      <ul>
+        <li>国内段机票 5 程提前 1 个月订</li>
+        <li>环球影城/迪士尼/恶魔岛/老忠实餐位提前订</li>
+        <li>下载 Google 地图离线包（国家公园无信号）</li>
+        <li>租车确认：全险+ETC+异地还车，带国际驾照翻译件</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>小费文化</strong>：餐厅/打车/理发都要给 15–20%，预算务必计入；② 国家公园内无信号、加油站少，进园前加满油、下载离线地图；③ 美国航空行李：国内段普遍不含托运行李（首件约 30–35 美元），轻装出行；④ 纽约地铁/热门景区扒手多，护照放酒店保险箱，随身只带复印件。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      美国是「<strong>一片大陆、十种地貌</strong>」的目的地——纽约的都会脉搏、华盛顿的历史、尼亚加拉的水雾、芝加哥的摩天楼、拉斯维加斯的霓虹、大峡谷的壮阔、洛杉矶的光影与旧金山的湾区，最后以黄石的地热收尾。30 天一条东西海岸大环线，签证是唯一的硬门槛，办好十年签、做足国内段规划，剩下的就是横跨时区慢慢走。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#b3261e",
+    "d": 3,
+    "n": "东岸主线 · 纽约→费城→华盛顿→波士顿→尼亚加拉→芝加哥",
+    "pts": [
+      [
+        40.7128,
+        -74.006
+      ],
+      [
+        39.9526,
+        -75.1652
+      ],
+      [
+        38.9072,
+        -77.0369
+      ],
+      [
+        42.3601,
+        -71.0589
+      ],
+      [
+        43.0962,
+        -79.0377
+      ],
+      [
+        41.8781,
+        -87.6298
+      ]
+    ]
+  },
+  {
+    "c": "#1f3a93",
+    "d": 3,
+    "n": "西岸主线 · 拉斯维加斯→大峡谷→洛杉矶→旧金山→黄石",
+    "pts": [
+      [
+        36.1699,
+        -115.1398
+      ],
+      [
+        36.1069,
+        -112.1129
+      ],
+      [
+        34.0522,
+        -118.2437
+      ],
+      [
+        37.7749,
+        -122.4194
+      ],
+      [
+        44.428,
+        -110.5885
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 40.6892,
+    "lng": -74.0445,
+    "name": "纽约·自由女神像",
+    "t": "D2 上午 · 3h",
+    "fee": "渡轮 25 美元起",
+    "note": "登岛+埃利斯岛移民博物馆"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 40.758,
+    "lng": -73.9855,
+    "name": "纽约·时代广场",
+    "t": "D4 上午 · 2h",
+    "fee": "免费",
+    "note": "霓虹灯牌、百老汇"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 38.8895,
+    "lng": -77.025,
+    "name": "华盛顿·国家广场",
+    "t": "D7 全天 · 1 天",
+    "fee": "免费",
+    "note": "林肯纪念堂、史密森博物馆"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 43.0962,
+    "lng": -79.0377,
+    "name": "尼亚加拉大瀑布",
+    "t": "D13 全天 · 1 天",
+    "fee": "游船 26 美元起",
+    "note": "雾中少女号、风洞、灯光秀"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 36.1069,
+    "lng": -112.1129,
+    "name": "大峡谷南缘",
+    "t": "D19–20 · 2 天",
+    "fee": "35 美元/车",
+    "note": "马瑟角、光明天使步道"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 34.0522,
+    "lng": -118.2437,
+    "name": "洛杉矶·好莱坞",
+    "t": "D22 全天 · 1 天",
+    "fee": "免费",
+    "note": "好莱坞标志、星光大道、环球影城"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 37.8199,
+    "lng": -122.4783,
+    "name": "旧金山·金门大桥",
+    "t": "D26 上午 · 2h",
+    "fee": "免费",
+    "note": "大桥步行、恶魔岛"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 44.525,
+    "lng": -110.8382,
+    "name": "黄石·大棱镜温泉",
+    "t": "D29 上午 · 2h",
+    "fee": "公园票 35 美元/车",
+    "note": "老忠实、黄石大峡谷"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[25.0, -125.5], [49.5, -70.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#b3261e\"></span>东岸主线（纽约→芝加哥）<br><span class=\"sw\" style=\"background:#1f3a93\"></span>西岸主线（拉斯维加斯→黄石）<br><span class=\"sw dash\"></span>芝加哥—拉斯维加斯、洛杉矶—旧金山等为国内航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

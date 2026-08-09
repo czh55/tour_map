@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 日本 20 天全景攻略 · 东京京都大阪北海道</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #b3202c;
+    --red-light: #c8452f;
+    --gold: #d9a441;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #3a4a6b;
+    --cover1: #7c1018;
+    --ov1: rgba(124,16,24,.88);
+    --ov2: rgba(179,32,44,.72);
+    --ov3: rgba(216,80,60,.38);
+    --ov4: rgba(230,120,70,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(179,32,44,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/japan/japan-cover.jpg" alt="日本旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 20 天环线 · 本州 + 北海道</div>
+      <h1>日本 20 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 东京 · 富士山京都奈良 · 大阪广岛 · 北海道</div>
+      <div class="meta">
+        <span>🛫 行程链：东京 → 镰仓 → 富士山 → 京都 → 奈良 → 大阪 → 广岛 → 札幌 → 函馆 → 返程</span>
+        <span>📅 时间窗口：20 天 19 晚</span>
+        <span>✈️ 北京⇄东京/札幌 直飞约 3.5–4.5 小时</span>
+        <span>🛂 签证：单次签限 15 天，20 天需多次/三年签（关键）</span>
+        <span>🕐 时差 +1 小时 · 🔌 电压 100V A 型插座（两扁脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 20 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 20 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">东京</span>
+      <span class="arrow">→</span>
+      <span class="node">镰仓</span>
+      <span class="arrow">→</span>
+      <span class="node">富士山/箱根</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">京都</span>
+      <span class="arrow">→</span>
+      <span class="node">奈良</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">大阪</span>
+      <span class="arrow">→</span>
+      <span class="node">广岛</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">北海道</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 20 天怎么安排最合理</span>
+      日本是「<strong>一国之境、半程四季</strong>」的目的地：本州串联都市与古都、富士山与温泉，北海道独立成段体验雪国与海鲜。20 天刚好把东京都市圈、关西古都带、广岛宫岛与北海道一次走完，节奏上<strong>每段不赶</strong>：前 15 天玩本州，后 5 天飞北海道收尾。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>单次旅游签最长停留 15 天；20 天行程必须办<strong>多次往返签（三年多次较易办）</strong>，或拆成两段入境</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>本州 15 天（东京→京都→大阪→广岛）+ 北海道 5 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 20 天从札幌/东京返程，航班多但旺季需提前 1 个月订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>东京 → 镰仓 → 富士山/箱根 → 京都 → 奈良 → 大阪 → 广岛 → 北海道</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 25000–32000 ／ 标准 40000–52000 ／ 舒适 70000–100000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办多次签 ② 订 JR Pass（全国 14 日版）③ 京都/箱根住宿提前 2–3 周</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>3 月底–4 月樱花、10–11 月红叶、12–2 月北海道雪景；暑期闷热但花火多</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>Suica/Pasmo 交通卡 + 现金 + 部分支持微信/支付宝（百货药妆）</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证是最大约束</strong>：单次签只给 15 天停留，20 天必须多次往返签（三年多次经济材料达标即可），办签前先确认自己的材料够格。② 日本换乘全靠交通卡与 Pass，<strong>JR Pass 全国版（7/14/21 日）按行程选 14 日版</strong>，需在国内提前买兑换券，到日本指定窗口激活。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 20 天版</h2>
+
+    <p>以下为 20 天 19 晚的推荐节奏：本州按「东→西」推进，最后飞北海道。每日主景点 ≤2 个，交通以新干线+区域 JR 为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵东京</td>
+<td>北京✈东京（成田/羽田约 3.5h），入住新宿，傍晚东京都厅展望台看夜景</td>
+<td>新宿</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>浅草寺+雷门 → 上野公园 → 秋叶原电器街</td>
+<td>东京</td>
+<td>江户+二次元</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>皇居东御苑 → 银座 → 东京塔/六本木 → 涩谷十字路口夜景</td>
+<td>东京</td>
+<td>都市核心</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>镰仓一日：江之电 → 镰仓大佛 → 鹤冈八幡宫 → 江之岛</td>
+<td>东京</td>
+<td>古都海岸</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>明治神宫 → 原宿/表参道 → 自由安排（teamLab/美术馆可选）</td>
+<td>东京</td>
+<td>潮流街区</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>富士山：河口湖 → 新仓山忠灵塔 → 忍野八海，宿河口湖</td>
+<td>河口湖</td>
+<td>富士山日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>箱根：大涌谷 → 芦之湖海盗船 → 露天温泉，宿温泉旅馆</td>
+<td>箱根</td>
+<td>温泉日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>新干线到京都：金阁寺 → 二条城 → 锦市场</td>
+<td>京都</td>
+<td>古都初访</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>清水寺 → 二年坂三年坂 → 祇园花见小路 → 八坂神社</td>
+<td>京都</td>
+<td>传统和风</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>伏见稻荷千鸟居 → 岚山竹林 + 渡月桥</td>
+<td>京都</td>
+<td>神社与竹海</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>奈良：东大寺 → 奈良公园喂鹿 → 春日大社</td>
+<td>京都</td>
+<td>奈良一日</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>大阪：大阪城 → 通天阁 → 心斋桥 → 道顿堀夜景</td>
+<td>大阪</td>
+<td>大阪烟火</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>环球影城 USJ 全天（马里奥园区）</td>
+<td>大阪</td>
+<td>乐园日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>新干线到广岛：原爆圆顶 → 和平公园 → 宫岛严岛神社海上鸟居</td>
+<td>广岛</td>
+<td>广岛/宫岛</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>姬路城（世界遗产）→ 神户港夜景 或 大阪购物日</td>
+<td>大阪</td>
+<td>白鹭城/购物</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>大阪✈札幌：大通公园 → 白色恋人公园 → 拉面横丁</td>
+<td>札幌</td>
+<td>飞北海道</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>小樽：运河 → 北一硝子 → 八音盒堂 → 天狗山夜景</td>
+<td>小樽</td>
+<td>浪漫港町</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>富良野/美瑛（夏季薰衣草花田）或 定山溪温泉/滑雪</td>
+<td>札幌</td>
+<td>雪国原野</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>函馆：五棱郭 → 元町洋楼 → 函馆山百万夜景</td>
+<td>函馆</td>
+<td>函馆夜景</td>
+</tr>
+<tr>
+<td>D20 返程</td>
+<td>札幌✈北京（直飞约 4.5h）或 函馆→东京转机返京，到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍广岛（D14）与姬路（D15）合并为一天；北海道也可缩为 3 天（札幌+小樽）。红叶季（11 月）优先京都与河口湖，冬季优先北海道。带娃家庭建议砍掉广岛宫岛，USJ 与迪士尼取舍其一。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 20 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达东京</span>
+          <span class="d-desc">入住新宿</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">北京✈东京（成田/羽田约 3.5h）。成田进市区坐 N'EX 或 Skyliner，羽田坐京急线/单轨</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">入住新宿（交通枢纽，去箱根/富士山方便），附近便利店买 Suica 交通卡</td></tr>
+          <tr><td class="t-time">19:30–21:30</td><td class="t-what">东京都厅展望台（免费）：45 层俯瞰东京夜景，晚餐新宿拉面或居酒屋</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">回酒店休息，倒时差（时差仅 +1h，基本无感）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">新宿换乘超复杂但住宿选择多；也可以住银座或涩谷，看行程偏好。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 浅草 + 上野 + 秋叶原</span>
+          <span class="d-desc">江户与二次元一日</span>
+          <span class="d-tag ">🏮 江户日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>浅草寺 + 雷门</b>（免费）：仲见世商业街，五重塔与雷门灯笼，可租和服拍照</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>上野公园</b>（免费）：东京国立博物馆（成人 1000 日元）或逛公园樱花道</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">上野午餐：一兰拉面/回转寿司</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>秋叶原</b>（免费）：电器街、动漫周边、扭蛋店，体验女仆咖啡（可选）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：秋叶原或回新宿吃烤肉/寿喜烧</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">浅草寺早上人少，下午旅行团多；和服体验提前一天网上预订约 3000–6000 日元。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 皇居 + 银座 + 东京塔</span>
+          <span class="d-desc">都市核心一日</span>
+          <span class="d-tag ">🏙 都市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>皇居东御苑</b>（免费，需在苑内登记）：二重桥、天守阁迹，东京最安静的绿洲</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>银座</b>（免费）：名牌旗舰店、三越/松屋百货、伊东屋文具</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">银座午餐：资生堂 Parlour 或天妇罗</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>东京塔</b>（展望台成人约 1200 日元）或六本木之丘 52 层观景台</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what"><b>涩谷十字路口</b>（免费）：全球最大人流路口，晚上去 SHIBUYA SKY 观景（约 2000 日元）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">皇居东御苑周二到周五开放，周六日不开放，行程尽量避开周末安排。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 镰仓一日</span>
+          <span class="d-desc">古都海岸一日</span>
+          <span class="d-tag alt">🏖 镰仓日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">新宿出发乘 JR 湘南新宿线/小田急到镰仓（约 1h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>江之电</b>沿线：镰仓高校前（灌篮高手平交道）、七里滨海岸线</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：镰仓小町通（紫菜仙贝、铜锣烧、抹茶冰淇淋）</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what"><b>高德院镰仓大佛</b>（300 日元）：日本第二大铜佛，可进入内部</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what"><b>鹤冈八幡宫</b>（免费）：镰仓幕府时代守护神社</td></tr>
+          <tr><td class="t-time">17:00–18:00</td><td class="t-what"><b>江之岛</b>：海边落日，返程回东京</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">镰仓高校前站人非常多，想拍干净平交道要早去；江之电一日券 800 日元很划算。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 明治神宫 + 原宿</span>
+          <span class="d-desc">潮流街区一日</span>
+          <span class="d-tag ">🛍 潮流日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>明治神宫</b>（免费）：东京最大神社，参天古木中的鸟居，可求御守</td></tr>
+          <tr><td class="t-time">11:00–13:30</td><td class="t-what"><b>原宿竹下通</b>（免费）：可丽饼、个性潮店；<b>表参道</b>：名牌大道+建筑美学</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">午餐：表参道/涩谷 拉面或蛋包饭</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">自由安排：teamLab Planets（需提前预约，约 3200 日元）/ 根津美术馆 / 东京站一番街</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：新宿思い出横丁（深夜食堂风小馆）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">明治神宫正月参拜人数超 300 万，平日则安静；想深度体验选一场茶道或和菓子体验课。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 富士山</span>
+          <span class="d-desc">河口湖 + 忠灵塔</span>
+          <span class="d-tag ">🗻 富士山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">新宿乘高速巴士/富士回游列车到河口湖（约 2h）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>新仓山浅间公园忠灵塔</b>（免费，需爬 398 级台阶）：五重塔+富士山经典机位</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">河口湖畔午餐（ほうとう 面锅、富士宫炒面）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>河口湖</b>环湖：天上山公园缆车（往返约 1000 日元）看逆富士</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what"><b>忍野八海</b>（免费）：富士山雪水形成的八个泉池</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿河口湖温泉酒店，泡温泉看富士山日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">富士山能不能看到全看天气，11 月–2 月能见度最高；河口湖周边住宿旺季要提前 2–3 周订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 箱根温泉</span>
+          <span class="d-desc">大涌谷 + 芦之湖</span>
+          <span class="d-tag alt">♨️ 温泉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">河口湖→御殿场（巴士）→箱根（约 1.5–2h）</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what"><b>大涌谷</b>（免费，缆车单程约 900 日元）：硫磺蒸汽谷，吃黑鸡蛋（延长 7 年寿命传说）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>芦之湖海盗船</b>（约 1000 日元）+ 箱根神社水上鸟居（免费）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">入住温泉旅馆，怀石晚餐</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">露天风吕泡汤，缓解 7 天疲劳</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">箱根登山电车/登山缆车/海盗船/空中缆车套票（箱根 Freepass 2 日约 6100 日元）最省心。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 京都初访</span>
+          <span class="d-desc">金阁寺 + 二条城</span>
+          <span class="d-tag ">🏯 古都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">箱根→小田原→新干线→京都（约 3.5h），入住京都站附近</td></tr>
+          <tr><td class="t-time">12:30–14:30</td><td class="t-what"><b>金阁寺</b>（成人 500 日元）：舍利殿金箔覆顶+镜湖池倒影，京都名片</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>二条城</b>（成人 1300 日元）：德川幕府将军行宫，莺声地板</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>锦市场</b>（免费）：京都的厨房，豆乳甜甜圈、渍物、海鲜串</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">京都站拉面小路晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">金阁寺早上 9 点前光最好、人最少；二条城参观约 1.5h，宫内不可拍照。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 清水寺 + 祇园</span>
+          <span class="d-desc">传统和风一日</span>
+          <span class="d-tag ">⛩ 清水寺日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>清水寺</b>（成人 400 日元）：悬空舞台+音羽瀑布，穿和服漫步最佳机位</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><b>二年坂/三年坂</b>（免费）：石板路老铺，抹茶冰淇淋、清水烧</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：汤豆腐/京怀石便当</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>八坂神社 + 祇园花见小路</b>（免费）：艺伎出没街区，四条通商铺</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>三十三间堂</b>（成人 600 日元）：1001 尊观音像，震撼</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：京都居酒屋或烧肉，晚一点回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">清水寺和服体验提前 2–3 天预约（约 5000–9000 日元含妆发）；三年坂傍晚人少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 伏见稻荷 + 岚山</span>
+          <span class="d-desc">神社与竹海一日</span>
+          <span class="d-tag alt">🍃 岚山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>伏见稻荷大社</b>（免费）：千本鸟居隧道，稻荷山登山 2–3h 深度线</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">JR 稻荷→京都→岚山（约 40min）</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what"><b>岚山竹林</b>（免费）：竹海小径，<b>天龙寺</b>（成人 500 日元）庭园</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what"><b>渡月桥 + 保津川</b>（免费）：嵯峨野小火车（需提前购票约 880 日元）</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">岚山大街吃团子/豆腐皮饭，返京都站</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：河原町商区</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伏见稻荷建议 8 点前到避开人群，山顶往返 2–3h；岚山小火车 5 月红叶季一票难求。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 奈良一日</span>
+          <span class="d-desc">东大寺 + 喂鹿</span>
+          <span class="d-tag ">🦌 奈良日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">京都乘 JR 奈良线到奈良（约 45min）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>东大寺</b>（成人 600 日元）：世界最大木造建筑，大佛殿与奈良大佛</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what"><b>奈良公园</b>（免费）：喂鹿仙贝（150 日元/10 片），鹿会鞠躬讨食</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：柿叶寿司/奈良渍物定食</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>春日大社</b>（免费，本殿 500 日元）：三千石灯笼+若草山眺望</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返京都，晚餐：京都烧肉/乌冬</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">奈良鹿会顶撞拿食物的人，喂食时手举高；东大寺 12 月 30–31 日闭殿，留意开放日。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 大阪</span>
+          <span class="d-desc">大阪城 + 道顿堀</span>
+          <span class="d-tag ">🏮 大阪日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">京都→大阪（JR 约 30min），入住心斋桥/难波</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>大阪城</b>（天守阁成人 600 日元）：丰臣秀吉居城，护城河+樱花道</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what"><b>通天阁</b>（成人 700 日元）+ 新世界炸串午餐</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>心斋桥</b>（免费）：购物主街，药妆店扫货</td></tr>
+          <tr><td class="t-time">18:00–21:00</td><td class="t-what"><b>道顿堀</b>（免费）：格力高广告牌、章鱼烧、大阪烧、河豚料理</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">道顿堀夜景比白天更出片；大阪住宿普遍比东京便宜，购物补货推荐在这里集中解决。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 环球影城</span>
+          <span class="d-desc">USJ 全天</span>
+          <span class="d-tag alt">🎢 乐园日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">开门前到 USJ（环球城站），普通票约 9800 日元，快速通行券另购</td></tr>
+          <tr><td class="t-time">08:30–13:00</td><td class="t-what">马里奥园区：超级任天堂世界（需园区入场券+马里奥手环 4200 日元）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">园内午餐：好莱坞餐厅/马里奥主题餐厅</td></tr>
+          <tr><td class="t-time">14:00–18:00</td><td class="t-what">哈利波特魔法世界：霍格沃茨城堡、黄油啤酒</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">夜间游行（视季节），大阪夜景晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">USJ 平日也人很多，强烈建议提前官网买票并抢马里奥园区入场券；带娃注意身高限制项目。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 广岛宫岛</span>
+          <span class="d-desc">和平纪念 + 海上鸟居</span>
+          <span class="d-tag ">🕊 广岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">新干线：大阪→广岛（约 1.5h，JR Pass 全包）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>广岛原爆圆顶 + 和平纪念公园</b>（免费）：人类历史一课</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：广岛烧（お好み焼き）</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>宫岛严岛神社</b>（神社 300 日元）：海上大鸟居、鹿、红叶馒头</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">潮汐看鸟居，日落返程回大阪/宿广岛</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">宫岛大鸟居涨潮立在海中、退潮可走近触摸，出发前查潮汐表；广岛烧酱汁是精髓。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 姬路城</span>
+          <span class="d-desc">白鹭城 + 神户</span>
+          <span class="d-tag alt">🏯 姬路日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">新干线：大阪→姬路（约 1h）</td></tr>
+          <tr><td class="t-time">09:30–13:00</td><td class="t-what"><b>姬路城</b>（成人 1000 日元）：日本第一名城，白鹭城+好古园（联票 1050 日元）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">姬路午餐：穴子饭/明石烧</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">新干线到神户：南京町中华街、神户港、六甲山夜景（可选）</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">神户牛肉晚餐（性价比优先选午市套餐），返大阪</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">姬路城天守阁楼梯极陡，穿平底鞋；神户牛正餐人均 8000+ 日元，午市套餐 3000–5000 日元更划算。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 飞北海道</span>
+          <span class="d-desc">大阪✈札幌</span>
+          <span class="d-tag ">🛫 北海道日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">大阪伊丹/关西✈札幌新千岁（约 1.5h，提前订特价约 400–800 元）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">新千岁机场国内线美食街午餐（海鲜丼/成吉思汗）</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">入住札幌，<b>大通公园</b>（免费）：札幌中心轴</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><b>白色恋人公园</b>（工厂参观 800 日元）：巧克力工厂+钟楼</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what"><b>薄野/拉面横丁</b>：味噌拉面、成吉思汗烤肉、啤酒博物馆（可加）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">北海道 6–8 月凉爽、12–2 月积雪；札幌市内地铁+巴士，白色恋人有 JR 巴士直达。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 小樽</span>
+          <span class="d-desc">运河 + 八音盒</span>
+          <span class="d-tag ">🏔 小樽日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">札幌乘 JR 到小樽（约 40min）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>小樽运河</b>（免费）：复古仓库+雪中运河最出片</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：小樽海鲜丼/寿司（三角市场）</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what"><b>北一硝子</b>（免费）+ <b>八音盒堂</b>（免费）：玻璃工坊与音乐盒博物馆</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>天狗山</b>（缆车往返约 1500 日元）：俯瞰小樽港夜景，返札幌</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">冬季 12 月–2 月小樽运河点灯（蓝白色灯饰），非常浪漫；天狗山雪季可滑雪。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 富良野美瑛</span>
+          <span class="d-desc">薰衣草花田</span>
+          <span class="d-tag alt">🌸 雪国原野日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">札幌乘 JR 富良野线（夏季薰衣草特急）到富良野（约 2h）</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>富田农场</b>（免费）：7 月中–8 月初薰衣草花田，薰衣草冰淇淋</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">美瑛午餐：农场直供蔬果料理</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>美瑛青池 + 拼布之路</b>（免费）：蓝色湖水与丘陵田埂，骑行/观光巴士</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返札幌，晚餐：汤咖喱/成吉思汗</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">冬季（12–3 月）富良野改玩滑雪场和雪地活动；青池冬季结冰也美。若时间紧可换定山溪温泉一日。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 函馆</span>
+          <span class="d-desc">函馆山百万夜景</span>
+          <span class="d-tag ">🌃 函馆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">札幌乘 JR 到函馆（约 3.5h，或乘飞机 40min）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>五棱郭</b>（塔展望台成人 900 日元）：星形城郭+雪中全景</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：函馆盐味拉面/海胆丼</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>元町 + 金森红砖仓库</b>（免费）：教堂群与洋馆街</td></tr>
+          <tr><td class="t-time">17:00–19:30</td><td class="t-what"><b>函馆山夜景</b>（缆车往返约 1800 日元）：世界三大夜景之一，日落前上山</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">函馆山秋冬多雾，提前查天气；缆车旺季排队 1h+，日落前 1.5h 到最稳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 返程</span>
+          <span class="d-desc">札幌✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what">自由活动：札幌市中央卸卖市场（场外市场）海鲜早餐，三越/大丸百货补货</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：札幌味噌拉面收官</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">退房，机场巴士到新千岁机场</td></tr>
+          <tr><td class="t-time">16:00–21:00</td><td class="t-what">札幌✈北京（直飞约 4.5h），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">北海道返京直飞每天 2–3 班；也可函馆✈东京转机返京。机场记得最后扫货白色恋人、Royce 生巧。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-cover.jpg" alt="富士山·河口湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">富士山·河口湖 <small>免费（缆车另计）</small></div>
+          <div class="sc-feat">日本象征。忠灵塔机位 + <b>逆富士倒影</b>，能见度冬季最高。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚌 新宿高速巴士 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-1.jpg" alt="东京塔/六本木" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">东京塔/六本木 <small>1200 日元起</small></div>
+          <div class="sc-feat">东京地标。<b>红色铁塔夜景 + SHIBUYA SKY</b> 当代观景台。</div>
+          <div class="sc-meta">📅 9:00–23:00 · ⏱ 1–2h · 🚇 东京地铁赤羽桥/麻布十番</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-3.jpg" alt="伏见稻荷大社" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伏见稻荷大社 <small>免费</small></div>
+          <div class="sc-feat">千本鸟居隧道。<b>稻荷山登顶 2–3h</b>，清晨无人最好拍。</div>
+          <div class="sc-meta">📅 全天开放 · ⏱ 1.5–3h · 🚇 JR 稻荷站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-4.jpg" alt="金阁寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">金阁寺 <small>500 日元</small></div>
+          <div class="sc-feat">金箔舍利殿。<b>镜湖池倒影</b>，京都世界遗产名片。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 1h · 🚇 巴士金阁寺道</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-5.jpg" alt="奈良公园·东大寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">奈良公园·东大寺 <small>东大寺 600 日元</small></div>
+          <div class="sc-feat">世界最大木构建筑 + <b>千年驯鹿</b>，奈良灵魂所在。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3–4h · 🚇 近铁奈良站步行 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-6.jpg" alt="大阪·道顿堀" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">大阪·道顿堀 <small>免费</small></div>
+          <div class="sc-feat">大阪胃袋。<b>格力高广告牌 + 章鱼烧大阪烧</b>，夜景无敌。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚇 大阪地铁难波/心斋桥</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-7.jpg" alt="小樽运河" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">小樽运河 <small>免费</small></div>
+          <div class="sc-feat">雪国港町。<b>雪中运河灯饰 + 北一硝子</b>，冬夜浪漫。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 JR 小樽站步行 10min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/japan/japan-2.jpg" alt="京都·清水寺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">京都·清水寺 <small>400 日元</small></div>
+          <div class="sc-feat">悬空舞台 + 音羽瀑布。<b>和服漫步</b>二年坂三年坂。</div>
+          <div class="sc-meta">📅 6:00–18:00 · ⏱ 2h · 🚌 巴士清水道</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（富士山、东京塔、伏见稻荷、金阁寺、奈良鹿、道顿堀、小樽等均为日本实景），用于页面配图。更多免费景点：上野公园、明治神宫、皇居东御苑、锦市场、大通公园。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 100 日元 ≈ 4.6 元人民币估算，日元价格波动大。往返机票按淡季 3000–4500 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（25000–32000）</th>
+<th>标准（40000–52000）</th>
+<th>舒适（70000–100000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄东京/札幌 3000–4000</td>
+<td>含北海道段 5000–6500</td>
+<td>直飞商务/灵活 10000–15000</td>
+</tr>
+<tr>
+<td>住宿（19 晚）</td>
+<td>胶囊/民宿 300–450/晚</td>
+<td>商务酒店 500–900/晚</td>
+<td>温泉旅馆/星级 1200–2500/晚</td>
+</tr>
+<tr>
+<td>交通（JR Pass 等）</td>
+<td>JR 14 日 Pass + 市内卡 4500–5500</td>
+<td>JR 14 日 Pass + 出租车少量 6500–8000</td>
+<td>JR + 国内航班 + 包车 12000–18000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 800–1200</td>
+<td>含 USJ/东京塔等约 2500–3500</td>
+<td>全含 + 快速券 + 演出约 6000–9000</td>
+</tr>
+<tr>
+<td>餐饮（20 天）</td>
+<td>便利店+拉面 4000–5000</td>
+<td>正常下馆子 7000–9000</td>
+<td>怀石/神户牛/米其林 15000–25000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 46000 元）</span>
+      往返机票 6000 + 住宿 19 晚 14000（平均 740/晚）+ JR Pass 与交通 7000 + 门票 3000 + 餐饮 8000 + 签证/杂费 2000 ≈ <strong>40000–46000 元</strong>。大头是住宿与交通，北海道段机票提前 2 个月订能省 1500–2500 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>18.1 只看本州的 15 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D7 东京+镰仓+富士山+箱根（同主行程）</li>
+
+      <li>D8–D11 京都+奈良</li>
+
+      <li>D12–D13 大阪+USJ</li>
+
+      <li>D14 广岛宫岛或姬路</li>
+
+      <li>D15 返程</li>
+
+    </ul>
+
+    <h3>18.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：东京迪士尼海洋（预留 2 天）+ 富士急乐园 + USJ 二选一，砍掉广岛与姬路；大阪海游馆、上野动物园儿童友好。USJ 与迪士尼距离远，别安排连续两天。日本 3 岁以下儿童多数交通免费。</p>
+
+    <h3>18.3 冬季雪国版（12–2 月）</h3>
+
+
+    <p>北海道段延长为 8–10 天：札幌冰雪节（2 月）+ 小樽点灯 + 富良野滑雪 + 洞爷湖 + 层云峡冰瀑；本州砍广岛。冬季日本酒店与机票整体便宜，但北方路面滑，防滑鞋必备。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 日本 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→东京约 3.5h / 札幌约 4.5h</td>
+<td>往返 3000–4500 元</td>
+<td>国航/全日空/日航，成田、羽田、新千岁多场</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>4–7h</td>
+<td>2500–4000 元</td>
+<td>经上海/香港/首尔，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>中国到日本无陆路，只能飞机/邮轮</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 日本境内交通核心提醒</span>
+      新干线全程用<strong>JR Pass 全国版</strong>最划算（14 日版普通车厢约 80,000 日元，东京⇄京都单程就 14,000 日元）；市内用 Suica/Pasmo 交通卡全国通用；北海道段新干线+飞机结合。所有列车可提前 1 个月在官网/自助机订座，热门班次（京都—东京）旺季提前订。
+    </div>
+
+    <h3>19.2 日本境内交通</h3>
+    <ul>
+      <li><strong>新干线</strong>：东京—京都 2h20min、京都—大阪 15min、大阪—广岛 1.5h，持 JR Pass 全包</li>
+      <li><strong>JR 普通/特急</strong>：镰仓、奈良、小樽、函馆等市郊线，JR Pass 通用</li>
+      <li><strong>市内地铁/巴士</strong>：Suica 一卡通，东京单程 200 日元起</li>
+      <li><strong>高速巴士</strong>：新宿—河口湖 2h（1700 日元），性价比高</li>
+      <li><strong>国内航班</strong>：大阪✈札幌 1.5h、东京✈北海道 1.5h，提前订 400–900 元</li>
+      <li><strong>出租车</strong>：起步价 500 日元左右，只在应急/深夜用</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>东京·新宿/涩谷</td>
+<td>经济 300–500 / 标准 600–900</td>
+<td>交通枢纽，夜生活丰富</td>
+<td>旺季贵，换乘复杂</td>
+</tr>
+<tr>
+<td>东京·银座/东京站</td>
+<td>标准 700–1200</td>
+<td>购物与机场线方便，安静</td>
+<td>晚间较冷清</td>
+</tr>
+<tr>
+<td>京都站/河原町</td>
+<td>经济 350–550 / 标准 600–1000</td>
+<td>古都核心，公交密集</td>
+<td>町屋老房隔音一般</td>
+</tr>
+<tr>
+<td>大阪·难波/心斋桥</td>
+<td>经济 300–450 / 标准 500–800</td>
+<td>美食购物集中，便宜</td>
+<td>游客多</td>
+</tr>
+<tr>
+<td>箱根/河口湖</td>
+<td>温泉旅馆 1000–2500（含餐）</td>
+<td>温泉+富士山景观</td>
+<td>一泊二食价格高，需提前订</td>
+</tr>
+<tr>
+<td>札幌·大通/薄野</td>
+<td>经济 300–450 / 标准 500–800</td>
+<td>北海道交通中心</td>
+<td>冬季雪天出行慢</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍜 必吃经典</h3>
+        <ul>
+          <li>拉面：一兰/一风堂（豚骨）、北海道味噌</li>
+          <li>寿司/海鲜丼：筑地场外市场、小樽三角市场</li>
+          <li>和牛：神户牛、近江牛烧肉</li>
+          <li>居酒屋：烤串、关东煮、生啤</li>
+        </ul>
+        <h3>🥢 在地名物</h3>
+        <ul>
+          <li>京都汤豆腐、京怀石</li>
+          <li>广岛烧（お好み焼き）</li>
+          <li>函馆盐拉面、海胆丼</li>
+          <li>富良野薰衣草冰淇淋</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>章鱼烧、大阪烧（大阪）</li>
+          <li>铜锣烧、团子、抹茶冰淇淋（京都）</li>
+          <li>紫菜仙贝、鱼饼（镰仓小町通）</li>
+          <li>白色恋人、Royce 生巧（北海道伴手礼）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>东京新宿思い出横丁、筑地场外市场</li>
+          <li>京都锦市场、河原町</li>
+          <li>大阪道顿堀、黑门市场</li>
+          <li>北海道薄野、拉面横丁</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 网红店排队 1h+，先用 Tabelog 查分（3.5+ 基本不踩雷）；② 寿司店注意「时价」菜单（旬のもの）；③ 和牛正餐贵，午市套餐更划算；④ 便利店(7-11/Lawson)的饭团和炸物其实很好吃且便宜，赶路时效率神器。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 多次往返签证（单次签仅 15 天）</li>
+        <li>Suica/Pasmo 交通卡（可手机 App 绑定）</li>
+        <li>日元现金（小额场景多，5–8 万日元备用）</li>
+        <li>充电转接头（100V A 型两扁脚）</li>
+      </ul>
+      <ul>
+        <li>JR Pass 兑换券（国内购买，到日本激活）</li>
+        <li>USJ/teamLab 等热门门票提前订</li>
+        <li>下载 Google 地图 + 乘换案内 App</li>
+        <li>查天气：河口湖富士山能见度、函馆山雾情</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证停留天数与行程必须匹配</strong>，单次签 15 天硬上限，办多次签前先核对银行流水等材料；② 新干线旺季（樱花/红叶/年末）一票难求，Pass 指定席提前划座；③ 日本地铁网极复杂，同一站名可能有多个运营商出口，用「乘换案内」按时间导航；④ 垃圾分类严格，便利店门口桶多，车站垃圾桶少，随身小垃圾袋必备。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      日本是「<strong>秩序感与烟火气并行</strong>」的目的地——东京的霓虹、京都的千年寺社、北海道的雪国与海鲜，20 天刚好串成一条本州+北海道的大环线。签证是唯一的硬门槛，办好多签、买好 JR Pass，剩下就是跟着新干线慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c9362f",
+    "d": 3,
+    "n": "本州主线 · 东京→镰仓→富士山→京都→奈良→大阪→广岛",
+    "pts": [
+      [
+        35.6812,
+        139.7671
+      ],
+      [
+        35.3192,
+        139.5467
+      ],
+      [
+        35.4966,
+        138.755
+      ],
+      [
+        35.0116,
+        135.7681
+      ],
+      [
+        34.6851,
+        135.8048
+      ],
+      [
+        34.6937,
+        135.5023
+      ],
+      [
+        34.3853,
+        132.4553
+      ]
+    ]
+  },
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "北海道支线 · 札幌→小樽→函馆",
+    "pts": [
+      [
+        43.0618,
+        141.3545
+      ],
+      [
+        43.199,
+        141.0015
+      ],
+      [
+        41.7687,
+        140.7288
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 35.7148,
+    "lng": 139.7967,
+    "name": "东京·浅草寺",
+    "t": "D2 上午 · 2h",
+    "fee": "免费",
+    "note": "雷门、五重塔、和服体验"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 35.4966,
+    "lng": 138.755,
+    "name": "富士山·河口湖",
+    "t": "D6 全天 · 1 天",
+    "fee": "免费（缆车另计）",
+    "note": "忠灵塔、逆富士、忍野八海"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 35.0394,
+    "lng": 135.7292,
+    "name": "京都·金阁寺",
+    "t": "D8 下午 · 1h",
+    "fee": "500 日元",
+    "note": "金箔舍利殿、镜湖池"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 34.9949,
+    "lng": 135.785,
+    "name": "京都·清水寺",
+    "t": "D9 上午 · 2h",
+    "fee": "400 日元",
+    "note": "悬空舞台、音羽瀑布"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 34.689,
+    "lng": 135.8397,
+    "name": "奈良·东大寺",
+    "t": "D11 上午 · 2.5h",
+    "fee": "600 日元",
+    "note": "大佛殿、奈良鹿"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 34.6687,
+    "lng": 135.5013,
+    "name": "大阪·道顿堀",
+    "t": "D12 晚上 · 2h",
+    "fee": "免费",
+    "note": "格力高广告牌、章鱼烧"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 34.2964,
+    "lng": 132.3195,
+    "name": "广岛·宫岛严岛神社",
+    "t": "D14 下午 · 3h",
+    "fee": "神社 300 日元",
+    "note": "海上大鸟居、红叶馒头"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 43.199,
+    "lng": 141.0015,
+    "name": "北海道·小樽运河",
+    "t": "D17 上午 · 2h",
+    "fee": "免费",
+    "note": "雪中运河、八音盒堂"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[32.8, 130.2], [45.5, 143.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c9362f\"></span>本州主线（东京→广岛）<br><span class=\"sw\" style=\"background:#1e6fd9\"></span>北海道支线（札幌→函馆）<br><span class=\"sw dash\"></span>广岛—札幌段为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

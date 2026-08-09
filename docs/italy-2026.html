@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 意大利 20 天全景攻略 · 罗马佛罗伦萨威尼斯</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #c0600c;
+    --red-light: #d9791f;
+    --gold: #e8b64c;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #1f5fa8;
+    --cover1: #7a3400;
+    --ov1: rgba(90,40,0,.88);
+    --ov2: rgba(192,96,12,.72);
+    --ov3: rgba(225,140,50,.38);
+    --ov4: rgba(240,180,90,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(192,96,12,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/italy/italy-cover.jpg" alt="意大利旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 20 天环线 · 罗马→佛罗伦萨→威尼斯</div>
+      <h1>意大利 20 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 罗马 · 梵蒂冈庞贝 · 托斯卡纳五渔村 · 米兰威尼斯</div>
+      <div class="meta">
+        <span>🛫 行程链：罗马 → 庞贝/阿马尔菲 → 佛罗伦萨 → 托斯卡纳 → 五渔村 → 米兰 → 威尼斯 → 返程</span>
+        <span>📅 时间窗口：20 天 19 晚</span>
+        <span>✈️ 北京⇄罗马 直飞约 11.5–12 小时</span>
+        <span>🛂 签证：申根签证（意大利签证中心办理，停留建议 ≤30 天）</span>
+        <span>🕐 时差 -6 小时（夏令时）/ -7 小时（冬令时）· 🔌 电压 220V C/F 型两圆脚</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 20 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 20 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">罗马</span>
+      <span class="arrow">→</span>
+      <span class="node">庞贝/阿马尔菲</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">佛罗伦萨</span>
+      <span class="arrow">→</span>
+      <span class="node">托斯卡纳</span>
+      <span class="arrow">→</span>
+      <span class="node">五渔村</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">米兰</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">威尼斯</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 20 天怎么安排最合理</span>
+      意大利是「<strong>一国之境、千年纵深</strong>」的目的地：罗马的废墟与梵蒂冈、托斯卡纳的艳阳与古堡、水城威尼斯的迷宫河道，南北风格完全不同。20 天正好把<strong>罗马—南部海岸—佛罗伦萨—托斯卡纳—五渔村—米兰—威尼斯</strong>串成一条大环线，中间用意大利高铁（Frecciarossa）衔接，节奏上<strong>每城住 1–2 晚、每天主景点 ≤2 个</strong>。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>申根签证，在意大利签证中心递交；一般给 15–30 天停留，行程表 + 机票 + 保险 + 银行流水备齐</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>罗马 4 天（含梵蒂冈）→ 庞贝/阿马尔菲 2 天 → 佛罗伦萨 3 天 → 托斯卡纳 2 天 → 五渔村 1–2 天 → 米兰 2 天 → 威尼斯 3 天 → 返程</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 20 天从罗马✈北京直飞，航班每天 1–2 班；也可从米兰/威尼斯经转机返京</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>罗马 → 庞贝/阿马尔菲 → 佛罗伦萨 → 托斯卡纳 → 五渔村 → 米兰 → 威尼斯 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 25000–35000 ／ 标准 45000–60000 ／ 舒适 80000–120000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办申根签（提前 1–2 个月）② 订高铁票（提前 60–90 天便宜很多）③ 订梵蒂冈博物馆/乌菲兹等热门门票</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>4–6 月与 9–10 月最佳；7–8 月暴晒且热门景点排队 2h+；12–2 月淡季便宜但部分海岸交通班次少</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>欧元现金 + 信用卡（Visa/Master 通用，多数地方可无接触）；小额场景用现金</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>热门景点门票必须提前官网预约</strong>：梵蒂冈博物馆、乌菲兹、学院美术馆、比萨登塔都是限流，旺季现场排不到当天票，且「免排队票」多为黄牛转卖，请只在官网或官方 App 购买。② 意大利城市中心普遍是<strong>ZTL 限行区</strong>（车辆禁入），自驾游客一不小心就吃罚单；行程默认不租车，托斯卡纳乡间需要车时再单独租半天，避开 ZTL 或停在城外换乘公交。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 20 天版</h2>
+
+    <p>以下为 20 天 19 晚的推荐节奏：先南后北绕一个大环线，高铁衔接为主。每日主景点 ≤2 个，罗马、佛罗伦萨、威尼斯三城尽量各住 2–3 晚不赶路。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵罗马</td>
+<td>北京✈罗马（菲乌米奇诺约 11.5h），入住市中心，晚上散步看斗兽场夜景</td>
+<td>罗马</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>斗兽场 + 古罗马广场 + 帕拉蒂尼山（联票 24h 有效）</td>
+<td>罗马</td>
+<td>古罗马一日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>梵蒂冈：圣彼得大教堂登顶 → 梵蒂冈博物馆+西斯廷礼拜堂</td>
+<td>罗马</td>
+<td>梵蒂冈日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>罗马漫步：许愿池 → 万神殿 → 纳沃纳广场 → 西班牙广场</td>
+<td>罗马</td>
+<td>巴洛克罗马</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>高铁到那不勒斯：庞贝古城半日（含考古标本），宿那不勒斯</td>
+<td>那不勒斯</td>
+<td>庞贝古城日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>阿马尔菲海岸：波西塔诺 → 阿马尔菲镇（Sita 巴士/游船），返那不勒斯</td>
+<td>那不勒斯</td>
+<td>地中海海岸日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>高铁到佛罗伦萨（约 3h）：圣母百花大教堂登顶 + 乔托钟楼 + 领主广场</td>
+<td>佛罗伦萨</td>
+<td>文艺复兴初访</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>乌菲兹美术馆（提香/波提切利/达芬奇）+ 老桥 + 米开朗琪罗广场日落</td>
+<td>佛罗伦萨</td>
+<td>艺术与老桥</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>托斯卡纳一日：锡耶纳田野广场 + 锡耶纳大教堂，宿锡耶纳</td>
+<td>锡耶纳</td>
+<td>中世纪古城</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>圣吉米尼亚诺（塔楼之城）+ 基安蒂酒庄品酒，返佛罗伦萨</td>
+<td>佛罗伦萨</td>
+<td>托斯卡纳乡村</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>比萨一日：奇迹广场 + 斜塔登顶（需提前订票）</td>
+<td>佛罗伦萨</td>
+<td>比萨斜塔日</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>火车到拉斯佩齐亚：五渔村小火车串村（马纳罗拉/韦尔纳扎），宿五渔村</td>
+<td>五渔村</td>
+<td>悬崖五村</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>五渔村徒步或出海：爱之路/悬崖步道，傍晚出发到米兰</td>
+<td>米兰</td>
+<td>海岸收尾</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>米兰：米兰大教堂登顶 + 埃马努埃莱二世拱廊 + 斯福尔扎城堡</td>
+<td>米兰</td>
+<td>米兰日</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>米兰购物/博物馆日：布雷拉画廊、达芬奇《最后的晚餐》（需提前 3 个月抢票），下午高铁到威尼斯</td>
+<td>威尼斯</td>
+<td>转场威尼斯</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>圣马可广场 + 圣马可大教堂 + 叹息桥 + 总督府</td>
+<td>威尼斯</td>
+<td>水城初访</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>大运河水上巴士 1 号线巡游 + 里亚托桥 + 贡多拉体验</td>
+<td>威尼斯</td>
+<td>大运河日</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>穆拉诺玻璃岛 + 布拉诺彩色岛（水上巴士半日游）</td>
+<td>威尼斯</td>
+<td>离岛日</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>威尼斯自由活动（学院桥/安康圣母教堂），傍晚高铁回罗马（约 4h）</td>
+<td>罗马</td>
+<td>返程中转</td>
+</tr>
+<tr>
+<td>D20 返程</td>
+<td>罗马✈北京（直飞约 11.5h），菲乌米奇诺机场退税+免税店，到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍庞贝/阿马尔菲（D5–D6）直接罗马→佛罗伦萨；五渔村与米兰二选一可各砍 1 天。带娃家庭建议砍掉庞贝（体力大）与米兰《最后的晚餐》，把威尼斯离岛多留一天。春夏（4–6 月）优先阿马尔菲海岸，秋季（10 月）优先托斯卡纳。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 20 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达罗马</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">13:00–16:30</td><td class="t-what">北京✈罗马菲乌米奇诺（FCO）约 11.5h。机场快线 Leonardo Express 约 30min 到特米尼站（14 欧元）</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">入住市中心酒店（推荐特米尼站或西班牙广场附近），附近买水/零食补给</td></tr>
+          <tr><td class="t-time">19:00–20:30</td><td class="t-what">步行或地铁到斗兽场外围散步看夜景（免费），罗马夜色初印象</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">晚餐：附近意面馆（Fettuccine Alfredo / 玛格丽特披萨），早点休息倒时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">时差 -6 小时（夏令时），第一天晚上困了就睡，第二天 7 点自然醒正好错峰看斗兽场。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 斗兽场 + 古罗马</span>
+          <span class="d-desc">古罗马遗迹一日</span>
+          <span class="d-tag ">🏛 古罗马日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">地铁 B 线到 Colosseo 站，开门前排斗兽场（提前官网订票免排队）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>斗兽场</b>（标准票约 18 欧元，含地下层约 23 欧元）：角斗士竞技场、地下通道与看台结构</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what"><b>古罗马广场</b>（联票内含）：凯旋门、元老院、维斯塔贞女院遗迹</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">午餐：附近三明治吧/意式快餐</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>帕拉蒂尼山</b>（联票内含）：罗马建城传说之地，俯瞰古罗马广场全景</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">真理之口（免费，排队拍照），提拉米苏店歇脚</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">斗兽场+古罗马广场+帕拉蒂尼山三景点联票 24 小时内有效，建议一天内逛完；地下层票每天限量需提前 1 个月抢。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 梵蒂冈</span>
+          <span class="d-desc">圣彼得 + 博物馆</span>
+          <span class="d-tag ">⛪ 梵蒂冈日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">地铁 A 线 Ottaviano 站步行到梵蒂冈，圣彼得广场清晨人少</td></tr>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>圣彼得大教堂</b>（免费）：先登顶（8 欧元，电梯+步行）俯瞰钥匙状广场，再参观大殿与米开朗基罗《哀悼基督》</td></tr>
+          <tr><td class="t-time">11:00–13:30</td><td class="t-what"><b>梵蒂冈博物馆</b>（约 20 欧元，提前订票）：拉斐尔画室、地图长廊，最后进<strong>西斯廷礼拜堂</strong>看米开朗基罗《创世纪》</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">午餐：博物馆出口附近简餐或梵蒂冈城墙外披萨店</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>圣天使堡</b>（约 13 欧元，可只外观）：哈德良陵墓+天使桥，沿台伯河散步</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：Trastevere 街区（特拉斯提弗列）罗马本地餐馆，主打碳烤牛排/意面</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">梵蒂冈博物馆每周日闭馆（每月最后一个周日免费但人极多）；周三上午圣彼得广场有教皇接见，人多且封路，安排行程时避开。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 巴洛克罗马</span>
+          <span class="d-desc">许愿池 + 万神殿</span>
+          <span class="d-tag ">🎨 巴洛克日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what"><b>许愿池（特雷维喷泉）</b>（免费）：8 点前人少，背身投硬币许愿</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>万神殿</b>（免费）：两千年前的穹顶，拉斐尔长眠于此</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>纳沃纳广场</b>（免费）：贝尔尼尼四河喷泉 + 广场三座喷泉</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：纳沃纳附近 Suppli（炸饭团）或意面</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>西班牙广场</b>（免费）：破船喷泉 + 西班牙阶梯（禁止坐台阶），奢侈品街逛橱窗</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">自由时间：波格赛美术馆（需预约）或卡拉卡拉浴场（约 13 欧元）二选一</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">罗马核心四景点（许愿池/万神殿/纳沃纳/西班牙广场）步行都在 20 分钟内，一天轻松走完；西班牙阶梯 2019 年起禁止席地而坐，会被罚款。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 庞贝古城</span>
+          <span class="d-desc">高铁南下</span>
+          <span class="d-tag ">🏺 庞贝日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">罗马特米尼站坐高铁 Frecciarossa 到那不勒斯中央站（约 1h10min）</td></tr>
+          <tr><td class="t-time">09:45–11:00</td><td class="t-what">那不勒斯寄存行李，转 Circumvesuviana 火车或维苏威环线到庞贝（约 35min）</td></tr>
+          <tr><td class="t-time">11:30–15:30</td><td class="t-what"><b>庞贝古城</b>（约 18 欧元）：角斗士训练场、广场、大剧场、壁画宅邸，解说器或导游讲解更佳</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">返那不勒斯，拿行李入住酒店，沿维苏威方向远眺（天气好可见火山）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">那不勒斯晚餐：玛格丽特披萨发源地之一，Sorbillo 或 Da Michele 排队店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">庞贝面积大，建议租中文语音导览（约 6–8 欧元）或跟团；夏季极晒，戴帽子带足水。若时间紧可只逛 2–3h 核心区。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 阿马尔菲海岸</span>
+          <span class="d-desc">波西塔诺一日</span>
+          <span class="d-tag alt">🏖 地中海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">那不勒斯乘 Sita 巴士/包车沿海岸线前往波西塔诺（约 1.5h，山路多弯）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>波西塔诺</b>（免费）：悬崖彩色房屋 + 圣母升天教堂，从码头仰拍经典机位</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：海鲜意面 + 柠檬酒（Limoncello）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">乘巴士到 <b>阿马尔菲镇</b>（免费）：阿马尔菲大教堂阶梯广场、纸博物馆（约 4 欧元）</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">海岸线往返巴士看最美弯道（建议坐右侧靠窗），返回那不勒斯</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">那不勒斯晚餐：海鲜烩饭，为次日高铁囤能量</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿马尔菲海岸夏季巴士爆满且盘山路易晕车，晕车药必备；想省时间可改乘游船（那不勒斯—波西塔诺水上快艇，约 1h）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 抵达佛罗伦萨</span>
+          <span class="d-desc">百花大教堂</span>
+          <span class="d-tag ">🕌 文艺复兴日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">那不勒斯中央站高铁到佛罗伦萨 SMN 站（约 3h，提前订票约 40–70 欧元）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">入住佛罗伦萨老城酒店，午餐：托斯卡纳牛肚包（Lampredotto）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>圣母百花大教堂</b>：先登<strong>乔托钟楼</strong>（联票含），再登<strong>大教堂穹顶</strong>看布努内莱斯基红瓦穹顶结构，参观洗礼堂金门</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>领主广场</b>（免费）：露天雕塑博物馆，海神喷泉与大卫像复制品</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：佛罗伦萨牛排（Bistecca alla Fiorentina）或中央市场夜市</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">百花大教堂联票（登顶+钟楼+洗礼堂+博物馆+地宫）约 20–30 欧元，48h 有效；登穹顶要爬 463 级台阶，建议放下午凉快时。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 乌菲兹 + 老桥</span>
+          <span class="d-desc">艺术一日</span>
+          <span class="d-tag ">🎨 美术馆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">提前 15min 到乌菲兹美术馆门口（预约时段入场）</td></tr>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what"><b>乌菲兹美术馆</b>（约 12–25 欧元）：波提切利《维纳斯的诞生》《春》、达芬奇《受胎告知》、提香</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：老桥附近托斯卡纳意面/中央市场 Panini</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>老桥</b>（免费）：欧洲最古老石桥之一，珠宝店橱窗，桥中段视野好</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>米开朗琪罗广场</b>（免费）：爬上坡看佛罗伦萨全景，红衣主教教堂与旧宫同框</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：学院美术馆附近或老城小巷家庭餐馆</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌菲兹按预约时段进入，旺季迟到会被拒；想看《大卫》原作的早上顺便去学院美术馆（约 12–16 欧元，需另行预约）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 锡耶纳</span>
+          <span class="d-desc">中世纪古城</span>
+          <span class="d-tag ">🏰 托斯卡纳日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">佛罗伦萨乘地区火车到锡耶纳（约 1h40min，或大巴 1h15min）</td></tr>
+          <tr><td class="t-time">10:45–13:00</td><td class="t-what"><b>田野广场（Piazza del Campo）</b>（免费）：贝壳形广场，世界遗产，爬曼吉亚钟楼（约 10 欧元）俯瞰全城</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：锡耶纳烤野猪肉/意面，广场边咖啡馆喝浓缩</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>锡耶纳大教堂</b>（约 12–15 欧元，可含地宫与登顶）：黑白大理石条纹立面+皮科洛米尼图书馆壁画</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返佛罗伦萨（晚上班次多），宿佛罗伦萨</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">锡耶纳一年两度赛马节（7 月 2 日与 8 月 16 日）期间人满为患且住宿暴涨，尽量避开；老城石板路多，穿平底鞋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 圣吉米尼亚诺</span>
+          <span class="d-desc">塔楼之城 + 酒庄</span>
+          <span class="d-tag alt">🍷 基安蒂日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">从锡耶纳/佛罗伦萨参加一日游或自驾，前往圣吉米尼亚诺（车程约 1h）</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>圣吉米尼亚诺</b>（免费）：中世纪塔楼之城，水井广场，登塔（约 8 欧元）看 14 座塔楼天际线</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：托斯卡纳乡村餐馆（白豆+橄榄油+基安蒂酒）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>基安蒂酒庄</b>品酒：红葡萄酒 Chianti Classico 品鉴 + 葡萄园参观（约 15–25 欧元/人）</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">返回佛罗伦萨，日落前在米开朗琪罗广场再看一眼城市全景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">托斯卡纳乡间交通依赖自驾或当地一日游团；若不自驾，从佛罗伦萨报名「圣吉米尼亚诺+酒庄」英文/中文小团最省心。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 比萨</span>
+          <span class="d-desc">斜塔一日</span>
+          <span class="d-tag ">🗼 比萨日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">佛罗伦萨乘地区火车到比萨中央站（约 1h）</td></tr>
+          <tr><td class="t-time">09:45–13:00</td><td class="t-what"><b>奇迹广场</b>：斜塔（登塔约 20 欧元，限时 30min 提前订）、比萨大教堂、洗礼堂，经典「推塔」拍照位</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：比萨老城意面或路边披萨角</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">阿尔诺河散步 / 骑士广场（免费），比萨大学周边咖啡馆</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">返佛罗伦萨，自由时间逛药妆店/中央市场买伴手礼</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">比萨斜塔登塔每日限流且按 30 分钟分批，务必提前 1–2 周官网订票；塔内台阶较滑，穿防滑鞋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 五渔村</span>
+          <span class="d-desc">悬崖五村</span>
+          <span class="d-tag ">🏞 五渔村日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">佛罗伦萨乘火车到拉斯佩齐亚（La Spezia，约 2h，中转比萨）</td></tr>
+          <tr><td class="t-time">10:45–12:00</td><td class="t-what">购买五渔村火车通票（约 18–25 欧元/天），先到<strong>马纳罗拉</strong>（Manarola）：悬崖彩色房经典机位</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：渔村海鲜意面/炸海鲜（Fritto Misto）</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>韦尔纳扎</b>（Vernazza）：海湾+古堡，<b>蒙特罗索</b>（Monterosso）：五村最大海滩，可下海</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what">火车串<strong>科尔尼利亚/里奥马焦雷</strong>看海岸线，宿蒙特罗索或马纳罗拉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">五渔村国家公园夏季极火爆，火车通票免排队且含徒步；「爱之路」（马纳罗拉—里奥马焦雷）经常封闭维护，出发前查官网。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 五渔村徒步</span>
+          <span class="d-desc">海岸步道 + 转场米兰</span>
+          <span class="d-tag ">🚶 徒步日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">选择一段经典海岸步道徒步（如蒙特罗索—韦尔纳扎段约 1.5h），看悬崖与蔚蓝海岸</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">回渔村小镇咖啡 + 买当地香蒜酱/橄榄油伴手礼</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐后乘火车北上（拉斯佩齐亚→热那亚→米兰，约 3.5–4h）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">入住米兰，地铁到多莫广场初见米兰大教堂（哥特式尖塔群）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：米兰烩饭/意式饺子，晚上看埃马努埃莱二世拱廊夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">从五渔村去米兰需在热那亚/拉斯佩齐亚换乘，全程约 3.5–4h；行李多建议住蒙特罗索（大站）便于出发。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 米兰</span>
+          <span class="d-desc">大教堂 + 城堡</span>
+          <span class="d-tag ">🏙 米兰日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">地铁 Duomo 站到米兰大教堂，开门即登顶</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>米兰大教堂</b>（教堂免费，登顶电梯约 15–20 欧元）：哥特式尖塔群+屋脊雕塑，晴天可望阿尔卑斯山</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>埃马努埃莱二世拱廊</b>（免费）：玻璃穹顶购物长廊，米兰经典地标</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：米兰烩饭/帕尼尼</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>斯福尔扎城堡</b>（城堡免费，博物馆约 5–8 欧元）：米开朗基罗《哀悼基督》真迹，森皮奥内公园散步</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：布雷拉区街头小馆，或看一场歌剧/买球票（若与档期吻合）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">米兰大教堂登顶清晨人少且光线好；达芬奇《最后的晚餐》在圣玛丽亚感恩教堂，每天仅限流，想看去需提前 2–3 个月官网抢票。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 转场威尼斯</span>
+          <span class="d-desc">米兰→威尼斯</span>
+          <span class="d-tag alt">🚄 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">自由安排：布雷拉画廊（约 15 欧元）或《最后的晚餐》（若已订票，需按预约时间）</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐后从米兰中央站乘高铁到威尼斯梅斯特雷（约 2.5h）</td></tr>
+          <tr><td class="t-time">13:30</td><td class="t-what">梅斯特雷转跨海大桥巴士/火车到威尼斯本岛，入住圣马可广场附近或朱代卡</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">第一次乘坐水上巴士 1 号线熟悉大运河：里亚托桥—学院桥—圣马可，全程约 1h</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：威尼斯墨鱼面（Spaghetti al Nero di Seppia）+ 运河边夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">威尼斯本岛禁机动车，全程靠步行+水上巴士（Vaporetto）；建议买 24/48h 水上巴士通票（约 25/35 欧元），单程一次 9.5 欧元不划算。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 圣马可广场</span>
+          <span class="d-desc">水城初访</span>
+          <span class="d-tag ">⛪ 圣马可日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">圣马可广场清晨：晨光中拍鸽子与钟楼（旺季 9 点后旅行团涌入）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>圣马可大教堂</b>（免费，登顶约 8 欧元）：金色马赛克穹顶，顶层阳台眺望广场</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>总督府 + 叹息桥</b>（联票约 25 欧元）：哥特宫殿与囚犯过桥历史，可含密室走廊</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：广场边小馆或巷子里墨鱼面</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">自由活动：钟楼登顶（约 10 欧元）/ 圣马可图书馆 / 科雷尔博物馆（约 25 欧元）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">黄昏时再走一遍叹息桥—学院桥，夕阳染金大运河</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">威尼斯 2024 年起对不过夜一日游客试行入城费，本行程连住多晚无影响；广场周边餐厅强制「服务费+座位费」，点单前看清菜单小字。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 大运河 + 贡多拉</span>
+          <span class="d-desc">水上巡游日</span>
+          <span class="d-tag ">🛶 贡多拉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">里亚托桥早市（鱼市+果蔬市场）看威尼斯烟火气</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>里亚托桥</b>（免费）：大运河最著名桥，两岸商户，桥顶俯瞰河道</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what"><b>大运河水上巴士巡游</b>（通票含）：从圣马可坐到火车站方向，全程看 170 多座宫殿立面</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what">午餐：运河边午餐或市场附近意面</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><b>贡多拉</b>（白天 30min 官方价约 80–100 欧元/船）：选小巷水道更便宜也更出片，和船夫确认价格再上船</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：威尼斯海鲜烩饭，宿本岛</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">贡多拉官方价是每船（最多 5 人）不是每人，拼船能摊薄成本；晚上 7 点后价格上浮，行程放下午最划算。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 玻璃岛彩色岛</span>
+          <span class="d-desc">离岛半日</span>
+          <span class="d-tag alt">🎨 离岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">水上巴士 3 号线/12 号线从圣马可出发前往穆拉诺（Murano，约 20min）</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>穆拉诺玻璃岛</b>（免费）：参观玻璃工坊吹制演示，逛玻璃博物馆（约 10 欧元）</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">水上巴士 12 号线到布拉诺（Burano，约 30min）</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what"><b>布拉诺彩色岛</b>（免费）：糖果色房屋，蕾丝博物馆（约 5 欧元），午餐：海鲜炸物+普罗塞克</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">返程回威尼斯本岛，途经托切罗岛（可选），下午自由休息或补货</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：本岛小巷餐厅最后一顿威尼斯海鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">穆拉诺玻璃制品鱼龙混杂，工坊现场吹制的才靠谱；布拉诺配色拍摄点在河岸与吊桥，晴天中午色彩最艳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 返程中转</span>
+          <span class="d-desc">威尼斯→罗马</span>
+          <span class="d-tag ">🚄 中转日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">上午自由活动：学院桥（看大运河最美视角）/ 安康圣母教堂，最后拍一次晨光水城</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what">回酒店退房，水上巴士到圣卢西亚站</td></tr>
+          <tr><td class="t-time">11:30</td><td class="t-what">圣卢西亚（Venezia S.Lucia）站乘高铁到罗马特米尼（约 3h50min）</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">入住罗马机场附近或市郊酒店（次日航班方便），傍晚特米尼周边轻食</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：罗马最后一顿（Carbonara 蛋酱面发源地），收拾行李</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">威尼斯—罗马高铁班次多，末班约 19:00；如次日早班机建议直接宿菲乌米奇诺机场酒店，减少折腾。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 返程</span>
+          <span class="d-desc">罗马✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">退房，坐 Leonardo Express 机场快线到菲乌米奇诺（约 30min，14 欧元）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">办理值机与<strong>退税</strong>（Global Blue/Planet 柜台，购满 154.94 欧元可退 12% 左右）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">机场午餐：意面/披萨收官，免税店补货咖啡与巧克力</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">罗马✈北京（直飞约 11.5h，国航/南航）</td></tr>
+          <tr><td class="t-time">次日 09:00</td><td class="t-what">抵北京大兴/首都机场，入境回家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">退税需同一天同一商店单张发票满 154.94 欧元，保留退税单与商品（可托运前先给海关验货）；罗马机场退税窗口旺季排队 1h+，提前到。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-cover.jpg" alt="罗马·斗兽场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">罗马·斗兽场 <small>约 18 欧元（联票）</small></div>
+          <div class="sc-feat">古罗马象征。<b>竞技场三层拱廊</b>，地下通道层需另购票，傍晚外墙金光最好拍。</div>
+          <div class="sc-meta">📅 9:00–19:00（夏季）· ⏱ 2–3h · 🚇 地铁 Colosseo 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-1.jpg" alt="梵蒂冈·圣彼得大教堂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">梵蒂冈·圣彼得大教堂 <small>免费（登顶 8 欧）</small></div>
+          <div class="sc-feat">全球最大教堂。<b>登顶俯瞰钥匙状广场</b>，米开朗基罗《哀悼基督》原作。</div>
+          <div class="sc-meta">📅 7:00–19:00 · ⏱ 2h · 🚇 地铁 Ottaviano 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-2.jpg" alt="佛罗伦萨·圣母百花" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">佛罗伦萨·圣母百花 <small>联票约 20–30 欧</small></div>
+          <div class="sc-feat">文艺复兴穹顶之父。<b>布努内莱斯基红瓦穹顶 + 乔托钟楼</b>，463 级台阶登顶。</div>
+          <div class="sc-meta">📅 联票 48h 有效 · ⏱ 2h · 🚶 老城中心步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-3.jpg" alt="威尼斯·大运河" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">威尼斯·大运河 <small>免费（水上巴士另计）</small></div>
+          <div class="sc-feat">水城主动脉。<b>1 号线水上巴士巡游</b>，两岸哥特与巴洛克宫殿 170 余座。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–1.5h · 🛶 水上巴士 1 号线</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-4.jpg" alt="五渔村·马纳罗拉" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">五渔村·马纳罗拉 <small>火车通票 18–25 欧/天</small></div>
+          <div class="sc-feat">悬崖彩色村落。<b>日落时分悬崖房 + 海湾</b>，明信片同款机位。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天–1 天 · 🚂 五渔村小火车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-5.jpg" alt="锡耶纳·田野广场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">锡耶纳·田野广场 <small>免费</small></div>
+          <div class="sc-feat">托斯卡纳中世纪之心。<b>贝壳形广场 + 曼吉亚钟楼</b>，黑白条纹大教堂。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3–4h · 🚂 佛罗伦萨火车 1h40min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-6.jpg" alt="比萨·斜塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">比萨·斜塔 <small>登塔约 20 欧元</small></div>
+          <div class="sc-feat">世界奇观。<b>5.5° 倾斜钟楼</b>，登塔限流 30min，奇迹广场推塔照。</div>
+          <div class="sc-meta">📅 9:00–18:00 · ⏱ 2h · 🚂 佛罗伦萨火车 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/italy/italy-7.jpg" alt="阿马尔菲·波西塔诺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿马尔菲·波西塔诺 <small>免费</small></div>
+          <div class="sc-feat">地中海悬崖之城。<b>彩色房屋层叠 + 柠檬海岸</b>，海陆两线都出片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚌 那不勒斯 Sita 巴士 1.5h</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（罗马斗兽场、圣彼得大教堂、圣母百花、威尼斯运河、五渔村、锡耶纳、比萨斜塔、阿马尔菲均为意大利实景），用于页面配图。更多免费景点：许愿池、万神殿、纳沃纳广场、西班牙广场、老桥、圣马可广场。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 欧元 ≈ 7.8 元人民币估算。往返机票按直飞淡季 5500–7500 元计。当地小额消费用欧元现金，大额刷卡。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（25000–35000）</th>
+<th>标准（45000–60000）</th>
+<th>舒适（80000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄罗马 5500–7000</td>
+<td>含内陆高铁全段 6500–8000</td>
+<td>直飞商务/灵活 20000–35000</td>
+</tr>
+<tr>
+<td>住宿（19 晚）</td>
+<td>青旅/民宿 300–500/晚</td>
+<td>三星级/民宿 600–1000/晚</td>
+<td>四五星/古迹酒店 1500–3000/晚</td>
+</tr>
+<tr>
+<td>交通</td>
+<td>高铁+巴士 3500–4500</td>
+<td>高铁二等+水上通票 5000–6500</td>
+<td>高铁一等/包车托斯卡纳 12000–20000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>核心景点约 2000–3000</td>
+<td>含博物馆/登顶/通票约 4000–6000</td>
+<td>全含+私导+演出约 10000–15000</td>
+</tr>
+<tr>
+<td>餐饮（20 天）</td>
+<td>超市+意面简餐 5000–6500</td>
+<td>正常下馆子 8000–10000</td>
+<td>米其林/米其林推荐 18000–30000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 52000 元）</span>
+      往返机票 7000 + 住宿 19 晚 16000（平均 840/晚）+ 高铁与水上交通 6000 + 门票 5000 + 餐饮 9000 + 签证/保险/杂费 2000 ≈ <strong>45000–52000 元</strong>。大头是住宿与交通，高铁票提前 2–3 个月买能省 30–50%；罗马—威尼斯夜车/早班车差价明显。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>18.1 只看北部的 14 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D4 罗马+梵蒂冈（同主行程）</li>
+
+      <li>D5–D6 佛罗伦萨+托斯卡纳</li>
+
+      <li>D7 比萨</li>
+
+      <li>D8–D9 五渔村</li>
+
+      <li>D10–D11 米兰（含《最后的晚餐》）</li>
+
+      <li>D12–D14 威尼斯+离岛，威尼斯✈回程或返罗马</li>
+
+    </ul>
+
+    <h3>18.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：罗马砍掉帕拉蒂尼山改为卡比托利欧博物馆+博尔盖塞公园；庞贝换那不勒斯海洋馆+蛋堡（城堡免费）；威尼斯离岛和贡多拉保留（孩子最爱），米兰加达芬奇科技馆。意大利餐馆普遍对儿童友好，5 岁以下多数免门票。步行量大，推车选威尼斯本岛以外区域。</p>
+
+    <h3>18.3 四季补充（夏季/冬季版）</h3>
+
+
+    <p>夏季（7–8 月）：阿马尔菲与五渔村人山人海，改成清晨 8 点前上岛；每天上午排景点、下午躲烈日，加锡拉库萨或西西里陶尔米纳作为补充（需另加 3 天）。冬季（12–2 月）：砍掉阿马尔菲与五渔村的海上项目，改在罗马、佛罗伦萨、威尼斯三城慢游 + 北部多洛米蒂滑雪（需租车）。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 意大利 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→罗马约 11.5–12h</td>
+<td>往返 5500–7500 元</td>
+<td>国航/南航/意大利航空（ITA），罗马菲乌米奇诺</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>14–20h</td>
+<td>4500–6500 元</td>
+<td>经阿布扎比/迪拜/多哈/伊斯坦布尔，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路/邮轮</td>
+<td>—</td>
+<td>—</td>
+<td>中国到欧洲无直连铁路，只能飞机；邮轮为欧洲境内可选</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 意大利境内交通核心提醒</span>
+      城际主力是<strong>意大利高铁 Frecciarossa/Italo</strong>（罗马—佛罗伦萨 1.5h、佛罗伦萨—威尼斯 2.5h、米兰—威尼斯 2.5h、罗马—威尼斯约 4h），票价浮动巨大，<strong>提前 60–90 天订能省一半</strong>；通勤选地区火车（Regionale）随买随走但较慢。罗马、那不勒斯注意防小偷（背包前背），上车前一定要在站台机器「打票」（巴士/地区火车），否则视作逃票罚款。
+    </div>
+
+    <h3>19.2 意大利境内交通</h3>
+    <ul>
+      <li><strong>高铁 Frecciarossa/Italo</strong>：罗马—佛罗伦萨 1.5h、罗马—那不勒斯 1.2h、佛罗伦萨—威尼斯 2.5h、米兰—威尼斯 2.5h、罗马—威尼斯 4h</li>
+      <li><strong>地区火车 Regionale</strong>：佛罗伦萨—锡耶纳/比萨、拉斯佩齐亚—五渔村等短途，无需提前订</li>
+      <li><strong>市内地铁/公交</strong>：罗马地铁 2 线+公交，单次约 1.5–2 欧元（100 分钟内换乘）；佛罗伦萨、威尼斯主要靠步行</li>
+      <li><strong>水上巴士 Vaporetto</strong>：威尼斯唯一公共交通，24h 通票约 25 欧元，1 号线沿大运河</li>
+      <li><strong>Sita 巴士/沿海公交</strong>：那不勒斯—阿马尔菲海岸线，山路多弯约 1.5–2h</li>
+      <li><strong>出租车/Uber</strong>：罗马起步约 3 欧元+计程，机场到市区固定价约 50–55 欧元；只在应急/带大行李时用</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>罗马·特米尼站周边</td>
+<td>经济 300–500 / 标准 500–800</td>
+<td>机场快线与高铁都从这里出发</td>
+<td>周边街道晚间接头较多</td>
+</tr>
+<tr>
+<td>罗马·西班牙广场/万神殿</td>
+<td>标准 700–1200 / 舒适 1500+</td>
+<td>步行覆盖核心景点</td>
+<td>旺季贵且房间小</td>
+</tr>
+<tr>
+<td>佛罗伦萨·老城（SMN 站北）</td>
+<td>经济 350–550 / 标准 600–1000</td>
+<td>步行到百花大教堂 10min</td>
+<td>老建筑隔音一般</td>
+</tr>
+<tr>
+<td>威尼斯·圣马可/朱代卡</td>
+<td>经济 400–600 / 标准 800–1500</td>
+<td>水城核心，推窗见运河</td>
+<td>拖行李过桥累，价格最高</td>
+</tr>
+<tr>
+<td>米兰·多莫/布雷拉</td>
+<td>经济 350–500 / 标准 600–900</td>
+<td>大教堂与购物近</td>
+<td>地铁站远一点的更便宜</td>
+</tr>
+<tr>
+<td>五渔村·蒙特罗索/马纳罗拉</td>
+<td>标准 700–1200</td>
+<td>海景与徒步便利</td>
+<td>旺季难订且贵，需提前 1 个月</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍝 必吃经典</h3>
+        <ul>
+          <li>意面：Carbonara（罗马蛋酱面）、阿玛翠斯面、海鲜意面（南方）</li>
+          <li>披萨：玛格丽特/水牛奶酪披萨（那不勒斯发源地）</li>
+          <li>佛罗伦萨牛排（Bistecca alla Fiorentina）1kg 起，多人分食</li>
+          <li>海鲜：威尼斯墨鱼面、海鲜烩饭（Risotto al Nero）</li>
+        </ul>
+        <h3>🥂 在地名物</h3>
+        <ul>
+          <li>托斯卡纳：基安蒂红葡萄酒、白豆、橄榄油</li>
+          <li>那不勒斯：Sfogliatella 贝壳酥、意式咖啡</li>
+          <li>威尼斯：Cicchetti 小碟下酒菜、普罗塞克</li>
+          <li>米兰：Ossobuco 烩牛膝、米兰烩饭</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍦 街头小吃</h3>
+        <ul>
+          <li>Gelato 手工冰淇淋（认「Artigianale」字样）</li>
+          <li>Suppli 炸饭团、Lampredotto 牛肚包（佛罗伦萨）</li>
+          <li>Caffè 咖啡：Espresso 站喝 1 欧左右</li>
+          <li>Limoncello 柠檬酒、Aperol Spritz 餐前酒</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>罗马 Trastevere 街区、Testaccio 市场</li>
+          <li>佛罗伦萨中央市场（Mercato Centrale）夜市</li>
+          <li>那不勒斯老城披萨店（Sorbillo/Da Michele）</li>
+          <li>威尼斯里亚托桥市场与小巷馆子</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 景点门口餐厅多为游客菜，先用 Google/TripAdvisor 评分筛（4.3+ 基本靠谱），或问本地人；② 意大利餐厅「桌位费（Coperto）+服务费」普遍存在，菜单小字看清再点；③ 点牛排问克数与单价（按 100g 计价）；④ 咖啡别在景点广场露天座点（贵 3–5 倍），站着喝最地道。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 申根签证（提前 1–2 个月办理）</li>
+        <li>往返机票 + 全程住宿预订确认单</li>
+        <li>意大利高铁票（官网订，早订便宜一半）</li>
+        <li>梵蒂冈博物馆/乌菲兹/比萨登塔等预约票</li>
+      </ul>
+      <ul>
+        <li>欧元现金（小额场景多，200–400 欧备用）</li>
+        <li>信用卡（Visa/Master，开通境外无接触支付）</li>
+        <li>转换插头（220V C/F 型两圆脚）+ 充电宝</li>
+        <li>Google 地图离线包 + 罗马/威尼斯防小偷提醒</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>热门景点全部要提前线上预约</strong>：梵蒂冈博物馆、乌菲兹、学院美术馆、比萨登塔、达芬奇《最后的晚餐》旺季窗口短，放票即抢；② 地铁/火车站是扒手高发区，背包前背、相机挂颈、现金分开放，尤其罗马 Termini 与那不勒斯中央站；③ 罗马、佛罗伦萨核心区「ZTL 限行」只对车不对人，游客步行无碍，但自驾务必查禁入时段；④ 意大利教堂与博物馆安检严格，双肩包、三脚架常需寄存，提前了解禁带物品。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      意大利是「<strong>行走的露天博物馆</strong>」——罗马两千年的废墟、佛罗伦萨文艺复兴的流光、托斯卡纳的艳阳与酒庄、五渔村的悬崖海景、米兰的时尚、威尼斯的迷宫水道，20 天刚好串成一条从古罗马到水城的完整文化线。提前办好申根签、订好高铁与热门门票，剩下的就是放慢脚步，在广场上晒太阳、吃一顿慢悠悠的意面。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 腾讯地图全球瓦片（GCJ-02，国内可访问，覆盖国外）
+        return L.tileLayer('https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&styleid=3&version=353', {
+          maxZoom: 18,
+          subdomains: ['0', '1', '2', '3'],
+          attribution: '© 腾讯地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c0600c",
+    "d": 3,
+    "n": "主环线 · 罗马→那不勒斯/庞贝→阿马尔菲→佛罗伦萨→锡耶纳→比萨→五渔村→米兰→威尼斯→罗马",
+    "pts": [
+      [
+        41.8902,
+        12.4922
+      ],
+      [
+        40.7497,
+        14.4872
+      ],
+      [
+        40.634,
+        14.603
+      ],
+      [
+        43.7731,
+        11.2559
+      ],
+      [
+        43.3188,
+        11.3308
+      ],
+      [
+        43.7229,
+        10.3966
+      ],
+      [
+        44.1067,
+        9.7273
+      ],
+      [
+        45.4642,
+        9.19
+      ],
+      [
+        45.434,
+        12.3388
+      ],
+      [
+        41.8902,
+        12.4922
+      ]
+    ]
+  },
+  {
+    "c": "#1f5fa8",
+    "d": 3,
+    "n": "阿马尔菲海岸支线 · 那不勒斯→索伦托→波西塔诺→阿马尔菲",
+    "pts": [
+      [
+        40.8518,
+        14.2681
+      ],
+      [
+        40.6263,
+        14.3758
+      ],
+      [
+        40.6281,
+        14.4851
+      ],
+      [
+        40.634,
+        14.603
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 41.8902,
+    "lng": 12.4922,
+    "name": "罗马·斗兽场",
+    "t": "D2 上午 · 2.5h",
+    "fee": "约 18 欧（联票）",
+    "note": "古罗马广场、帕拉蒂尼山"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 41.9022,
+    "lng": 12.4539,
+    "name": "梵蒂冈·圣彼得大教堂",
+    "t": "D3 上午 · 2h",
+    "fee": "免费（登顶 8 欧）",
+    "note": "西斯廷礼拜堂《创世纪》"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 43.7731,
+    "lng": 11.2559,
+    "name": "佛罗伦萨·圣母百花",
+    "t": "D7 下午 · 2h",
+    "fee": "联票 20–30 欧",
+    "note": "穹顶、乔托钟楼、金门"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 43.3188,
+    "lng": 11.3308,
+    "name": "锡耶纳·田野广场",
+    "t": "D9 上午 · 3h",
+    "fee": "免费",
+    "note": "曼吉亚钟楼、锡耶纳大教堂"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 43.7229,
+    "lng": 10.3966,
+    "name": "比萨·斜塔",
+    "t": "D11 上午 · 2h",
+    "fee": "登塔 20 欧",
+    "note": "奇迹广场、大教堂、洗礼堂"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 44.1067,
+    "lng": 9.7273,
+    "name": "五渔村·马纳罗拉",
+    "t": "D12 下午 · 2h",
+    "fee": "火车通票 18–25 欧/天",
+    "note": "悬崖彩屋、爱之路徒步"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 45.4642,
+    "lng": 9.19,
+    "name": "米兰·大教堂",
+    "t": "D14 上午 · 2h",
+    "fee": "教堂免费（登顶 15–20 欧）",
+    "note": "埃马努埃莱拱廊、斯福尔扎城堡"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 45.434,
+    "lng": 12.3388,
+    "name": "威尼斯·圣马可广场",
+    "t": "D16 上午 · 3h",
+    "fee": "广场免费（教堂登顶 8 欧）",
+    "note": "大运河巡游、贡多拉、离岛"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[36.6, 6.6], [47.1, 18.4]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c0600c\"></span>主环线（罗马→威尼斯→罗马）<br><span class=\"sw\" style=\"background:#1f5fa8\"></span>阿马尔菲海岸支线<br><span class=\"sw dash\"></span>庞贝—阿马尔菲段建议游船/沿海巴士</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>
