@@ -15,7 +15,7 @@ tour_map/
 │   ├── WORKFLOW.md                # 制作工作流（权威，下个项目照此执行）
 │   ├── images/                    # 景点图片（Unsplash License，本地化，按省/国分目录）
 │   ├── fonts/                     # 手写体字体（MaShanZheng 楷书，本地化）
-│   └── leaflet/                   # 地图库（Leaflet 本地文件 + 高德/腾讯瓦片）
+│   └── leaflet/                   # 地图库（Leaflet 本地文件 + 高德瓦片）
 ├── scripts/
 │   ├── build_guide.py             # 攻略 HTML 生成器（JSON → HTML，支持国内/国际双模式）
 │   └── data/<slug>.json           # 各省/国攻略数据（结构对齐 beijing.json / japan.json）
@@ -31,7 +31,7 @@ tour_map/
 ## 国际攻略试点（10 国）
 
 - 首批 10 个热门大国（日本/泰国/土耳其/法国/西班牙/意大利/埃及/美国/澳大利亚/印度），天数按国土面积与可玩性分配（15–30 天），北京出发、人民币预算。
-- **国际模式**：JSON 顶层 `"mode": "world"` 即启用——底图自动切换为腾讯全球瓦片（国内可访问、GCJ-02 坐标系），标题/文案按实际天数动态生成。
+- **国际模式**：JSON 顶层 `"mode": "world"` 即启用——底图自动切换为高德全球瓦片（国内可访问、GCJ-02 坐标系；海外只提供到 z9 级别底图，`maxNativeZoom: 9` 防止放大后请求空白瓦片），标题/文案按实际天数动态生成。
 - 样板：`scripts/data/japan.json`（20 天），新国照此结构扩写；运行 `python3 scripts/build_guide.py japan.json` 重渲染。
 - 每国含：签证/时差/电源/货币四要素、20 天级逐日时间线、交互地图、景点图鉴、三档预算、备选方案、美食与出行贴士。
 

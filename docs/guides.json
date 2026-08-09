@@ -724,5 +724,118 @@
       "拉贾斯坦",
       "世界遗产"
     ]
+  },
+  {
+    "slug": "indonesia-2026",
+    "title": "2026 印度尼西亚 16 天全景攻略 · 巴厘岛爪哇",
+    "cover": "images/indonesia/indonesia-cover.jpg",
+    "html": "indonesia-2026.html",
+    "date": "2026-08",
+    "destination": "印度尼西亚",
+    "days": 16,
+    "difficulty": "东南亚",
+    "summary": "巴厘岛→吉利群岛→日惹→布罗莫火山→雅加达，16 天海岛+火山+佛塔",
+    "tags": [
+      "印尼",
+      "巴厘岛",
+      "布罗莫火山",
+      "婆罗浮屠",
+      "潜水",
+      "海岛"
+    ]
+  },
+  {
+    "slug": "vietnam-2026",
+    "title": "2026 越南 15 天全景攻略 · 南北纵贯线",
+    "cover": "images/vietnam/vietnam-cover.jpg",
+    "html": "vietnam-2026.html",
+    "date": "2026-08",
+    "destination": "越南",
+    "days": 15,
+    "difficulty": "东南亚",
+    "summary": "河内→下龙湾→岘港会安→芽庄→胡志明，15 天南北纵贯",
+    "tags": [
+      "越南",
+      "下龙湾",
+      "会安",
+      "河内",
+      "胡志明市",
+      "米粉"
+    ]
+  },
+  {
+    "slug": "malaysia-2026",
+    "title": "2026 马来西亚 15 天全景攻略 · 西马东马双线",
+    "cover": "images/malaysia/malaysia-cover.jpg",
+    "html": "malaysia-2026.html",
+    "date": "2026-08",
+    "destination": "马来西亚",
+    "days": 15,
+    "difficulty": "东南亚",
+    "summary": "吉隆坡→槟城→兰卡威→沙巴亚庇，15 天都市+海岛+雨林",
+    "tags": [
+      "马来西亚",
+      "双子塔",
+      "槟城",
+      "兰卡威",
+      "沙巴",
+      "海岛"
+    ]
+  },
+  {
+    "slug": "singapore-2026",
+    "title": "2026 新加坡 7 天全景攻略 · 花园城市",
+    "cover": "images/singapore/singapore-cover.jpg",
+    "html": "singapore-2026.html",
+    "date": "2026-08",
+    "destination": "新加坡",
+    "days": 7,
+    "difficulty": "东南亚城市",
+    "summary": "滨海湾→圣淘沙→乌节路→多元文化街区，7 天花园城市精华",
+    "tags": [
+      "新加坡",
+      "滨海湾",
+      "圣淘沙",
+      "环球影城",
+      "免税购物"
+    ]
+  },
+  {
+    "slug": "korea-2026",
+    "title": "2026 韩国 12 天全景攻略 · 首尔釜山济州",
+    "cover": "images/korea/korea-cover.jpg",
+    "html": "korea-2026.html",
+    "date": "2026-08",
+    "destination": "韩国",
+    "days": 12,
+    "difficulty": "东亚",
+    "summary": "首尔→釜山→济州岛，12 天都市+海滨+火山岛环线",
+    "tags": [
+      "韩国",
+      "首尔",
+      "釜山",
+      "济州",
+      "韩屋",
+      "免税购物"
+    ]
+  },
+  {
+    "slug": "nepal-2026",
+    "title": "2026 尼泊尔 12 天全景攻略 · 雪山之国",
+    "cover": "images/nepal/nepal-cover.jpg",
+    "html": "nepal-2026.html",
+    "date": "2026-08",
+    "destination": "尼泊尔",
+    "days": 12,
+    "difficulty": "南亚",
+    "summary": "加德满都→博卡拉→奇特旺，12 天雪山+圣城+丛林",
+    "tags": [
+      "尼泊尔",
+      "加德满都",
+      "博卡拉",
+      "鱼尾峰",
+      "奇特旺",
+      "徒步"
+    ]
   }
 ]
