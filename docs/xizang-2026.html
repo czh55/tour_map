@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 西藏 10 天全景攻略 · 雪域高原深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #a83a2e;
+    --red-light: #bc4c40;
+    --gold: #d9a441;
+    --ink: #3a2825;
+    --muted: #8a746e;
+    --bg: #faf5f1;
+    --card: #ffffff;
+    --line: #edddd8;
+    --blue: #4a3530;
+    --cover1: #742019;
+    --ov1: rgba(80,16,10,.88);
+    --ov2: rgba(120,30,20,.72);
+    --ov3: rgba(165,50,36,.38);
+    --ov4: rgba(200,80,55,.20);
+    --key-bg: #fdf0e0;
+    --info-bg: #f6ece8;
+    --head-bg: rgba(168,58,46,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/xizang/xizang-cover.jpg" alt="西藏旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 拉萨 + 圣湖 + 珠峰大本营</div>
+      <h1>西藏 10 天全景攻略</h1>
+      <div class="sub">拉萨 ⇄ 布达拉宫 · 纳木错 · 羊卓雍措 · 日喀则 · 珠峰大本营</div>
+      <div class="meta">
+        <span>🚄 行程链：拉萨 → 布达拉宫 → 纳木错 → 羊卓雍措 → 日喀则 → 珠峰大本营 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚗 省内主力：包车 + 拼车 + 旅游大巴</span>
+        <span>🏔 主题：雪域圣地 + 世界之巅</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">拉萨</span>
+      <span class="arrow">→</span>
+      <span class="node">纳木错</span>
+      <span class="arrow">→</span>
+      <span class="node">羊卓雍措</span>
+      <span class="arrow">→</span>
+      <span class="node">日喀则</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">珠峰大本营</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      西藏是「<strong>离天空最近的地方</strong>」，拉萨是几乎所有行程的起点。<strong>前 2 天在拉萨适应高反</strong>，第 3–4 天走纳木错与羊卓雍措两大圣湖，第 5–8 天沿拉萨—日喀则—珠峰大本营的经典线看世界之巅，最后回拉萨缓冲后返程。全程以包车/拼车为主，海拔逐渐爬升最稳妥。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（拉萨 5 晚 + 日喀则 2 晚 + 珠峰大本营 1 晚 + 途中 1 晚）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天从拉萨返程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>拉萨 → 纳木错 → 羊卓雍措 → 日喀则 → 珠峰大本营 → 拉萨</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 5000–6500 ／ 标准 8000–10000 ／ 舒适 13000–17000</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 布达拉宫门票提前 7–10 天预约 ② 边防证提前在户籍地/拉萨办理 ③ 高原药品与氧气瓶备足</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>5–10 月最佳；7–8 月雨季雨多，4/5/9/10 月天气最稳</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>拉萨市内公交+打车；环线包车/拼车为主</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 高反是第一道关卡</span>
+      ① 拉萨海拔 3650 米，<strong>落地前 24 小时别洗澡、别跑跳、别喝酒</strong>，多喝水多休息；② 布达拉宫<strong>实名预约分时段</strong>，旺季一票难求，提前 7–10 天抢。心脑血管疾病者请慎重上珠峰（5200 米）。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏。整体「拉萨适应 → 圣湖 → 珠峰线 → 拉萨返程」，海拔循序渐进。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵拉萨</td>
+<td>机场/火车站进城，酒店静休适应高反</td>
+<td>拉萨</td>
+<td>适应日</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>布达拉宫（上午）→ 药王山观景台 → 罗布林卡</td>
+<td>拉萨</td>
+<td>布宫日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>大昭寺 + 八廓街转经 → 色拉寺辩经</td>
+<td>拉萨</td>
+<td>信仰日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>纳木错一日（圣象天门视开放情况）</td>
+<td>拉萨</td>
+<td>圣湖日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>羊卓雍措一日 → 卡若拉冰川</td>
+<td>拉萨</td>
+<td>圣湖日 2</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>拉萨→日喀则，扎什伦布寺</td>
+<td>日喀则</td>
+<td>后藏首府</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>日喀则→定日→珠峰大本营（晚观星空/日落）</td>
+<td>珠峰大本营</td>
+<td>世界之巅</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>珠峰日出 → 返回日喀则</td>
+<td>日喀则</td>
+<td>返程线</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>日喀则→拉萨，八廓街补拍 + 伴手礼</td>
+<td>拉萨</td>
+<td>收尾</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午拉萨市区自由活动，下午返程</td>
+<td>—</td>
+<td>返程</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      体力有限可把 D4/D5 两个圣湖合并取舍（纳木错车程更远、海拔更高）；珠峰大本营住宿（帐篷/绒布寺招待所）条件简单，怕苦可选 D7 当晚返回定日县城住酒店。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达拉萨</span>
+          <span class="d-desc">适应高反首日</span>
+          <span class="d-tag alt">🚇 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">12:00–16:00</td><td class="t-what">抵达拉萨（贡嘎机场/拉萨站），机场大巴/出租车进城</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">入住（推荐八廓街周边），静卧休息</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">轻量活动：八廓街外围漫步（别走太快），晚饭清淡</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">早睡，保证睡眠对抗高反</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">首日千万别洗澡、别喝酒、别剧烈运动；若头痛明显，酒店多备有供氧设备。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 布达拉宫</span>
+          <span class="d-desc">布宫日</span>
+          <span class="d-tag ">🏛 布宫日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>布达拉宫</b>（参考价 200 元，需提前预约）：白宫红宫、法王洞，世界文化遗产</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：藏面、甜茶</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what"><b>药王山观景台</b>（免费）：50 元人民币同款机位</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what"><b>罗布林卡</b>（参考价 60 元）：达赖夏宫，藏式园林</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：藏餐（糌粑、酥油茶、牦牛肉）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">布宫限时限人，提前 7–10 天在「布达拉宫票务预订系统」预约；爬布宫台阶慢一点，量力而行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 大昭寺 + 色拉寺</span>
+          <span class="d-desc">信仰日</span>
+          <span class="d-tag ">🙏 信仰日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>大昭寺</b>（参考价 85 元）：释迦牟尼 12 岁等身像，藏传佛教圣地</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>八廓街</b>（免费）：转经道 + 手工艺品，玛吉阿米等老店</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>色拉寺</b>（参考价 50 元）：辩经场下午 3 点开始，场面生动</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐后早点休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">八廓街顺时针转经；想拍藏服写真的可安排在 D3 上午，光线最好。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 纳木错</span>
+          <span class="d-desc">圣湖日</span>
+          <span class="d-tag ">🌊 纳木错日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00</td><td class="t-what">出发（拉萨→纳木错约 4.5 小时车程）</td></tr>
+          <tr><td class="t-time">12:00–15:00</td><td class="t-what"><b>纳木错</b>（参考价 120 元）：海拔 4718 米世界最高咸水湖，扎西半岛看湖</td></tr>
+          <tr><td class="t-time">15:00–19:30</td><td class="t-what">返程回拉萨，途中那根拉山口（海拔 5190 米）打卡</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">晚餐，好好休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">纳木错一天往返较累、海拔高，<strong>易高反者建议改期或加吸氧</strong>；圣象天门目前多处于关闭状态，以官方为准。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 羊卓雍措</span>
+          <span class="d-desc">圣湖日 2</span>
+          <span class="d-tag ">🌊 羊湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">出发（拉萨→羊湖约 2 小时车程）</td></tr>
+          <tr><td class="t-time">10:30–13:30</td><td class="t-what"><b>羊卓雍措</b>（参考价 60 元）：「天鹅之湖」，环湖观景台 4998 米</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>卡若拉冰川</b>（远观）：《红河谷》取景地</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返回拉萨</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：牦牛火锅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">羊湖比纳木错车程短一半、海拔略低，是「第一站圣湖」首选；观景台风大，注意保暖。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 日喀则</span>
+          <span class="d-desc">后藏首府一日</span>
+          <span class="d-tag ">🏯 日喀则日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">拉萨→日喀则（旅游大巴约 5 小时，或火车约 3 小时）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>扎什伦布寺</b>（参考价 100 元）：班禅驻锡地，世界最大铜佛强巴佛</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：后藏风味，宿日喀则</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐后早休息；日喀则海拔 3836 米，注意保暖防高反</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">拉萨—日喀则火车（约 3 小时）比大巴舒服且省时；扎寺下午光线好，适合慢慢转。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 珠峰大本营</span>
+          <span class="d-desc">世界之巅一日</span>
+          <span class="d-tag ">🗻 珠峰日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00</td><td class="t-what">日喀则出发，经定日县城午餐（全程约 8–9 小时）</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">定日午餐（海拔 4300 米）</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>珠峰国家公园</b>（参考价 180 元+环保车 120 元）：绒布寺、珠峰大本营纪念碑（海拔 5200 米）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">珠峰日落金山 + 星空银河</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">宿大本营帐篷/绒布寺招待所</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">边防证必带（定日检查站查验）；大本营海拔 5200 米，氧气、药品随身，动作放慢。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 珠峰返程</span>
+          <span class="d-desc">返程线</span>
+          <span class="d-tag alt">🛣 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00</td><td class="t-what">珠峰日出（云海/金山，拼人品）</td></tr>
+          <tr><td class="t-time">09:00</td><td class="t-what">返程，沿途雪山群峰</td></tr>
+          <tr><td class="t-time">15:00</td><td class="t-what">回到日喀则</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐，宿日喀则（洗个热水澡缓一缓）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">若前一晚睡眠差、高反明显，可提前 1 天下撤；回程注意检查站不要带违禁品。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 回拉萨</span>
+          <span class="d-desc">收尾一日</span>
+          <span class="d-tag ">🎁 收尾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">日喀则→拉萨（火车/大巴约 3–5 小时）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">八廓街补拍 + 买伴手礼（唐卡、藏香、藏红花）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：藏式晚餐收尾</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">整理行李，确认返程交通与氧气准备</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伴手礼推荐：藏香、藏红花、唐卡（机印款）、牦牛肉干、转经筒小挂件。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">回家</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what">自由活动：布达拉宫广场补拍白天的蓝天白云</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">退房，赴贡嘎机场/拉萨站返程</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">抵达出发地，结束西藏 10 天行程；到低海拔后注意醉氧</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">贡嘎机场离市区约 60km，机场大巴约 1 小时；航班建议订下午，留足时间。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-cover.jpg" alt="布达拉宫" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布达拉宫 <small>参考价 200 元</small></div>
+          <div class="sc-feat">世界海拔最高宫殿，<b>白宫红宫</b>，需提前 7–10 天预约。</div>
+          <div class="sc-meta">📅 分时段入宫 · ⏱ 2–3h · 拉萨市区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-1.jpg" alt="大昭寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">大昭寺 <small>参考价 85 元</small></div>
+          <div class="sc-feat">释迦牟尼 12 岁等身像所在，<b>藏传佛教最高圣地</b>。</div>
+          <div class="sc-meta">📅 8:30–18:00 · ⏱ 1–2h · 八廓街中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-2.jpg" alt="纳木错" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">纳木错 <small>参考价 120 元</small></div>
+          <div class="sc-feat">世界最高咸水湖（4718 米），<b>圣湖之首</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 日往返 · 拉萨北 4.5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-3.jpg" alt="羊卓雍措" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">羊卓雍措 <small>参考价 60 元</small></div>
+          <div class="sc-feat">「天鹅之湖」，<b>湖水随光变色</b>，观景台 4998 米。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 日往返 · 拉萨南 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-4.jpg" alt="珠峰大本营" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">珠峰大本营 <small>参考价 180+120 元</small></div>
+          <div class="sc-feat">世界之巅（5200 米），<b>看金山日落与星空银河</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 晚 · 定日方向</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-5.jpg" alt="扎什伦布寺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">扎什伦布寺 <small>参考价 100 元</small></div>
+          <div class="sc-feat">班禅驻锡地，<b>强巴佛（世界最大铜佛）</b>。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 2–3h · 日喀则市区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-6.jpg" alt="八廓街" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">八廓街 <small>免费</small></div>
+          <div class="sc-feat">拉萨<b>转经道与手工艺街</b>，老城烟火。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 大昭寺外围</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/xizang/xizang-7.jpg" alt="罗布林卡" loading="lazy"><span class="sc-tag skip">可跳过</span></div>
+        <div class="sc-body">
+          <div class="sc-name">罗布林卡 <small>参考价 60 元</small></div>
+          <div class="sc-feat">达赖夏宫，<b>藏式园林</b>，世界文化遗产。</div>
+          <div class="sc-meta">📅 9:00–17:30 · ⏱ 2h · 拉萨市区</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（布达拉宫、纳木错、珠峰等为西藏实景），用于页面配图。更多免费景点：药王山观景台、宗角禄康公园、拉萨河畔、哲蚌寺。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为参考价，以现场为准。西藏旅行大头在交通（机票/包车）与边防证办理，旺季（6–8 月）价格明显上浮。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（5000–6500）</th>
+<th>标准（8000–10000）</th>
+<th>舒适（13000–17000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>飞机/火车 1500–2200</td>
+<td>飞机 2200–3500</td>
+<td>飞机+商务舱 4000–6000</td>
+</tr>
+<tr>
+<td>省内包车/拼车</td>
+<td>拼车 1500–2500</td>
+<td>包车 3000–4500</td>
+<td>独立包车 6000–9000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/客栈 900–1400</td>
+<td>连锁/藏式 2000–3000</td>
+<td>星级/景观房 5000–7000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 800</td>
+<td>含珠峰环保车等 1100</td>
+<td>全含 1500+</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>800–1000</td>
+<td>1500–1900</td>
+<td>2500–3500</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 9700 元）</span>
+      往返 2800 + 包车拼车 3500 + 住宿 9 晚 2000（双人分 4000）+ 门票 1100 + 餐饮 1600 + 杂费 400 ≈ <strong>9700 元</strong>。旺季机票与珠峰住宿是主要浮动项。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 拉萨周边 6 天版</h3>
+
+
+    <ul>
+
+      <li>D1 适应高反</li>
+
+      <li>D2 布达拉宫+大昭寺</li>
+
+      <li>D3 罗布林卡+色拉寺</li>
+
+      <li>D4 纳木错</li>
+
+      <li>D5 羊卓雍措</li>
+
+      <li>D6 返程</li>
+
+    </ul>
+
+    <h3>7.2 深游阿里版</h3>
+
+
+    <p>资深玩家可加 10 天走阿里南线：冈仁波齐转山、玛旁雍错、扎达土林与古格王朝，但全程平均海拔 4500 米+，需极强体力与时间，属进阶行程。</p>
+
+    <h3>7.3 雨季调整版</h3>
+
+
+    <p>7–8 月雨季珠峰方向常云雾遮蔽，若时间灵活，可把珠峰段换到 9 月中旬后；或改走林芝方向（低海拔 2900 米），看南迦巴瓦与桃花（4 月）。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 西藏 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>飞机</td>
+<td>视出发地 2–5h</td>
+<td>600–3000 元</td>
+<td>拉萨/林芝/日喀则机场，旺季贵</td>
+</tr>
+<tr>
+<td>青藏铁路</td>
+<td>西宁—拉萨约 20h</td>
+<td>硬卧 500–800 元</td>
+<td>火车进藏可逐步适应海拔，票紧张</td>
+</tr>
+<tr>
+<td>自驾（滇藏/川藏）</td>
+<td>5–10 天</td>
+<td>油费+食宿</td>
+<td>高原险路，资深老司机专属</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 交通核心提醒</span>
+      进藏最常见是飞机直飞拉萨或火车走青藏线；<strong>区内交通以包车/拼车为主</strong>，拉萨—日喀则可坐火车（约 3 小时）。珠峰方向必须包车（或参加纯玩团），边防证随身带好。
+    </div>
+
+    <h3>8.2 区内交通</h3>
+    <ul>
+      <li><strong>拉萨市区</strong>：公交 1–2 元 + 打车（起步约 10 元）</li>
+      <li><strong>拉萨—日喀则</strong>：火车约 3h（推荐）/旅游大巴约 5h</li>
+      <li><strong>纳木错/羊湖</strong>：拼车或一日游团（人均 200–400 元）</li>
+      <li><strong>珠峰线</strong>：包车 3–4 天（2000–4500 元/车）</li>
+      <li><strong>机场大巴</strong>：贡嘎机场—市区约 30–40 元</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>八廓街周边</td>
+<td>客栈 250–500</td>
+<td>近大昭寺与转经道</td>
+<td>老房隔音一般</td>
+</tr>
+<tr>
+<td>拉萨市区酒店</td>
+<td>快捷 300–600 / 星级 600–1200</td>
+<td>供氧设施齐全</td>
+<td>旺季紧张</td>
+</tr>
+<tr>
+<td>日喀则市区</td>
+<td>客栈 200–450</td>
+<td>离扎寺近</td>
+<td>选择少于拉萨</td>
+</tr>
+<tr>
+<td>珠峰大本营</td>
+<td>帐篷/招待所 150–300</td>
+<td>看星空日出</td>
+<td>海拔高、条件简单</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>藏面、甜茶、酥油茶</li>
+          <li>牦牛肉、藏式火锅</li>
+          <li>糌粑、藏包子（夏馍馍）</li>
+          <li>酸奶（牦牛酸奶）</li>
+        </ul>
+        <h3>🥮 伴手礼</h3>
+        <ul>
+          <li>藏香、藏红花</li>
+          <li>唐卡（机印款）</li>
+          <li>牦牛肉干</li>
+          <li>转经筒挂件、绿松石饰品</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 特色体验</h3>
+        <ul>
+          <li>甜茶馆（光明港琼等）</li>
+          <li>八廓街小吃（藏面+甜茶）</li>
+          <li>藏式餐厅看歌舞表演</li>
+          <li>藏香/唐卡工坊体验</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>八廓街周边（藏餐集中）</li>
+          <li>北京东路（老字号）</li>
+          <li>甜茶馆（本地人生活）</li>
+          <li>珠峰营地（简餐+自热饭）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 初到高原饮食清淡，别猛吃辛辣与重油；② 酥油茶可助适应高反，但乳糖不耐者慎饮；③ 景区餐饮贵且简单，珠峰线提前备干粮。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证 + 边防证（珠峰线必带）</li>
+        <li>红景天/高原安、氧气瓶</li>
+        <li>防晒霜 50+、墨镜、润唇膏</li>
+        <li>保暖衣 + 羽绒服（珠峰 0℃ 以下）</li>
+      </ul>
+      <ul>
+        <li>布达拉宫提前 7–10 天预约</li>
+        <li>大昭寺等门票提前购</li>
+        <li>包车/拼车提前 1 周订</li>
+        <li>首日不洗澡不喝酒不跑跳</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 高反与安全四条</span>
+      ① <strong>高反是概率事件，别轻视也别恐慌</strong>，氧气+休息即可缓解，严重时立即下撤就医；② 边防证务必提前办好；③ 珠峰大本营住宿极简，自备睡袋与药品；④ 尊重宗教习俗，转经顺时针，不指佛像。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      西藏是「<strong>眼睛的天堂，身体的地狱</strong>」——布达拉宫看信仰、纳木错看圣湖、珠峰看世界之巅。海拔再高，也挡不住这片土地带来的震撼。10 天把拉萨、圣湖与珠峰走完，放慢脚步、敬畏自然，就是最好的打开方式。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "D2-D3 拉萨市区 · 布达拉宫→大昭寺→罗布林卡",
+    "pts": [
+      [
+        29.655,
+        91.117
+      ],
+      [
+        29.653,
+        91.131
+      ],
+      [
+        29.653,
+        91.099
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "D4-D8 圣湖珠峰线 · 纳木错→羊湖→扎寺→珠峰",
+    "pts": [
+      [
+        30.67,
+        90.6
+      ],
+      [
+        29.12,
+        90.8
+      ],
+      [
+        29.268,
+        88.878
+      ],
+      [
+        28.146,
+        86.852
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 29.655,
+    "lng": 91.117,
+    "name": "布达拉宫",
+    "t": "D2 上午 · 2–3h",
+    "fee": "参考价 200 元",
+    "note": "提前 7–10 天预约"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 29.653,
+    "lng": 91.131,
+    "name": "大昭寺",
+    "t": "D3 上午 · 1–2h",
+    "fee": "参考价 85 元",
+    "note": "释迦牟尼 12 岁等身像"
+  },
+  {
+    "num": 3,
+    "prio": "nice",
+    "lat": 29.6535,
+    "lng": 91.132,
+    "name": "八廓街",
+    "t": "D3 上午 · 1–2h",
+    "fee": "免费",
+    "note": "转经道、藏服写真"
+  },
+  {
+    "num": 4,
+    "prio": "skip",
+    "lat": 29.653,
+    "lng": 91.099,
+    "name": "罗布林卡",
+    "t": "D2 下午 · 2h",
+    "fee": "参考价 60 元",
+    "note": "达赖夏宫"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 30.67,
+    "lng": 90.6,
+    "name": "纳木错",
+    "t": "D4 · 1 日往返",
+    "fee": "参考价 120 元",
+    "note": "海拔 4718 米圣湖"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 29.12,
+    "lng": 90.8,
+    "name": "羊卓雍措",
+    "t": "D5 · 1 日往返",
+    "fee": "参考价 60 元",
+    "note": "天鹅之湖"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 29.268,
+    "lng": 88.878,
+    "name": "扎什伦布寺",
+    "t": "D6 下午 · 2–3h",
+    "fee": "参考价 100 元",
+    "note": "班禅驻锡地"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 28.146,
+    "lng": 86.852,
+    "name": "珠峰大本营",
+    "t": "D7-D8 · 1 晚",
+    "fee": "参考价 180+120 元",
+    "note": "世界之巅 5200 米"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[27.9, 86.6], [31.0, 91.4]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>D2-D3 拉萨市区线<br><span class=\"sw\" style=\"background:#c9820e\"></span>D4-D8 圣湖珠峰线<br><span class=\"sw dash\"></span>远郊段（珠峰）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

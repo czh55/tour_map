@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 海南 10 天全景攻略 · 环岛深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #0e8a8a;
+    --red-light: #12a5a5;
+    --gold: #e0a63f;
+    --ink: #283238;
+    --muted: #7a8a8f;
+    --bg: #f0f6f7;
+    --card: #ffffff;
+    --line: #dbe8e9;
+    --blue: #0b5f63;
+    --cover1: #0b6a6d;
+    --ov1: rgba(6,90,92,.88);
+    --ov2: rgba(14,112,112,.72);
+    --ov3: rgba(40,150,150,.38);
+    --ov4: rgba(70,180,180,.20);
+    --key-bg: #e7f4f4;
+    --info-bg: #ecf5f6;
+    --head-bg: rgba(14,138,138,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/hainan/hainan-cover.jpg" alt="海南旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环岛 · 海口 + 文昌 + 万宁 + 三亚 + 五指山</div>
+      <h1>海南 10 天全景攻略</h1>
+      <div class="sub">海口 ⇄ 文昌 ⇄ 万宁 ⇄ 三亚 ⇄ 五指山 · 环岛公路 + 海岛 + 热带雨林</div>
+      <div class="meta">
+        <span>🚗 行程链：海口 → 文昌 → 万宁 → 三亚 → 五指山 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚗 环岛主力：环岛高铁 + 租车自驾</span>
+        <span>🏝 主题：热带海岛 + 冲浪 + 雨林 + 航天</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">海口</span>
+      <span class="arrow">→</span>
+      <span class="node">文昌</span>
+      <span class="arrow">→</span>
+      <span class="node">万宁</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">三亚</span>
+      <span class="arrow">→</span>
+      <span class="node">五指山</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      海南玩法一半在海一半在山：海口看骑楼与烟火气，文昌看航天与椰林，万宁冲浪看海，三亚度假玩岛，五指山钻进热带雨林。<strong>10 天是环岛深度游的理想时长</strong>，环岛高铁 3 小时内串起东线主要城市，自驾走海南环岛旅游公路则能随时停下来看海。头尾各留 1 天给海口，中间 6–7 天慢慢南移。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（海口 2 + 文昌万宁 2 + 三亚 4 + 五指山 2）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天从海口美兰/三亚凤凰机场飞走，或高铁返</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>海口 → 文昌 → 万宁 → 三亚 → 五指山 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 3500–5000 ／ 标准 5500–7500 ／ 舒适 9000–13000</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 蜈支洲岛船票提前订 ② 南山/天涯海角预约购票 ③ 离岛免税额度提前了解</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11–3 月温暖避寒最佳；6–9 月湿热多台风</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>环岛高铁东线串联主要城市，租车自驾走环岛旅游公路</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>海南旺季（11–4 月及春节）机票与酒店价格翻倍</strong>，春节前后一房难求，务必提前 1–2 个月预订。② 三亚阳光紫外线极强，<strong>海岛暴晒 + 下水后更容易晒伤</strong>，防晒霜、防晒衣、墨镜三件套缺一不可，蜈支洲岛水上项目请认正规商家。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏。东线沿海、中线进山，自驾/高铁结合。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵海口</td>
+<td>入住骑楼老街附近，老街夜景 + 老爸茶</td>
+<td>海口骑楼</td>
+<td>抵达 + 市井烟火</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>海口 → 文昌：航天科普中心 + 东郊椰林</td>
+<td>文昌</td>
+<td>航天 + 椰林</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>文昌 → 万宁：日月湾冲浪 + 石梅湾</td>
+<td>万宁</td>
+<td>冲浪海岸</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>万宁 → 三亚：亚龙湾沙滩 + 傍晚椰梦长廊</td>
+<td>三亚亚龙湾</td>
+<td>度假海湾</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>蜈支洲岛（全天潜水/水上项目）</td>
+<td>三亚</td>
+<td>海岛潜水</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>南山海上观音 → 天涯海角</td>
+<td>三亚</td>
+<td>祈福 + 地标</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>亚龙湾热带天堂森林公园 → 免税城购物</td>
+<td>三亚</td>
+<td>雨林 + 免税</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>三亚 → 五指山：热带雨林徒步 + 水满乡</td>
+<td>五指山</td>
+<td>雨林探秘</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>五指山 → 海口：环岛高速返程 + 伴手礼采购</td>
+<td>海口</td>
+<td>收尾休整</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午美兰机场免税提货，午后航班返程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      纯度假可把 D2–D3 压缩，三亚连住 5 晚；冲浪爱好者把万宁扩成 2 天。自驾走环岛旅游公路（万宁—陵水段）风景最好。带老人孩子可跳过五指山徒步，改在亚龙湾多玩一天。环岛高铁海口—三亚东线约 1.5 小时，行程调整灵活。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达海口</span>
+          <span class="d-desc">骑楼老街 + 市井烟火</span>
+          <span class="d-tag alt">🚇 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">抵达海口（美兰机场，高铁/地铁进城约 30 分钟）</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>骑楼老街</b>（免费）：南洋风格骑楼群，中山路、博爱路逛吃</td></tr>
+          <tr><td class="t-time">19:00–20:30</td><td class="t-what">晚餐：文昌鸡/老爸茶 + 清补凉，尝海南粉</td></tr>
+          <tr><td class="t-time">20:30–22:00</td><td class="t-what"><b>世纪大桥</b>（免费）：海甸河夜景，或骑楼夜景</td></tr>
+          <tr><td class="t-time">22:30</td><td class="t-what">回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海口是海南物价最「亲民」的城市，是了解海南市井生活的最佳入口；骑楼老街晚上灯火好拍，老爸茶是当地人的下午仪式。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 文昌航天 + 椰林</span>
+          <span class="d-desc">航天发射场 + 东郊椰林</span>
+          <span class="d-tag ">🚀 航天日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">海口乘环岛高铁至<b>文昌站</b>（约 30 分钟，参考价约 30 元）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>文昌航天科普中心</b>（参考价约 100 元）：近距离看火箭发射塔架</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：文昌鸡（四大名菜之一）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>东郊椰林</b>（免费）：百万株椰树，清澜大桥看海，椰子现砍现喝</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">晚餐：文昌海鲜，入住文城镇或回海口</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">文昌是中国第四个航天发射场，有发射任务时发射场区域封闭，科普中心正常开放；东郊椰林适合傍晚光线拍照。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 万宁冲浪</span>
+          <span class="d-desc">日月湾 + 石梅湾</span>
+          <span class="d-tag ">🏄 冲浪日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">文昌乘高铁至<b>万宁站</b>（约 40 分钟），打车至日月湾</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>日月湾</b>（免费）：中国冲浪胜地，报名体验课（参考 200–400 元/人）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：湾边简餐/椰子鸡</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>石梅湾</b>（免费）：《非诚勿扰》取景地，椰林海湾散步</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">可选 <b>※ 兴隆热带植物园</b>（参考价约 50 元）或咖啡庄园</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：兴隆东南亚风味（华侨美食）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">日月湾浪况适合初学者，旺季教练需预约；兴隆是海南的咖啡之乡，南洋华侨菜别错过。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 三亚亚龙湾</span>
+          <span class="d-desc">度假海湾开启</span>
+          <span class="d-tag ">🌴 三亚日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">万宁乘高铁至<b>三亚站</b>（约 45 分钟，参考价约 70 元），或自驾环岛旅游公路</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">入住<b>亚龙湾</b>酒店区，午餐</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><b>亚龙湾沙滩</b>（免费）：沙白水清，游泳/摩托艇/香蕉船</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>椰梦长廊</b>（免费）：三亚湾日落，全场椰树成排</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">晚餐：海鲜大餐（第一市场加工或酒店餐厅）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">亚龙湾是三亚水质最好的湾，酒店密度高；三亚湾椰梦长廊看日落免费且最美。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 蜈支洲岛</span>
+          <span class="d-desc">海岛潜水一日</span>
+          <span class="d-tag ">🤿 海岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">出发至蜈支洲岛码头（市区约 40 分钟车程）</td></tr>
+          <tr><td class="t-time">09:30–10:00</td><td class="t-what">乘船登岛（往返船票参考价约 140 元，含门票）</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>潜水</b>（参考价 380 元起）/浮潜，或电瓶车环岛看观日岩、情人桥</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">岛上简餐</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">水上项目：摩托艇、拖伞（参考 200–400 元/项），白沙滩游泳</td></tr>
+          <tr><td class="t-time">16:00–17:00</td><td class="t-what">返程离岛，回酒店休息</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：三亚本地菜或海鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蜈支洲岛旺季（冬季）排队登船时间长，建议 8:30 前到码头；潜水选「堡礁潜水」性价比最高，深潜需穿潜水衣防划伤。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 南山 + 天涯海角</span>
+          <span class="d-desc">祈福 + 地标一日</span>
+          <span class="d-tag ">🙏 祈福日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:30</td><td class="t-what"><b>南山文化旅游区</b>（参考价约 108–129 元）：108 米海上观音像、南山寺，园区电瓶车游览</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：南山素斋（参考人均 60–80 元）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>天涯海角</b>（参考价约 68 元）：南天一柱、天涯石，海边礁石群</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">可选 <b>※ 大小洞天</b>（参考价约 90 元）或回酒店休息</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：三亚海鲜/椰子鸡火锅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">南山园区很大，买电瓶车票省体力；天涯海角主要是地标打卡，2 小时足够，别抱太高期望。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 雨林公园 + 免税</span>
+          <span class="d-desc">热带天堂 + 买买买</span>
+          <span class="d-tag ">🛍 休闲日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>亚龙湾热带天堂森林公园</b>（参考价约 158 元）：过江龙索桥、《非诚勿扰》鸟巢酒店外观</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：亚龙湾周边</td></tr>
+          <tr><td class="t-time">14:00–18:00</td><td class="t-what"><b>cdf 三亚国际免税城</b>：化妆品/箱包/酒水，离岛免税额度每人每年 10 万元</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">可选 <b>※ 三亚千古情</b>（参考价约 260 元）或海边晚餐</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">离岛免税需凭离岛机票/船票购物，提前一晚在 App 上比价下单；森林公园蚊子多，穿长裤喷驱蚊液。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 五指山</span>
+          <span class="d-desc">热带雨林探秘</span>
+          <span class="d-tag ">🌲 雨林日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">三亚出发，自驾/包车至<b>五指山</b>（约 2 小时，环岛高速）</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>五指山热带雨林景区</b>（参考价约 50 元）：雨林栈道、百年古树、天然氧吧</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：水满乡黎族农家菜（五脚猪、竹筒饭）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">可选 <b>※ 五指山漂流</b>（参考价约 150–200 元，夏季）或黎苗风情村寨</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">入住五指山/水满乡民宿，晚上看星空</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：黎族风味</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">五指山是海南最高峰（1867 米），雨林湿度大、栈道湿滑，穿防滑鞋；徒步主峰较累，普通游客走景区栈道即可。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 五指山 → 海口</span>
+          <span class="d-desc">中线返程 + 采购</span>
+          <span class="d-tag alt">🚗 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">五指山出发经<b>海南中线高速</b>返回海口（约 3 小时）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：海口，采购伴手礼（海南咖啡、黄灯笼辣椒酱、椰子糖）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">可选 <b>※ 海口观澜湖电影公社</b>（参考价约 150 元）或免税提货、市区逛街</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐：海口夜宵（糟粕醋火锅、生蚝）</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">入住海口美兰机场附近酒店（方便次日早班机）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">中线高速穿过中部山区，两侧是原始雨林风光；海口美兰机场可提前 2 天在线下免税店选购、机场提货。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">免税提货 + 回家</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:30</td><td class="t-what">早餐后退房，打车前往美兰机场（市区约 30–40 分钟）</td></tr>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">办理值机 + 离岛免税提货（随身行李注意液体限制）</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">午餐：机场或登机口简餐</td></tr>
+          <tr><td class="t-time">12:00–16:00</td><td class="t-what">航班返程（或高铁过海返广东）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">离岛免税提货点在安检后，液体超限需托运；海口—广东可乘环岛高铁过海（火车轮渡，约 3 小时到湛江），适合想自驾返程的游客。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-cover.jpg" alt="亚龙湾" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">亚龙湾 <small>免费</small></div>
+          <div class="sc-feat">三亚水质最好的海湾。<b>白沙细浪 + 水上项目</b>，度假酒店群环绕。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天起 · 🚌 市区约 40 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-1.jpg" alt="蜈支洲岛" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蜈支洲岛 <small>门票+往返船参考价约 140 元</small></div>
+          <div class="sc-feat">潜水天堂。<b>清澈海水 + 堡礁潜水</b>，观日岩看日出。</div>
+          <div class="sc-meta">📅 08:00–16:30 · ⏱ 1 天 · 🚢 蜈支洲码头</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-2.jpg" alt="天涯海角" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">天涯海角 <small>参考价约 68 元</small></div>
+          <div class="sc-feat">海南地标。<b>南天一柱、天涯石</b>，海边礁石群 + 椰林步道。</div>
+          <div class="sc-meta">📅 07:30–18:00 · ⏱ 2h · 🚌 市区约 30 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-3.jpg" alt="南山文化旅游区" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">南山文化旅游区 <small>参考价约 108–129 元</small></div>
+          <div class="sc-feat">108 米<strong>海上观音</strong> + 南山寺。<b>南海祈福圣地</b>，素斋出名。</div>
+          <div class="sc-meta">📅 08:00–17:30 · ⏱ 3–4h · 🚌 市区约 40 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-4.jpg" alt="海口骑楼老街" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">海口骑楼老街 <small>免费</small></div>
+          <div class="sc-feat">南洋骑楼建筑群。<b>中山路夜景 + 老爸茶</b>，海口烟火气。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚇 海口市区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-5.jpg" alt="文昌航天发射场" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">文昌航天发射场 <small>科普中心参考价约 100 元</small></div>
+          <div class="sc-feat">中国新一代航天发射场。<b>火箭发射塔架 + 东郊椰林</b>，航天迷必去。</div>
+          <div class="sc-meta">📅 09:00–17:00 · ⏱ 2–3h · 🚄 文昌站约 30 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-6.jpg" alt="万宁日月湾" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">万宁日月湾 <small>免费（冲浪课参考 200–400 元）</small></div>
+          <div class="sc-feat">中国冲浪胜地。<b>国家冲浪队训练地</b>，新手也能体验站上浪尖。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚄 万宁站转车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/hainan/hainan-7.jpg" alt="五指山热带雨林" loading="lazy"><span class="sc-tag skip">可跳过</span></div>
+        <div class="sc-body">
+          <div class="sc-name">五指山热带雨林 <small>参考价约 50 元</small></div>
+          <div class="sc-feat">海南最高峰。<b>原始雨林栈道 + 黎族风情</b>，天然氧吧。</div>
+          <div class="sc-meta">📅 08:00–17:00 · ⏱ 3–4h · 🚗 三亚约 2h</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（三亚湾、热带海岛、雨林栈道、冲浪等均为同主题示意图），用于页面配图。更多免费景点：三亚湾椰梦长廊、海口世纪大桥、文昌东郊椰林、兴隆热带植物园。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为旺季参考价，以现场为准。机票是最大开支（淡季往返 800–1500 元，旺季春节翻倍），不同出发地浮动较大。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（3500–5000）</th>
+<th>标准（5500–7500）</th>
+<th>舒适（9000–13000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>淡季机票约 800–1200</td>
+<td>机票约 1200–2000</td>
+<td>旺季/直飞约 2500–4000</td>
+</tr>
+<tr>
+<td>省内交通</td>
+<td>高铁约 300–400</td>
+<td>高铁 + 打车约 600–800</td>
+<td>全程租车自驾约 1500–2500</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/快捷 900–1350</td>
+<td>连锁/民宿 1800–2700</td>
+<td>亚龙湾度假酒店 5000–8000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 400</td>
+<td>含蜈支洲岛+南山约 700</td>
+<td>全含 + 水上项目约 1500</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>600–900</td>
+<td>1200–1600（含海鲜）</td>
+<td>2200–3000（海鲜大餐）</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 6800 元）</span>
+      往返机票 1600 + 省内交通 700 + 住宿 9 晚 2200（双人分 4400）+ 门票 700 + 餐饮 1400 + 市内交通 300 ≈ <strong>6900 元</strong>。淡季出行能省 2000 元以上；亚龙湾住 1–2 晚即可，其余住市区性价比高。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 只看精华的 5 天版</h3>
+
+
+    <ul>
+
+      <li>D1 三亚亚龙湾 + 椰梦长廊</li>
+
+      <li>D2 蜈支洲岛</li>
+
+      <li>D3 南山 + 天涯海角</li>
+
+      <li>D4 热带天堂公园 + 免税</li>
+
+      <li>D5 返程</li>
+
+    </ul>
+
+    <h3>7.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：三亚亚特兰蒂斯水世界/水族馆、亚龙湾沙滩玩沙、南山看海上观音；把五指山徒步换成南湾猴岛（缆车观猴）或分界洲岛海洋剧场，节奏更轻松。</p>
+
+    <h3>7.3 冲浪户外版</h3>
+
+
+    <p>冲浪爱好者可把万宁扩到 3 天（日月湾+石梅湾），把五指山换成尖峰岭原始森林或七仙岭温泉。冬季（11–3 月）浪况稳定是冲浪黄金季，需提前预约教练与板。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 海南 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>飞机（推荐）</td>
+<td>视出发地 2–4h</td>
+<td>800–2500 元</td>
+<td>美兰/凤凰/博鳌三机场，旺季需早订</td>
+</tr>
+<tr>
+<td>高铁过海</td>
+<td>广州→海口约 4–5h</td>
+<td>约 300–400 元</td>
+<td>火车轮渡跨琼州海峡，体验独特</td>
+</tr>
+<tr>
+<td>自驾过海</td>
+<td>视出发地 + 轮渡</td>
+<td>轮渡 400–600 元/车</td>
+<td>徐闻海安港—海口轮渡约 1.5h，旺季排队长</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 省内交通核心提醒</span>
+      <strong>环岛高铁东线串联海口、文昌、万宁、陵水、三亚</strong>，全线约 1.5–2 小时，是环岛性价比最高的方式；西线高铁覆盖儋州、东方等地。自驾推荐走环岛旅游公路（东线万宁—陵水段海景最美）。三亚市区打车方便，蜈支洲岛码头与亚龙湾间建议包车/打车。
+    </div>
+
+    <h3>8.2 省内交通</h3>
+    <ul>
+      <li><strong>环岛高铁</strong>：东线为主，海口—三亚约 1.5–2 小时</li>
+      <li><strong>租车自驾</strong>：环岛旅游公路首选，机场取还车便利</li>
+      <li><strong>市内公交/打车</strong>：三亚打车 10–30 元，海口地铁 + 公交</li>
+      <li><strong>环岛旅游公路</strong>：万宁—陵水段海景最佳，边走边停</li>
+      <li><strong>蜈支洲岛船</strong>：码头位于海棠湾，需单独前往</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>海口骑楼/市区</td>
+<td>快捷 250–450</td>
+<td>近老街、机场高铁方便，物价低</td>
+<td>无海景</td>
+</tr>
+<tr>
+<td>文昌文城/东郊</td>
+<td>快捷/民宿 200–400</td>
+<td>安静、椰林海景，价格亲民</td>
+<td>配套较少</td>
+</tr>
+<tr>
+<td>万宁日月湾/石梅湾</td>
+<td>民宿/冲浪店 300–700</td>
+<td>冲浪氛围浓，海湾安静</td>
+<td>旺季房源紧</td>
+</tr>
+<tr>
+<td>三亚亚龙湾</td>
+<td>度假酒店 800–2500</td>
+<td>一线海景、水质最好</td>
+<td>春节翻倍，餐饮贵</td>
+</tr>
+<tr>
+<td>三亚市区/三亚湾</td>
+<td>快捷/民宿 300–600</td>
+<td>性价比高、看日落方便</td>
+<td>部分区域离景点远</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🦞 海鲜大餐</h3>
+        <ul>
+          <li>和乐蟹、石斑鱼、基围虾</li>
+          <li>生蚝、扇贝、濑尿虾（第一市场加工）</li>
+          <li>糟粕醋火锅（海南特色酸汤）</li>
+        </ul>
+        <h3>🥥 小吃甜品</h3>
+        <ul>
+          <li>清补凉（椰奶底必试）</li>
+          <li>抱罗粉、海南粉、陵水酸粉</li>
+          <li>椰子饭、椰子冻</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍗 海南四大名菜</h3>
+        <ul>
+          <li>文昌鸡（白切）</li>
+          <li>加积鸭、东山羊</li>
+          <li>和乐蟹</li>
+          <li>椰子鸡火锅</li>
+        </ul>
+        <h3>🍍 热带水果</h3>
+        <ul>
+          <li>椰子、芒果、菠萝蜜</li>
+          <li>莲雾、火龙果、山竹</li>
+          <li>兴隆咖啡、黄灯笼辣椒酱</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 第一市场买海鲜先问清加工费（按斤/按个），认明码标价；② 三亚景区周边海鲜店溢价高，本地人推荐去回新村/群众街；③ 清补凉认椰奶现榨的，预包装口感差很多；④ 热带水果别在景区买，去市区水果市场更便宜。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝</li>
+        <li>防晒霜 SPF50+、防晒衣、墨镜</li>
+        <li>泳衣、潜水鞋、防水手机袋</li>
+        <li>驱蚊液（雨林/沙滩）</li>
+      </ul>
+      <ul>
+        <li>蜈支洲岛船票提前订</li>
+        <li>南山/天涯海角预约购票</li>
+        <li>离岛免税提前了解额度与提货</li>
+        <li>关注台风季（6–9 月）天气</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>旺季机票酒店是第一优先级</strong>，春节前后至少提前 1–2 个月订；② 潜水/水上项目认正规机构，警惕低价拉客的「野潜」；③ 蜈支洲岛登船排队久，9 点前到码头；④ 海南紫外线超强，阴天也会晒伤，防晒三件套随身带。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      海南是「<strong>一半海水一半雨林</strong>」的度假岛——海口吃烟火、文昌看航天、万宁冲浪、三亚玩海、五指山探雨林，10 天刚好环岛一圈。错开旺季出行，防晒做足，剩下的交给海风。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "D2-D4 东线环岛段 · 海口→文昌→万宁→三亚",
+    "pts": [
+      [
+        20.0412,
+        110.342
+      ],
+      [
+        19.615,
+        110.947
+      ],
+      [
+        18.621,
+        110.205
+      ],
+      [
+        18.229,
+        109.634
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "D8-D9 中线雨林段 · 三亚→五指山→海口",
+    "pts": [
+      [
+        18.29,
+        109.33
+      ],
+      [
+        18.772,
+        109.519
+      ],
+      [
+        20.0412,
+        110.342
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 18.229,
+    "lng": 109.634,
+    "name": "亚龙湾",
+    "t": "D4–D7 · 3 天",
+    "fee": "免费",
+    "note": "沙白水清，度假主湾"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 18.306,
+    "lng": 109.762,
+    "name": "蜈支洲岛",
+    "t": "D5 全天 · 1 天",
+    "fee": "船票参考价约 140 元",
+    "note": "潜水、水上项目"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 18.32,
+    "lng": 109.19,
+    "name": "南山文化旅游区",
+    "t": "D6 上午 · 3h",
+    "fee": "参考价约 108 元起",
+    "note": "海上观音、南山寺"
+  },
+  {
+    "num": 4,
+    "prio": "nice",
+    "lat": 18.29,
+    "lng": 109.33,
+    "name": "天涯海角",
+    "t": "D6 下午 · 2h",
+    "fee": "参考价约 68 元",
+    "note": "南天一柱、天涯石"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 20.0412,
+    "lng": 110.342,
+    "name": "海口骑楼老街",
+    "t": "D1 傍晚 · 2h",
+    "fee": "免费",
+    "note": "南洋骑楼、老爸茶"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 19.615,
+    "lng": 110.947,
+    "name": "文昌航天发射场",
+    "t": "D2 上午 · 2h",
+    "fee": "科普中心参考价约 100 元",
+    "note": "火箭塔架、航天科普"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 18.621,
+    "lng": 110.205,
+    "name": "万宁日月湾",
+    "t": "D3 全天 · 半天",
+    "fee": "免费（冲浪课另计）",
+    "note": "冲浪、石梅湾"
+  },
+  {
+    "num": 8,
+    "prio": "skip",
+    "lat": 18.772,
+    "lng": 109.519,
+    "name": "五指山热带雨林",
+    "t": "D8 全天 · 3–4h",
+    "fee": "参考价约 50 元",
+    "note": "雨林栈道、黎族风情"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[18.2, 108.6], [20.2, 111.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>D2-D4 东线环岛段（海口→文昌→万宁→三亚）<br><span class=\"sw\" style=\"background:#c9820e\"></span>D8-D9 中线雨林段（三亚→五指山→海口）<br><span class=\"sw dash\"></span>远郊段（五指山）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

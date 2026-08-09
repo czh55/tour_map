@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 河南 10 天全景攻略 · 中原文明深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #b08a2b;
+    --red-light: #c9a03c;
+    --gold: #e8c96a;
+    --ink: #3a3222;
+    --muted: #8a7a5f;
+    --bg: #faf7f0;
+    --card: #ffffff;
+    --line: #eee4d0;
+    --blue: #6b5420;
+    --cover1: #7a5f1c;
+    --ov1: rgba(74,56,10,.88);
+    --ov2: rgba(110,84,25,.72);
+    --ov3: rgba(150,120,45,.38);
+    --ov4: rgba(180,145,65,.20);
+    --key-bg: #fdf5e0;
+    --info-bg: #f7f0e2;
+    --head-bg: rgba(176,138,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/henan/henan-cover.jpg" alt="河南旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 华夏起源 + 石窟 + 古都</div>
+      <h1>河南 10 天全景攻略</h1>
+      <div class="sub">郑州 ⇄ 安阳殷墟 ⇄ 洛阳 ⇄ 登封少林 ⇄ 开封 · 中原文明深度游</div>
+      <div class="meta">
+        <span>🚄 行程链：郑州 → 安阳殷墟 → 洛阳 → 登封少林 → 开封 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚄 省内主力：高铁 + 城际大巴</span>
+        <span>🏛 主题：华夏文明 + 世界遗产</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">郑州</span>
+      <span class="arrow">→</span>
+      <span class="node">安阳殷墟</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">洛阳</span>
+      <span class="arrow">→</span>
+      <span class="node">登封少林</span>
+      <span class="arrow">→</span>
+      <span class="node">开封</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      河南是「一部河南史，半部中国史」，中国八大古都里郑州、洛阳、开封、安阳独占其四。<strong>10 天刚好串起中原文明主线</strong>：先到安阳看殷墟的甲骨文，再到洛阳看龙门石窟与古都风华，西出登封访少林寺，最后在开封感受大宋繁华。省内高铁呈米字形，城市间通勤普遍 1 小时内，非常适合环线游。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（4 城大环线）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天下午/晚间返程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>安阳殷墟 → 洛阳龙门 → 登封少林 → 开封宋都</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 3500–4500 ／ 标准 5500–7000 ／ 舒适 9000–11000</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 龙门/少林门票提前 1–3 天订 ② 旺季酒店提前 2 周 ③ 河南博物院预约（周一闭馆）</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>4–5 月洛阳牡丹季最美；夏季湿热多雨；秋季凉爽适合爬山</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>高铁覆盖 4 城，城际间普遍 0.5–1h</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>龙门石窟与少林寺均需实名购票</strong>，节假日排队 1 小时起步，务必线上提前买并早到。② 河南 7–8 月多雨闷热，<strong>石窟与爬山行程尽量安排在上午</strong>，下午避开暴晒与阵雨。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏。每日主景点 ≤2 个，洛阳与开封各留 2 晚慢节奏体验。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵郑</td>
+<td>高铁到郑州东，二七塔夜景 + 中原第一天</td>
+<td>郑州</td>
+<td>抵达 + 预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>郑州 → 安阳殷墟博物馆（全天）→ 夜返郑州</td>
+<td>郑州</td>
+<td>商朝都城</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>郑州 → 洛阳，白马寺 + 洛邑古城夜景</td>
+<td>洛阳</td>
+<td>佛国首刹</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>洛阳龙门石窟（全天）→ 丽景门夜市</td>
+<td>洛阳</td>
+<td>石窟艺术</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>洛阳博物馆 + 应天门灯光秀（或老君山一日）</td>
+<td>洛阳</td>
+<td>河洛古都</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>洛阳 → 登封嵩山少林寺（塔林/武术表演）</td>
+<td>登封</td>
+<td>禅武少林</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>登封 → 开封，清明上河园（含夜场）</td>
+<td>开封</td>
+<td>大宋繁华</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>开封府 + 包公祠 + 大宋武侠城（可选）→ 鼓楼夜市</td>
+<td>开封</td>
+<td>宋都人文</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>开封城墙 → 高铁返郑州，河南博物院（半天）</td>
+<td>郑州</td>
+<td>中原国宝</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午自由活动/采购特产，下午返程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      老君山（栾川）往返需一整天，可与 D5 互换或替换洛阳博物馆；登封与开封之间可顺访嵩阳书院、观星台。带老人孩子建议每天大景点压缩到 1 个，龙门与少林各留全天。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达郑州</span>
+          <span class="d-desc">中原枢纽第一天</span>
+          <span class="d-tag alt">🚄 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">抵达郑州（高铁到郑州东站，飞机到新郑机场），地铁进城入住二七广场/火车站商圈</td></tr>
+          <tr><td class="t-time">17:30–18:30</td><td class="t-what">办理入住，熟悉地铁线路</td></tr>
+          <tr><td class="t-time">19:00–20:30</td><td class="t-what">二七纪念塔（免费）：登塔俯瞰郑州夜景，二七广场商圈晚餐（烩面/胡辣汤）</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">回酒店休息，调整状态</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">郑州是中原交通枢纽，高铁到洛阳/开封/安阳均在 1 小时内，非常适合作为环线起终点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 安阳殷墟</span>
+          <span class="d-desc">甲骨文故乡一日</span>
+          <span class="d-tag ">🏺 殷商日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">早餐后高铁赴安阳（郑州东 → 安阳东约 50 分钟）</td></tr>
+          <tr><td class="t-time">09:30–15:00</td><td class="t-what"><b>殷墟博物馆新馆</b>（门票参考 60 元）：后母戊鼎、甲骨窖穴、妇好墓，馆藏青铜重器众多</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">馆内或市区简餐</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what"><b>殷墟宫殿宗庙遗址</b>（甲骨文出土地）：车马坑、宗庙基址，可顺访王陵遗址</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">高铁返回郑州，晚餐（安阳扁粉菜可在市内尝）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">殷墟是世界文化遗产、中国考古圣地，馆内展陈值得预留 4 小时以上，周一闭馆。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 洛阳白马寺 + 洛邑古城</span>
+          <span class="d-desc">佛国古都一日</span>
+          <span class="d-tag ">🏮 古都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">高铁郑州 → 洛阳龙门站（约 40 分钟），入住老城/西工区</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>白马寺</b>（门票参考 35 元）：中国第一古刹，齐云塔、印度/缅甸/泰国佛殿苑</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">白马寺附近简餐</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>洛邑古城</b>（免费）：文峰塔、老街，看汉服与古建筑</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">洛阳水席晚餐（真不同/老城水席），丽景门夜市</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">洛阳是十三朝古都；水席是招牌，人多去真不同，人少可找老城小店，先点小份试试。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 洛阳龙门石窟</span>
+          <span class="d-desc">石刻艺术宝库一日</span>
+          <span class="d-tag ">🗿 石窟日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">出发龙门石窟（洛龙区，打车/公交 30–40 分钟）</td></tr>
+          <tr><td class="t-time">09:00–14:00</td><td class="t-what"><b>龙门石窟</b>（门票参考 90 元，含西山/东山）：奉先寺卢舍那大佛、万佛洞、宾阳三洞</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">景区内简餐</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">香山寺 + 白园（白居易墓），东岸隔伊河眺望石窟全景</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返回市区，晚上洛邑古城灯光或应天门夜景（可选）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">龙门石窟上午光线最好；隔伊河对岸（东岸）是经典拍摄机位，建议带长焦。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 洛阳博物馆 / 老君山（二选一）</span>
+          <span class="d-desc">河洛文化日</span>
+          <span class="d-tag alt">🏛 河洛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–13:00</td><td class="t-what">方案 A：<b>洛阳博物馆</b>（免费需预约）：夏商周青铜器、唐三彩，镇馆之宝曹魏白玉杯</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">博物馆周边午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>关林</b>（门票参考 40 元）：关公首级葬地，古柏参天</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">应天门遗址灯光秀（免费，19:30 起）：隋唐洛阳城夜景</td></tr>
+          <tr><td class="t-time">20:45</td><td class="t-what">回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">若选老君山（栾川，往返需一整天，缆车+金顶），替换掉本日市内行程；夏季山顶凉爽、冬季有雪景，但台阶多，老人孩子慎选。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 登封嵩山少林寺</span>
+          <span class="d-desc">禅武合一一日</span>
+          <span class="d-tag ">🥋 禅武日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">洛阳出发赴登封（大巴/包车约 1.5h）</td></tr>
+          <tr><td class="t-time">09:30–15:00</td><td class="t-what"><b>嵩山少林寺</b>（门票参考 80 元）：常住院、塔林、藏经阁，武术表演场次提前问</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">景区内或景区门口简餐</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">达摩洞 / 三皇寨（可选，体力好的登嵩山）</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">入住登封市区，晚餐（嵩山烩面）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">少林武术表演通常上午/下午各数场，进场先看时间表；塔林是全国最大古塔群，摄影重点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 开封清明上河园</span>
+          <span class="d-desc">大宋东京一日</span>
+          <span class="d-tag ">🏯 大宋日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">登封 → 开封（大巴/高铁经郑州约 2h），入住大梁门/龙亭周边</td></tr>
+          <tr><td class="t-time">11:30</td><td class="t-what">午餐（开封灌汤包）</td></tr>
+          <tr><td class="t-time">13:00–17:00</td><td class="t-what"><b>清明上河园</b>（门票参考 120 元）：虹桥、东京食街、勾栏瓦舍表演，建议买含夜演套票</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">园内晚餐或回市区</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what">《大宋·东京梦华》实景演出（可选，参考 180–300 元）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">清明上河园 1:1 复刻《清明上河图》；下午进园、看演出到晚上是经典玩法，园区很大穿舒适鞋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 开封府 + 鼓楼夜市</span>
+          <span class="d-desc">宋都人文一日</span>
+          <span class="d-tag ">🏮 宋都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>开封府</b>（门票参考 65 元）：开衙仪式、包公断案情景剧</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：鼓楼/西司夜市周边小吃</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">大宋武侠城（万岁山，参考 60 元，可选）或 包公祠（参考 30 元）</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">清明上河园北门外古城墙散步，远眺龙亭</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what">鼓楼夜市：灌汤包、炒凉粉、桶子鸡、花生糕</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">开封夜市人气爆棚，20 点后最热闹；吃灌汤包认准「第一楼」系老字号，先咬皮再吸汤。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 开封 → 郑州 · 河南博物院</span>
+          <span class="d-desc">中原国宝一日</span>
+          <span class="d-tag alt">🏺 中原国宝日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">高铁开封北 → 郑州东（约 25 分钟）</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>河南博物院</b>（免费需预约）：贾湖骨笛、莲鹤方壶、武则天金简，九大镇馆之宝</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">博物院附近午餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">郑州商都遗址公园 / 二七广场自由活动</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">采购伴手礼（花生糕、道口烧鸡真空装、牡丹饼）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">河南博物院是「中原文明的殿堂」，务必提前 1–3 天预约，周一闭馆，预留半天最从容。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">采购伴手礼 + 回家</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">自由活动：郑州商都遗址公园或补逛商圈</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">采购伴手礼：开封花生糕、道口烧鸡、信阳毛尖</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">退房，赴郑州东站/新郑机场，返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伴手礼推荐：开封花生糕、道口烧鸡（真空装）、洛阳牡丹饼、信阳毛尖。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-cover.jpg" alt="龙门石窟" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">龙门石窟 <small>参考价 90 元</small></div>
+          <div class="sc-feat">世界文化遗产。<b>奉先寺卢舍那大佛、万佛洞</b>，伊河两岸十万造像。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 4–5h · 🚄 洛阳龙门站转公交</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-1.jpg" alt="少林寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">少林寺 <small>参考价 80 元</small></div>
+          <div class="sc-feat">禅宗祖庭、天下武功出少林。<b>塔林、武术表演</b>，嵩山五乳峰下。</div>
+          <div class="sc-meta">📅 8:00–17:30 · ⏱ 3–4h · 🚌 登封市区转景区巴士</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-2.jpg" alt="殷墟" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">殷墟 <small>参考价 60 元</small></div>
+          <div class="sc-feat">商朝晚期都城、甲骨文出土地。<b>殷墟博物馆新馆、妇好墓</b>。</div>
+          <div class="sc-meta">📅 8:30–17:30 · ⏱ 3–4h · 🚄 安阳东站打车 20 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-3.jpg" alt="白马寺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">白马寺 <small>参考价 35 元</small></div>
+          <div class="sc-feat">中国第一古刹。<b>齐云塔、国际佛殿苑</b>，佛教东传第一站。</div>
+          <div class="sc-meta">📅 7:40–18:00 · ⏱ 2h · 🚌 洛阳老城公交直达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-4.jpg" alt="老君山" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">老君山 <small>参考价 100 元</small></div>
+          <div class="sc-feat">道教圣地、中原最美云海。<b>金顶道观群、云海日出</b>。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 全天 · 🚗 洛阳栾川，建议包车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-5.jpg" alt="清明上河园" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">清明上河园 <small>参考价 120 元</small></div>
+          <div class="sc-feat">《清明上河图》实景再现。<b>虹桥、东京食街、夜游</b>。</div>
+          <div class="sc-meta">📅 9:00–22:00 · ⏱ 4h+ · 🚕 开封市区打车即到</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-6.jpg" alt="开封府" loading="lazy"><span class="sc-tag skip">可跳过</span></div>
+        <div class="sc-body">
+          <div class="sc-name">开封府 <small>参考价 65 元</small></div>
+          <div class="sc-feat">北宋首府、包拯办公地。<b>开衙仪式、包公断案情景剧</b>。</div>
+          <div class="sc-meta">📅 7:30–18:00 · ⏱ 2–3h · 🚶 龙亭湖畔步行可达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/henan/henan-7.jpg" alt="河南博物院" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">河南博物院 <small>免费（需预约）</small></div>
+          <div class="sc-feat">华夏文明殿堂。<b>贾湖骨笛、莲鹤方壶、武则天金简</b>。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 3h · 🚇 郑州地铁农业南路站</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（龙门石窟、古寺、古城为河南/中原实景或同主题示意图），用于页面配图。更多免费景点：洛邑古城、应天门遗址、二七纪念塔、开封古城墙。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为旺季参考价，以现场为准。交通按高铁往返计（从华北/华东周边城市出发约 800–1500 元），不同出发地浮动较大。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（3500–4500）</th>
+<th>标准（5500–7000）</th>
+<th>舒适（9000–11000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>高铁约 800–1200</td>
+<td>高铁/飞机约 1500–2500</td>
+<td>飞机+接送约 3000–4000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/快捷 800–1200</td>
+<td>连锁酒店 1800–2700</td>
+<td>古都特色酒店 4500–5500</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 300</td>
+<td>含演出套票约 600</td>
+<td>全含 + 实景演出约 900</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>600–800</td>
+<td>1200–1600（含水席）</td>
+<td>2000–2600（老字号）</td>
+</tr>
+<tr>
+<td>省内交通</td>
+<td>高铁+大巴 250–350</td>
+<td>高铁+包车 400–600</td>
+<td>包车 700–1000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 6700 元）</span>
+      高铁往返 2000 + 住宿 9 晚 2200 + 门票 600 + 餐饮 1400 + 省内交通 500 ≈ <strong>6700 元</strong>。主要浮动项是住宿地段与演出门票，提前订可省 500–1000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 只看精华的 6 天版</h3>
+
+
+    <ul>
+
+      <li>D1 抵郑州，河南博物院</li>
+
+      <li>D2 龙门石窟</li>
+
+      <li>D3 少林寺</li>
+
+      <li>D4 洛阳白马寺+应天门</li>
+
+      <li>D5 开封清明上河园</li>
+
+      <li>D6 返程</li>
+
+    </ul>
+
+    <h3>7.2 牡丹季特别版（4–5 月）</h3>
+
+
+    <p>洛阳牡丹节期间王城公园/隋唐城遗址植物园看牡丹（参考 30–50 元），把 D5 换成赏花日；同期酒店与高铁票务必提前 2 周以上预订。</p>
+
+    <h3>7.3 亲子版调整</h3>
+
+
+    <p>带娃推荐：郑州方特、开封大宋武侠城（互动多）、河南博物院青少年讲解；老君山台阶多慎选，石窟与少林各安排半天并备足零食。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 河南 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>高铁（推荐）</td>
+<td>视出发地 2–7h</td>
+<td>二等座 200–900 元</td>
+<td>郑州东/郑州站为枢纽，到 4 城均 1h 内</td>
+</tr>
+<tr>
+<td>飞机</td>
+<td>视出发地 1–2.5h</td>
+<td>300–1800 元</td>
+<td>新郑机场地铁/城际入市区</td>
+</tr>
+<tr>
+<td>自驾</td>
+<td>视出发地</td>
+<td>高速+停车费</td>
+<td>洛阳市区停车紧张，景点多有大停车场</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 省内交通核心提醒</span>
+      河南高铁呈米字形，<strong>郑州到洛阳/开封/安阳均 1 小时内</strong>；洛阳–登封少林无直达高铁，需乘大巴（约 1.5h）。节假日务必提前购票。
+    </div>
+
+    <h3>8.2 省内交通</h3>
+    <ul>
+      <li><strong>高铁</strong>：郑州⇄洛阳 40min，郑州⇄安阳 50min，郑州⇄开封 25min</li>
+      <li><strong>城际大巴</strong>：洛阳→登封少林约 1.5h，登封→开封约 2h</li>
+      <li><strong>地铁</strong>：郑州/洛阳地铁覆盖主要景点与车站</li>
+      <li><strong>打车/网约车</strong>：市区短途 10–30 元，去老君山建议包车</li>
+      <li><strong>自驾</strong>：省内高速发达，但节假日景区易堵车</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>洛阳老城/西工</td>
+<td>快捷 200–350 / 特色 400–800</td>
+<td>近丽景门、应天门，水席多</td>
+<td>老城停车难</td>
+</tr>
+<tr>
+<td>开封龙亭/大梁门</td>
+<td>快捷 200–350</td>
+<td>近清明上河园与夜市</td>
+<td>旺季景区周边贵</td>
+</tr>
+<tr>
+<td>郑州二七广场</td>
+<td>快捷 250–400</td>
+<td>高铁/地铁枢纽，交通便利</td>
+<td>城市景观一般</td>
+</tr>
+<tr>
+<td>登封市区</td>
+<td>快捷 180–300</td>
+<td>近少林寺景区</td>
+<td>选择较少，偏安静</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍜 必吃经典</h3>
+        <ul>
+          <li>洛阳水席（真不同/老城水席）</li>
+          <li>开封灌汤包（第一楼/黄家）</li>
+          <li>郑州烩面、胡辣汤</li>
+          <li>安阳扁粉菜、道口烧鸡</li>
+        </ul>
+        <h3>🥮 伴手礼</h3>
+        <ul>
+          <li>开封花生糕、绿豆糕</li>
+          <li>道口烧鸡（真空装）</li>
+          <li>洛阳牡丹饼</li>
+          <li>信阳毛尖茶</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 夜市小吃</h3>
+        <ul>
+          <li>开封鼓楼夜市、西司夜市</li>
+          <li>洛阳丽景门夜市</li>
+          <li>郑州二七广场商圈</li>
+          <li>胡辣汤配油馍头是河南早餐灵魂</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>开封鼓楼/书店街（老字号扎堆）</li>
+          <li>洛阳老城（水席+小吃）</li>
+          <li>郑州国棉厂夜市（本地人聚集）</li>
+          <li>景区周边多游客店，认准居民区老店</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 水席人多时排队久，可点双人小份；② 夜市认准本地人排队的摊；③ 开封灌汤包先咬皮再吸汤，别烫嘴；④ 胡辣汤口味偏重，外地人先尝小碗。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝</li>
+        <li>舒适步行鞋（石窟+少林步行多）</li>
+        <li>防晒霜、遮阳帽（夏季）</li>
+        <li>雨具（7–8 月多阵雨）</li>
+      </ul>
+      <ul>
+        <li>龙门/少林门票提前 1–3 天</li>
+        <li>河南博物院提前预约（周一闭馆）</li>
+        <li>下载 12306 购省内高铁票</li>
+        <li>关注洛阳牡丹花期与演出场次</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>文物类景点周一多闭馆</strong>（龙门正常开放，博物院闭馆），排期前先核对；② 老君山海拔 2200+ 米，山顶冷需带外套；③ 打车认正规平台；④ 殷墟范围大，留足半天以上。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      河南是「<strong>华夏文明的源头</strong>」——殷墟的甲骨、龙门的造像、少林的禅武、开封的市井，10 天刚好把中原五千年走成一条线。提前预约博物院、把洛阳与开封各留 2 晚，剩下的就是慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "D2-D4 北线 · 安阳殷墟→洛阳龙门",
+    "pts": [
+      [
+        34.7497,
+        113.6623
+      ],
+      [
+        36.1305,
+        114.3057
+      ],
+      [
+        34.5546,
+        112.468
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "D6-D8 东西线 · 登封少林→开封",
+    "pts": [
+      [
+        34.5546,
+        112.468
+      ],
+      [
+        34.5134,
+        112.9347
+      ],
+      [
+        34.8048,
+        114.301
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 34.5546,
+    "lng": 112.468,
+    "name": "龙门石窟",
+    "t": "D4 全天 · 4–5h",
+    "fee": "参考 90 元",
+    "note": "奉先寺卢舍那大佛"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 34.5134,
+    "lng": 112.9347,
+    "name": "少林寺",
+    "t": "D6 全天 · 3–4h",
+    "fee": "参考 80 元",
+    "note": "塔林、武术表演"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 36.1305,
+    "lng": 114.3057,
+    "name": "安阳殷墟",
+    "t": "D2 全天 · 3–4h",
+    "fee": "参考 60 元",
+    "note": "甲骨文出土地、妇好墓"
+  },
+  {
+    "num": 4,
+    "prio": "nice",
+    "lat": 34.725,
+    "lng": 112.6098,
+    "name": "白马寺",
+    "t": "D3 上午 · 2h",
+    "fee": "参考 35 元",
+    "note": "中国第一古刹、齐云塔"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 33.6839,
+    "lng": 111.4861,
+    "name": "老君山",
+    "t": "D5 备选 · 全天",
+    "fee": "参考 100 元",
+    "note": "金顶道观、云海"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 34.8048,
+    "lng": 114.301,
+    "name": "清明上河园",
+    "t": "D7 下午+夜 · 4h+",
+    "fee": "参考 120 元",
+    "note": "大宋东京梦华演出"
+  },
+  {
+    "num": 7,
+    "prio": "skip",
+    "lat": 34.7876,
+    "lng": 114.3275,
+    "name": "开封府",
+    "t": "D8 上午 · 2–3h",
+    "fee": "参考 65 元",
+    "note": "包公断案情景剧"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 34.8008,
+    "lng": 113.6604,
+    "name": "河南博物院",
+    "t": "D9 上午 · 3h",
+    "fee": "免费（预约）",
+    "note": "贾湖骨笛、莲鹤方壶"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[33.3, 111.1], [36.5, 114.7]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>D2-D4 安阳→洛阳北线<br><span class=\"sw\" style=\"background:#c9820e\"></span>D6-D8 少林→开封东西线<br><span class=\"sw dash\"></span>远郊段（老君山）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

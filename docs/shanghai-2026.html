@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 上海 10 天全景攻略 · 魔都深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #8a7a2b;
+    --red-light: #a5923a;
+    --gold: #d9a441;
+    --ink: #2f2b22;
+    --muted: #8a8274;
+    --bg: #faf8f1;
+    --card: #ffffff;
+    --line: #ece4d3;
+    --blue: #5a5440;
+    --cover1: #4a4215;
+    --ov1: rgba(58,50,20,.88);
+    --ov2: rgba(90,80,30,.72);
+    --ov3: rgba(140,125,60,.38);
+    --ov4: rgba(170,150,70,.20);
+    --key-bg: #fbf3dd;
+    --info-bg: #f5f1e6;
+    --head-bg: rgba(138,122,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/shanghai/shanghai-1.jpg" alt="上海旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 外滩 + 迪士尼 + 梧桐区</div>
+      <h1>上海 10 天全景攻略</h1>
+      <div class="sub">魔都上海 ⇄ 陆家嘴 · 外滩 · 迪士尼 · 老城厢 · 梧桐街区</div>
+      <div class="meta">
+        <span>🚄 行程链：上海 → 外滩 → 陆家嘴 → 豫园 → 迪士尼 → 武康路 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚇 市内主力：地铁 + 步行 + 骑行</span>
+        <span>🏙 主题：摩登都市 + 江南风韵 + 主题乐园</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">上海</span>
+      <span class="arrow">→</span>
+      <span class="node">外滩</span>
+      <span class="arrow">→</span>
+      <span class="node">陆家嘴</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">迪士尼</span>
+      <span class="arrow">→</span>
+      <span class="node">豫园</span>
+      <span class="arrow">→</span>
+      <span class="node">武康路</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      上海是「<strong>一面是摩天都会、一面是老城烟火</strong>」的超级城市：前 3 天走外滩陆家嘴与老城厢，中间 2 天留给迪士尼，后 4 天转入梧桐街区、博物馆与水乡。地铁 20 条线几乎覆盖所有目的地，市区景点间大多 30 分钟内可达。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（含 1 个乐园日 + 1 个水乡日）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天下午/晚间返程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>外滩 → 陆家嘴 → 豫园 → 迪士尼 → 武康路 → 朱家角</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 4500–5500 ／ 标准 7000–9000 ／ 舒适 11000–14000</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 迪士尼提前订票 + 下官方 App 抢热门项目 ② 外滩夜景选工作日晚 ③ 酒店提前 2 周订</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>春秋最舒适；梅雨季（6 月中–7 月初）潮湿闷热，暑期乐园人多排队长</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>地铁全线支持手机扫码，无需办卡</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>迪士尼热门项目排队 1–2 小时</strong>（创极速光轮、飞越地平线），务必提前在官方 App 抢「预约等候卡」，一开园就冲热门。② 外滩最佳观赏时间是 <strong>19:00–21:00</strong>（灯效持续到 22:00），别白天看一眼就走；陆家嘴观景台（上海中心/金茂）傍晚后人流巨大，建议 16:00 前登顶。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏。每日主景点 ≤2 个，迪士尼与水乡各留一整天。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵沪</td>
+<td>入住南京东路/人民广场，傍晚南京路步行街 + 外滩夜景</td>
+<td>南京东路一带</td>
+<td>抵达 + 预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>外滩（白天）→ 陆家嘴（东方明珠/上海中心）→ 滨江大道 → 外滩夜景</td>
+<td>陆家嘴/外滩</td>
+<td>摩天都市</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>豫园 + 城隍庙 → 老城厢巷弄 → 田子坊（傍晚）</td>
+<td>豫园一带</td>
+<td>老城风韵</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>上海博物馆 → 人民广场 → 新天地 → 思南路</td>
+<td>新天地一带</td>
+<td>海派文博</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>武康路 → 衡山路 → 徐家汇源（天主堂/观象台）</td>
+<td>徐汇一带</td>
+<td>梧桐街区</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>上海迪士尼乐园（全天 + 夜场烟花）</td>
+<td>川沙/迪士尼</td>
+<td>童话一日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>朱家角古镇（水乡）→ 返回市区</td>
+<td>市区</td>
+<td>江南水乡</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>上海中心观光厅 → 世博滨江 → 中华艺术宫</td>
+<td>世博/陆家嘴</td>
+<td>云端与世博</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>共青森林公园 或 上海科技馆（二选一）→ 大学路</td>
+<td>市区</td>
+<td>松弛一日</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午自由活动/采购伴手礼，下午返程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      迪士尼（D6）与朱家角（D7）可互换，都需留整天；博物馆爱好者可把 D4 扩成全天。带娃家庭建议迪士尼安排两天（首日主玩、次日二刷热门+看烟花）。梅雨季行程尽量把室内场馆（博物馆、科技馆）排到雨天。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达上海</span>
+          <span class="d-desc">入住南京东路/人民广场</span>
+          <span class="d-tag alt">🚇 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">抵达上海（高铁到虹桥/上海站，飞机到虹桥/浦东两场），地铁进城入住</td></tr>
+          <tr><td class="t-time">17:30–18:30</td><td class="t-what">办理入住（推荐南京东路/人民广场，近地铁与外滩）</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what"><b>南京路步行街</b>散步：老字号（沈大成、第一食品）、霓虹夜景，晚餐本帮菜或生煎</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">回酒店休息，调整状态</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">南京东路距外滩步行 10 分钟，D2 一早看白天的外滩很方便。虹桥机场/火车站有地铁 2、10 号线直达市中心。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 外滩 + 陆家嘴</span>
+          <span class="d-desc">摩天都市一日</span>
+          <span class="d-tag ">🏙 都市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>外滩</b>（免费）：万国建筑博览群、陈毅广场、观光平台看浦江对岸</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">外滩隧道或打车过江到陆家嘴（地铁 2 号线南京东路→陆家嘴）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">陆家嘴午餐，可在国金中心/正大广场</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what"><b>东方明珠</b>（参考价 220 元）或 <b>上海中心观光厅</b>（180 元）登高俯瞰</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>滨江大道</b>散步，看黄浦江游船与落日</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what">回到外滩看夜景，或<b>黄浦江游船</b>（参考价 100–150 元）夜航</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">陆家嘴三件套（东方明珠、金茂、上海中心）建议只登其一；上海中心 118 层视野最佳。傍晚外滩灯效亮起是经典打卡点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 豫园 + 城隍庙 + 老城厢</span>
+          <span class="d-desc">老上海风韵一日</span>
+          <span class="d-tag ">🏮 老城厢日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>豫园</b>（参考价 40 元）：江南园林典范，玉玲珑、三穗堂、九曲桥</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what"><b>城隍庙</b>周边午餐：南翔小笼、蟹壳黄、梨膏糖</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">城隍庙（香火 10 元）→ 豫园商城，逛老字号与文创</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">老城厢巷弄（方浜中路一带）步行，感受老上海底子</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what"><b>田子坊</b>（免费）：弄堂艺术区，小店、咖啡、画廊</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">豫园与城隍庙紧邻，上午游客相对少；九曲桥人多时注意看包。田子坊巷窄人多，错峰（早 10 点前）体验更好。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 博物馆 + 新天地 + 思南路</span>
+          <span class="d-desc">海派文博一日</span>
+          <span class="d-tag alt">🏺 文博日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–13:00</td><td class="t-what"><b>上海博物馆</b>（免费需预约）：青铜器、陶瓷、书画馆藏顶级</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">人民广场附近午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>新天地</b>（免费）：石库门老建筑改造街区，中共一大会址可顺访</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><b>思南路</b>骑行：思南公馆、周公馆，梧桐树下的老洋房</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：新天地/淮海路，体验精致餐饮</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">上博新馆（人民广场）非常热门，提前 3–5 天在公众号预约，周一闭馆。思南路沿线老洋房免费看外观，骑行体验最佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 武康路 + 衡山路 + 徐家汇</span>
+          <span class="d-desc">梧桐街区一日</span>
+          <span class="d-tag ">🌳 街区日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>武康路</b>（免费）：武康大楼、沿街百年洋房、咖啡馆，梧桐树影</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">武康路/安福路午餐（网红咖啡馆与小店）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>衡山路</b>骑行：法国梧桐大街，梧桐别墅区</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>徐家汇源</b>：徐家汇天主堂、观象台旧址、藏书楼</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：徐家汇商圈</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">武康大楼正面打卡人多，清晨 7–9 点去人最少；沿衡山路往南可一直骑到徐家汇。整条路线约 1.5 万步，建议骑行 + 步行结合。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 上海迪士尼乐园</span>
+          <span class="d-desc">童话一日（含夜场烟花）</span>
+          <span class="d-tag ">🏰 乐园日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:00</td><td class="t-what">地铁 11 号线迪士尼站/打车，提前到乐园门口排队安检</td></tr>
+          <tr><td class="t-time">08:30</td><td class="t-what">开园直奔热门：创极速光轮 / 飞越地平线（下 App 抢预约等候卡）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">园区内午餐（可提前订园区餐厅）</td></tr>
+          <tr><td class="t-time">13:00–17:00</td><td class="t-what">主玩加勒比海盗、七个小矮人矿车、城堡巡游</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">米奇童话专列巡游 + 轻松项目</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what"><b>烟花秀</b>（奇梦之光幻影秀）：提前占位，奇想花园/城堡前</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">返程回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">迪士尼门票参考价 399–599 元/日（按淡旺季浮动），两日票更划算。工作日入园人相对少；带娃家庭租园区童车，提前下官方 App 看排队实时时间。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 朱家角古镇</span>
+          <span class="d-desc">江南水乡一日</span>
+          <span class="d-tag ">🛶 水乡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">地铁 17 号线朱家角站直达（约 1h）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>朱家角古镇</b>（免费，小景点联票 60 元）：放生桥、课植园、北大街</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">古镇午餐：扎肉、阿婆粽、酱蹄髈</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">乘摇橹船游河道（参考价 60–80 元），逛西井街/漕港滩</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">返回市区</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：市区自由选择</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">朱家角是离市区最近的水乡，商业化适中；放生桥日出和日落最美。若想更清静，可换青浦的金泽古镇或松江广富林遗址。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 上海中心 + 世博滨江</span>
+          <span class="d-desc">云端与世博一日</span>
+          <span class="d-tag ">🌆 云端日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>上海中心大厦观光厅</b>（参考价 180 元）：118 层 546 米俯瞰全城</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">陆家嘴午餐</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>中华艺术宫</b>（免费需预约）：原世博会中国馆，清明上河图多媒体馆（参考价 20 元）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>世博滨江</b>：滨江步道骑行，看卢浦大桥日落</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：世博源/梅赛德斯周边</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">上海中心观景台天气不好时能见度差，出发前看当天天气；中华艺术宫周一闭馆。世博滨江骑行线很舒服，共享单车可达。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 森林公园/科技馆 + 大学路</span>
+          <span class="d-desc">松弛放松一日</span>
+          <span class="d-tag ">🌲 放松日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>共青森林公园</b>（15 元，森林草坪野餐）或 <b>上海科技馆</b>（45 元，亲子科普）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">就近午餐</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>五角场/大学路</b>（免费）：高校区街拍、咖啡馆、文创小店</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：大学路夜市/五角场商圈</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">共青森林公园适合春秋野餐踏青；科技馆适合带娃家庭。想更轻松也可以换成静安寺商圈或世纪公园。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">采购伴手礼 + 回家</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">早餐、收拾行李并退房</td></tr>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what">自由活动：第一食品/沈大成买点心、大白兔奶糖、国际饭店蝴蝶酥</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">赴高铁站/机场（浦东机场可选磁悬浮），返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伴手礼推荐：蝴蝶酥（国际饭店）、沈大成/杏花楼点心、大白兔奶糖、梨膏糖、上海老字号酱菜。浦东机场可坐磁悬浮 8 分钟到龙阳路。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-1.jpg" alt="外滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">外滩 <small>免费</small></div>
+          <div class="sc-feat">万国建筑博览群 + 浦江对岸陆家嘴天际线。<b>夜景 19:00–21:00 最佳</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 2/10 号线南京东路</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-3.jpg" alt="上海迪士尼乐园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">上海迪士尼乐园 <small>参考价 399–599 元</small></div>
+          <div class="sc-feat">全球最大迪士尼城堡。<b>创极速光轮、飞越地平线、夜场烟花</b>，需官方 App 预约。</div>
+          <div class="sc-meta">📅 8:30–20:30 · ⏱ 全天 · 🚇 11 号线迪士尼站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-2.jpg" alt="陆家嘴·上海中心" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">陆家嘴·上海中心 <small>观光厅参考价 180 元</small></div>
+          <div class="sc-feat">中国第一高楼。<b>118 层 546 米云端观景</b>，与金茂、东方明珠组成三件套。</div>
+          <div class="sc-meta">📅 9:00–21:00 · ⏱ 2h · 🚇 2 号线陆家嘴站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-4.jpg" alt="豫园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">豫园 <small>参考价 40 元</small></div>
+          <div class="sc-feat">明代江南园林。<b>玉玲珑、九曲桥</b>，紧邻城隍庙与豫园商城。</div>
+          <div class="sc-meta">📅 9:00–16:30 · ⏱ 2–3h · 🚇 10 号线豫园站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-5.jpg" alt="南京路步行街" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">南京路步行街 <small>免费</small></div>
+          <div class="sc-feat">中华商业第一街。<b>霓虹夜景、百年老字号</b>，一端直通外滩。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 1/2/8 号线人民广场</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-6.jpg" alt="武康路" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">武康路 <small>免费</small></div>
+          <div class="sc-feat">梧桐深处的百年洋房。<b>武康大楼、名人故居、网红咖啡馆</b>，法式风情。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚇 10 号线上海图书馆</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-7.jpg" alt="黄浦江游船" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">黄浦江游船 <small>参考价 100–150 元</small></div>
+          <div class="sc-feat">夜航看外滩与陆家嘴<b>两岸灯光秀</b>，经典魔都视角。</div>
+          <div class="sc-meta">📅 18:30–21:30 班次 · ⏱ 1h · 🚢 十六铺码头</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanghai/shanghai-cover.jpg" alt="东方明珠塔" loading="lazy"><span class="sc-tag skip">可跳过</span></div>
+        <div class="sc-body">
+          <div class="sc-name">东方明珠塔 <small>参考价 220 元</small></div>
+          <div class="sc-feat">上海地标。<b>观光球体、悬空廊道</b>，与上海中心二选一登高即可。</div>
+          <div class="sc-meta">📅 8:00–21:30 · ⏱ 2h · 🚇 2 号线陆家嘴站</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（外滩、陆家嘴、迪士尼均为上海实景），用于页面配图。更多免费景点：城隍庙周边老城厢、田子坊、新天地、思南路、世博滨江。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为旺季参考价，以现场为准。迪士尼按单日票计（两日票可摊薄单价）；交通按高铁往返计（从华东周边城市出发约 400–900 元），不同出发地浮动较大。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（4500–5500）</th>
+<th>标准（7000–9000）</th>
+<th>舒适（11000–14000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>高铁约 400–900</td>
+<td>高铁/飞机约 900–1600</td>
+<td>飞机+接送约 2000–3000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/快捷 900–1400</td>
+<td>连锁酒店 2000–3200</td>
+<td>陆家嘴星级 5500–8000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 450</td>
+<td>含迪士尼/观光厅约 1100</td>
+<td>全含+演出约 1800</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>700–1000</td>
+<td>1400–1800（含本帮菜）</td>
+<td>2200–3000（精致餐饮）</td>
+</tr>
+<tr>
+<td>市内交通</td>
+<td>地铁 120–180</td>
+<td>地铁+打车 300–420</td>
+<td>打车/包车 600–900</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 7000 元）</span>
+      高铁往返 1400 + 住宿 9 晚 2600（双人分 5200）+ 门票（含迪士尼）1100 + 餐饮 1600 + 市内交通 350 ≈ <strong>7050 元</strong>。主要浮动项是住宿地段与迪士尼票种，提前订可省 500–1000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 只看精华的 5 天版</h3>
+
+
+    <ul>
+
+      <li>D1 外滩+陆家嘴</li>
+
+      <li>D2 豫园+城隍庙+田子坊</li>
+
+      <li>D3 迪士尼</li>
+
+      <li>D4 武康路+新天地</li>
+
+      <li>D5 返程</li>
+
+    </ul>
+
+    <h3>7.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：迪士尼安排两日票（首日主玩、次日二刷热门+看烟花），上海科技馆、自然博物馆、海昌海洋公园替换部分人文行程；园区租童车省体力。</p>
+
+    <h3>7.3 冬季淡季版</h3>
+
+
+    <p>12–2 月游客少、外滩拍照干净，酒店比旺季低 30–50%；注意湿冷体感，迪士尼部分户外项目可能受低温影响，防寒装备必备。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 上海 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>高铁（推荐）</td>
+<td>视出发地 2–6h</td>
+<td>二等座 200–700 元</td>
+<td>虹桥/上海站为主，班次密集</td>
+</tr>
+<tr>
+<td>飞机</td>
+<td>视出发地 1–3h</td>
+<td>400–1800 元</td>
+<td>虹桥/浦东两场，地铁/磁悬浮进城</td>
+</tr>
+<tr>
+<td>自驾</td>
+<td>视出发地</td>
+<td>高速+停车费</td>
+<td>市区停车贵，迪士尼建议地铁</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 市内交通核心提醒</span>
+      上海地铁 20 条线基本覆盖全部景点，<strong>手机扫码即可乘车</strong>；早晚高峰（7:30–9:30）拥挤。浦东机场到市区可选磁悬浮（50 元/8 分钟）或地铁 2 号线。迪士尼周末与节假日需提早出发。
+    </div>
+
+    <h3>8.2 市内交通</h3>
+    <ul>
+      <li><strong>地铁</strong>：20 条线覆盖全市，扫码进站，单程 3–9 元</li>
+      <li><strong>公交</strong>：2 元起步，景区直达线路多</li>
+      <li><strong>共享单车/骑行</strong>：武康路、滨江大道首选</li>
+      <li><strong>打车</strong>：市区短途 15–40 元，高峰堵车严重</li>
+      <li><strong>去迪士尼</strong>：地铁 11 号线直达，比打车更快更省</li>
+      <li><strong>磁悬浮</strong>：浦东机场→龙阳路 8 分钟 50 元</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>南京东路/人民广场</td>
+<td>快捷 400–600 / 星级 800–1500</td>
+<td>近外滩、南京路、地铁枢纽</td>
+<td>游客多，旺季贵</td>
+</tr>
+<tr>
+<td>陆家嘴/世纪大道</td>
+<td>星级 900–2000</td>
+<td>陆家嘴夜景与滨江</td>
+<td>商务区餐饮偏贵</td>
+</tr>
+<tr>
+<td>新天地/淮海路</td>
+<td>民宿/精品 500–900</td>
+<td>梧桐街区、老洋房体验</td>
+<td>部分民宿隔音一般</td>
+</tr>
+<tr>
+<td>川沙（迪士尼）</td>
+<td>主题/快捷 400–700</td>
+<td>近迪士尼、含接驳</td>
+<td>离市中心约 1h</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>生煎馒头（大壶春/小杨生煎）</li>
+          <li>小笼包（南翔馒头店）</li>
+          <li>本帮红烧肉、响油鳝糊</li>
+          <li>白斩鸡（小绍兴）、蟹粉豆腐</li>
+        </ul>
+        <h3>🥮 伴手礼</h3>
+        <ul>
+          <li>国际饭店蝴蝶酥</li>
+          <li>沈大成/杏花楼点心</li>
+          <li>大白兔奶糖、梨膏糖</li>
+          <li>上海老字号酱菜、五香豆</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 小吃街</h3>
+        <ul>
+          <li>城隍庙小吃广场</li>
+          <li>云南南路美食街</li>
+          <li>黄河路美食街（老字号扎堆）</li>
+          <li>大学路夜市（年轻人聚集）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>豫园老城厢（本帮菜聚集）</li>
+          <li>南京西路（精致餐饮）</li>
+          <li>新天地（创意融合菜）</li>
+          <li>五角场大学路（高性价比）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 外滩/景区周边「老字号」多为游客店，认准居民区里的本帮馆子；② 生煎和小笼趁热吃，凉了差很多；③ 城隍庙小吃整体偏游客价，尝鲜小份即可。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝</li>
+        <li>舒适步行鞋（日行 1.5–2 万步）</li>
+        <li>雨伞/雨衣（梅雨季必备）</li>
+        <li>薄外套（商场冷气足）</li>
+      </ul>
+      <ul>
+        <li>迪士尼门票+官方 App 提前装</li>
+        <li>上博提前 3–5 天预约</li>
+        <li>下载 Metro 大都会/支付宝扫码乘车</li>
+        <li>关注台风与黄梅天预警</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>迪士尼预约和票务是头等大事</strong>，假期门票会提前售罄；② 外滩、南京路注意防扒手；③ 打车认正规平台，高峰时段溢价明显；④ 梅雨季与台风季（7–9 月）行程预留弹性，室外项目看天气调整。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      上海是「<strong>摩登与烟火并存</strong>」的都市——外滩看历史、陆家嘴看未来、豫园看老城、迪士尼看童话、武康路看生活。10 天刚好把魔都的白天黑夜都走一遍。提前订好迪士尼、约好博物馆，剩下的就是慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "D2-D6 都市线 · 外滩→陆家嘴→迪士尼",
+    "pts": [
+      [
+        31.24,
+        121.4906
+      ],
+      [
+        31.2397,
+        121.4998
+      ],
+      [
+        31.2336,
+        121.5056
+      ],
+      [
+        31.1439,
+        121.657
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "D3-D7 老城水乡线 · 豫园→武康路→朱家角",
+    "pts": [
+      [
+        31.2278,
+        121.493
+      ],
+      [
+        31.2083,
+        121.4366
+      ],
+      [
+        31.11,
+        121.056
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 31.24,
+    "lng": 121.4906,
+    "name": "外滩",
+    "t": "D2 白天 + 夜 · 1–2h",
+    "fee": "免费",
+    "note": "万国建筑群 + 浦江夜景"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 31.2376,
+    "lng": 121.4792,
+    "name": "南京路步行街",
+    "t": "D1 傍晚 · 1–2h",
+    "fee": "免费",
+    "note": "霓虹夜景与老字号"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 31.2278,
+    "lng": 121.493,
+    "name": "豫园·城隍庙",
+    "t": "D3 上午 · 2–3h",
+    "fee": "豫园 40 元",
+    "note": "江南园林 + 老城厢"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 31.2397,
+    "lng": 121.4998,
+    "name": "东方明珠",
+    "t": "D2 下午 · 2h",
+    "fee": "参考价 220 元",
+    "note": "地标球体观景"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 31.2336,
+    "lng": 121.5056,
+    "name": "上海中心",
+    "t": "D8 上午 · 2h",
+    "fee": "参考价 180 元",
+    "note": "118 层云端俯瞰"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 31.1439,
+    "lng": 121.657,
+    "name": "上海迪士尼乐园",
+    "t": "D6 全天 · 12h",
+    "fee": "参考价 399–599 元",
+    "note": "创极速光轮 + 夜场烟花"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 31.2083,
+    "lng": 121.4366,
+    "name": "武康路",
+    "t": "D5 上午 · 2–3h",
+    "fee": "免费",
+    "note": "梧桐洋房与武康大楼"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 31.11,
+    "lng": 121.056,
+    "name": "朱家角古镇",
+    "t": "D7 全天 · 5h",
+    "fee": "免费",
+    "note": "放生桥与摇橹船"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[30.95, 120.9], [31.55, 122.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>D2-D6 都市线（外滩→陆家嘴→迪士尼）<br><span class=\"sw\" style=\"background:#c9820e\"></span>D3-D7 老城水乡线（豫园→武康路→朱家角）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

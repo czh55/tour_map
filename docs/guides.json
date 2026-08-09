@@ -9,7 +9,11 @@
     "days": 13,
     "difficulty": "高海拔徒步",
     "summary": "北京→临汾→拉萨→冈仁波齐转山→返京，13 天全行程",
-    "tags": ["转山", "西藏", "高海拔徒步"]
+    "tags": [
+      "转山",
+      "西藏",
+      "高海拔徒步"
+    ]
   },
   {
     "slug": "dalian-2026",
@@ -21,7 +25,12 @@
     "days": 3,
     "difficulty": "城市海滨",
     "summary": "北京⇄大连高铁 4 小时，星海广场→老虎滩→金石滩，海鲜+滨海大道 3 天 2 晚",
-    "tags": ["大连", "海滨", "周末短途", "海鲜"]
+    "tags": [
+      "大连",
+      "海滨",
+      "周末短途",
+      "海鲜"
+    ]
   },
   {
     "slug": "liuzhou-2026",
@@ -33,6 +42,507 @@
     "days": 3,
     "difficulty": "城市休闲",
     "summary": "北京⇄柳州高铁 9 小时，龙潭公园→工业博物馆→马鞍山夜景，螺蛳粉+喀斯特 3 天 2 晚",
-    "tags": ["柳州", "喀斯特", "周末短途", "螺蛳粉"]
+    "tags": [
+      "柳州",
+      "喀斯特",
+      "周末短途",
+      "螺蛳粉"
+    ]
+  },
+  {
+    "slug": "anhui-2026",
+    "title": "2026 安徽 10 天全景攻略 · 徽韵深度游",
+    "cover": "images/anhui/anhui-cover.jpg",
+    "html": "anhui-2026.html",
+    "date": "2026-08",
+    "destination": "安徽",
+    "days": 10,
+    "difficulty": "山水人文",
+    "summary": "徽韵安徽 ⇄ 黄山 · 宏村西递 · 徽州古城 · 九华山",
+    "tags": [
+      "黄山",
+      "宏村",
+      "徽派建筑"
+    ]
+  },
+  {
+    "slug": "beijing-2026",
+    "title": "2026 北京 10 天全景攻略 · 帝都深度游",
+    "cover": "images/beijing/bj-forbidden-city.jpg",
+    "html": "beijing-2026.html",
+    "date": "2026-08",
+    "destination": "北京",
+    "days": 10,
+    "difficulty": "城市深度",
+    "summary": "北京 ⇄ 各地 · 故宫长城 · 胡同烟火 · 中轴线深度游",
+    "tags": [
+      "古都",
+      "世界遗产",
+      "10天"
+    ]
+  },
+  {
+    "slug": "chongqing-2026",
+    "title": "2026 重庆 10 天全景攻略 · 山城魔幻深度游",
+    "cover": "images/chongqing/chongqing-cover.jpg",
+    "html": "chongqing-2026.html",
+    "date": "2026-08",
+    "destination": "重庆",
+    "days": 10,
+    "difficulty": "山城魔幻",
+    "summary": "重庆 ⇄ 洪崖洞 · 长江索道 · 磁器口 · 武隆天坑 · 大足石刻",
+    "tags": [
+      "洪崖洞",
+      "火锅",
+      "武隆"
+    ]
+  },
+  {
+    "slug": "fujian-2026",
+    "title": "2026 福建 10 天全景攻略 · 山海闽南深度游",
+    "cover": "images/fujian/fujian-cover.jpg",
+    "html": "fujian-2026.html",
+    "date": "2026-08",
+    "destination": "福建",
+    "days": 10,
+    "difficulty": "山海人文",
+    "summary": "厦门 ⇄ 鼓浪屿 ⇄ 泉州 ⇄ 福州 ⇄ 武夷山 ⇄ 土楼 · 山海与人文双主题",
+    "tags": [
+      "鼓浪屿",
+      "土楼",
+      "武夷山"
+    ]
+  },
+  {
+    "slug": "gansu-2026",
+    "title": "2026 甘肃 10 天全景攻略 · 丝路走廊 · 敦煌飞天",
+    "cover": "images/gansu/gansu-cover.jpg",
+    "html": "gansu-2026.html",
+    "date": "2026-08",
+    "destination": "甘肃",
+    "days": 10,
+    "difficulty": "丝路风光",
+    "summary": "兰州 ⇄ 张掖 ⇄ 嘉峪关 ⇄ 敦煌 · 莫高窟壁画 · 大漠孤烟",
+    "tags": [
+      "莫高窟",
+      "鸣沙山",
+      "张掖丹霞"
+    ]
+  },
+  {
+    "slug": "guangdong-2026",
+    "title": "2026 广东 10 天全景攻略 · 岭南深度游",
+    "cover": "images/guangdong/guangdong-cover.jpg",
+    "html": "guangdong-2026.html",
+    "date": "2026-08",
+    "destination": "广东",
+    "days": 10,
+    "difficulty": "都市/美食",
+    "summary": "广州 ⇄ 丹霞山 ⇄ 深圳 ⇄ 珠海 ⇄ 潮汕 · 都市 + 乐园 + 山水 + 古城",
+    "tags": [
+      "广州塔",
+      "长隆",
+      "潮汕"
+    ]
+  },
+  {
+    "slug": "guangxi-2026",
+    "title": "2026 广西 10 天全景攻略 · 山水深度游",
+    "cover": "images/guangxi/guangxi-cover.jpg",
+    "html": "guangxi-2026.html",
+    "date": "2026-08",
+    "destination": "广西",
+    "days": 10,
+    "difficulty": "喀斯特",
+    "summary": "桂林 ⇄ 阳朔 ⇄ 龙脊 ⇄ 柳州 ⇄ 北海 ⇄ 德天 · 喀斯特山水 + 海岛 + 边境",
+    "tags": [
+      "桂林山水",
+      "阳朔",
+      "北海"
+    ]
+  },
+  {
+    "slug": "guizhou-2026",
+    "title": "2026 贵州 10 天全景攻略 · 山水奇观深度游",
+    "cover": "images/guizhou/guizhou-cover.jpg",
+    "html": "guizhou-2026.html",
+    "date": "2026-08",
+    "destination": "贵州",
+    "days": 10,
+    "difficulty": "山水人文",
+    "summary": "贵阳 ⇄ 黄果树 · 荔波 · 西江苗寨 · 镇远 · 梵净山",
+    "tags": [
+      "黄果树",
+      "苗寨",
+      "梵净山"
+    ]
+  },
+  {
+    "slug": "hainan-2026",
+    "title": "2026 海南 10 天全景攻略 · 环岛深度游",
+    "cover": "images/hainan/hainan-cover.jpg",
+    "html": "hainan-2026.html",
+    "date": "2026-08",
+    "destination": "海南",
+    "days": 10,
+    "difficulty": "热带海岛",
+    "summary": "海口 ⇄ 文昌 ⇄ 万宁 ⇄ 三亚 ⇄ 五指山 · 环岛公路 + 海岛 + 热带雨林",
+    "tags": [
+      "三亚",
+      "海岛",
+      "免税"
+    ]
+  },
+  {
+    "slug": "hebei-2026",
+    "title": "2026 河北 10 天全景攻略 · 长城山海与燕赵古城",
+    "cover": "images/hebei/hebei-cover.jpg",
+    "html": "hebei-2026.html",
+    "date": "2026-08",
+    "destination": "河北",
+    "days": 10,
+    "difficulty": "历史人文",
+    "summary": "河北 ⇄ 各地 · 承德山庄 · 山海关 · 白洋淀",
+    "tags": [
+      "长城",
+      "承德避暑山庄",
+      "10天"
+    ]
+  },
+  {
+    "slug": "heilongjiang-2026",
+    "title": "2026 黑龙江 10 天全景攻略 · 哈尔滨冰雪 + 亚布力 + 镜泊湖 + 北极村",
+    "cover": "images/heilongjiang/heilongjiang-cover.jpg",
+    "html": "heilongjiang-2026.html",
+    "date": "2026-08",
+    "destination": "黑龙江",
+    "days": 10,
+    "difficulty": "冰雪/避暑",
+    "summary": "哈尔滨 ⇄ 亚布力 ⇄ 牡丹江/镜泊湖 ⇄ 漠河 · 中央大街 · 吊水楼瀑布 · 北极村",
+    "tags": [
+      "哈尔滨",
+      "冰雪",
+      "漠河"
+    ]
+  },
+  {
+    "slug": "henan-2026",
+    "title": "2026 河南 10 天全景攻略 · 中原文明深度游",
+    "cover": "images/henan/henan-cover.jpg",
+    "html": "henan-2026.html",
+    "date": "2026-08",
+    "destination": "河南",
+    "days": 10,
+    "difficulty": "古都人文",
+    "summary": "郑州 ⇄ 安阳殷墟 ⇄ 洛阳 ⇄ 登封少林 ⇄ 开封 · 中原文明深度游",
+    "tags": [
+      "龙门石窟",
+      "少林寺",
+      "开封"
+    ]
+  },
+  {
+    "slug": "hubei-2026",
+    "title": "2026 湖北 10 天全景攻略 · 荆楚山水深度游",
+    "cover": "images/hubei/hubei-cover.jpg",
+    "html": "hubei-2026.html",
+    "date": "2026-08",
+    "destination": "湖北",
+    "days": 10,
+    "difficulty": "山水人文",
+    "summary": "武汉 ⇄ 宜昌三峡 ⇄ 武当山 ⇄ 神农架 ⇄ 恩施 · 荆楚山水深度游",
+    "tags": [
+      "武当山",
+      "黄鹤楼",
+      "神农架"
+    ]
+  },
+  {
+    "slug": "hunan-2026",
+    "title": "2026 湖南 10 天全景攻略 · 湘情山水深度游",
+    "cover": "images/hunan/hunan-cover.jpg",
+    "html": "hunan-2026.html",
+    "date": "2026-08",
+    "destination": "湖南",
+    "days": 10,
+    "difficulty": "山水人文",
+    "summary": "长沙 ⇄ 张家界 ⇄ 凤凰古城 ⇄ 南岳衡山 · 湘情山水深度游",
+    "tags": [
+      "张家界",
+      "凤凰古城",
+      "长沙"
+    ]
+  },
+  {
+    "slug": "jiangsu-2026",
+    "title": "2026 江苏 10 天全景攻略 · 江南深度游",
+    "cover": "images/jiangsu/jiangsu-cover.jpg",
+    "html": "jiangsu-2026.html",
+    "date": "2026-08",
+    "destination": "江苏",
+    "days": 10,
+    "difficulty": "园林人文",
+    "summary": "江南江苏 ⇄ 南京古都 · 苏州园林 · 无锡太湖 · 扬州瘦西湖",
+    "tags": [
+      "苏州园林",
+      "南京",
+      "水乡"
+    ]
+  },
+  {
+    "slug": "jiangxi-2026",
+    "title": "2026 江西 10 天全景攻略 · 赣鄱山水深度游",
+    "cover": "images/jiangxi/jiangxi-cover.jpg",
+    "html": "jiangxi-2026.html",
+    "date": "2026-08",
+    "destination": "江西",
+    "days": 10,
+    "difficulty": "山水人文",
+    "summary": "南昌 ⇄ 庐山 ⇄ 景德镇 ⇄ 婺源 ⇄ 三清山 ⇄ 龙虎山 · 山江湖城深度游",
+    "tags": [
+      "庐山",
+      "婺源",
+      "三清山"
+    ]
+  },
+  {
+    "slug": "jilin-2026",
+    "title": "2026 吉林 10 天全景攻略 · 长白山 + 雾凇 + 延边朝鲜族",
+    "cover": "images/jilin/jilin-cover.jpg",
+    "html": "jilin-2026.html",
+    "date": "2026-08",
+    "destination": "吉林",
+    "days": 10,
+    "difficulty": "冰雪/山水",
+    "summary": "长春 ⇄ 吉林市 ⇄ 长白山 ⇄ 延边 · 天池 · 雾凇 · 一眼望三国",
+    "tags": [
+      "长白山",
+      "雾凇",
+      "边境"
+    ]
+  },
+  {
+    "slug": "liaoning-2026",
+    "title": "2026 辽宁 10 天全景攻略 · 沈阳→大连→丹东 山海环线",
+    "cover": "images/liaoning/liaoning-cover.jpg",
+    "html": "liaoning-2026.html",
+    "date": "2026-08",
+    "destination": "辽宁",
+    "days": 10,
+    "difficulty": "山海环线",
+    "summary": "沈阳 ⇄ 大连 ⇄ 丹东 · 盛京故宫 · 滨海之城 · 中朝边境",
+    "tags": [
+      "沈阳故宫",
+      "大连",
+      "海滨"
+    ]
+  },
+  {
+    "slug": "neimenggu-2026",
+    "title": "2026 内蒙古 10 天全景攻略 · 草原沙漠与火山星空",
+    "cover": "images/neimenggu/neimenggu-cover.jpg",
+    "html": "neimenggu-2026.html",
+    "date": "2026-08",
+    "destination": "内蒙古",
+    "days": 10,
+    "difficulty": "自然风光",
+    "summary": "内蒙古 ⇄ 各地 · 希拉穆仁草原 · 响沙湾 · 乌兰哈达火山",
+    "tags": [
+      "草原",
+      "沙漠",
+      "火山"
+    ]
+  },
+  {
+    "slug": "ningxia-2026",
+    "title": "2026 宁夏 10 天全景攻略 · 塞上江南 · 沙坡头",
+    "cover": "images/ningxia/ningxia-cover.jpg",
+    "html": "ningxia-2026.html",
+    "date": "2026-08",
+    "destination": "宁夏",
+    "days": 10,
+    "difficulty": "塞上江南",
+    "summary": "银川 ⇄ 中卫 ⇄ 固原 · 大漠黄河 · 西夏遗韵",
+    "tags": [
+      "沙坡头",
+      "西夏王陵",
+      "贺兰山"
+    ]
+  },
+  {
+    "slug": "qinghai-2026",
+    "title": "2026 青海 10 天全景攻略 · 天空之镜 · 高原圣湖",
+    "cover": "images/qinghai/qinghai-cover.jpg",
+    "html": "qinghai-2026.html",
+    "date": "2026-08",
+    "destination": "青海",
+    "days": 10,
+    "difficulty": "高原湖泊",
+    "summary": "西宁 ⇄ 青海湖 ⇄ 茶卡 ⇄ 祁连 ⇄ 格尔木 · 高原湖泊 · 藏地风情",
+    "tags": [
+      "青海湖",
+      "茶卡盐湖",
+      "祁连山"
+    ]
+  },
+  {
+    "slug": "shaanxi-2026",
+    "title": "2026 陕西 10 天全景攻略 · 秦砖汉瓦 · 华山黄河",
+    "cover": "images/shaanxi/shaanxi-cover.jpg",
+    "html": "shaanxi-2026.html",
+    "date": "2026-08",
+    "destination": "陕西",
+    "days": 10,
+    "difficulty": "古都人文",
+    "summary": "西安 ⇄ 华山 ⇄ 壶口 ⇄ 延安 · 兵马俑城墙 · 秦唐盛世",
+    "tags": [
+      "兵马俑",
+      "华山",
+      "壶口瀑布"
+    ]
+  },
+  {
+    "slug": "shandong-2026",
+    "title": "2026 山东 10 天全景攻略 · 齐鲁山海深度游",
+    "cover": "images/shandong/shandong-cover.jpg",
+    "html": "shandong-2026.html",
+    "date": "2026-08",
+    "destination": "山东",
+    "days": 10,
+    "difficulty": "山海人文",
+    "summary": "济南 ⇄ 泰山 ⇄ 曲阜 ⇄ 青岛 ⇄ 烟台威海 ⇄ 返程 · 圣山儒海深度游",
+    "tags": [
+      "泰山",
+      "三孔",
+      "青岛"
+    ]
+  },
+  {
+    "slug": "shanghai-2026",
+    "title": "2026 上海 10 天全景攻略 · 魔都深度游",
+    "cover": "images/shanghai/shanghai-1.jpg",
+    "html": "shanghai-2026.html",
+    "date": "2026-08",
+    "destination": "上海",
+    "days": 10,
+    "difficulty": "城市时尚",
+    "summary": "魔都上海 ⇄ 陆家嘴 · 外滩 · 迪士尼 · 老城厢 · 梧桐街区",
+    "tags": [
+      "外滩",
+      "迪士尼",
+      "魔都"
+    ]
+  },
+  {
+    "slug": "shanxi-2026",
+    "title": "2026 山西 10 天全景攻略 · 石窟古建与晋商大院",
+    "cover": "images/shanxi/shanxi-cover.jpg",
+    "html": "shanxi-2026.html",
+    "date": "2026-08",
+    "destination": "山西",
+    "days": 10,
+    "difficulty": "历史人文",
+    "summary": "山西 ⇄ 各地 · 云冈石窟 · 平遥古城 · 壶口瀑布",
+    "tags": [
+      "古建",
+      "云冈石窟",
+      "平遥古城"
+    ]
+  },
+  {
+    "slug": "sichuan-2026",
+    "title": "2026 四川 10 天全景攻略 · 天府之国深度游",
+    "cover": "images/sichuan/sichuan-cover.jpg",
+    "html": "sichuan-2026.html",
+    "date": "2026-08",
+    "destination": "四川",
+    "days": 10,
+    "difficulty": "自然人文",
+    "summary": "成都 ⇄ 九寨沟 · 峨眉山 · 乐山大佛 · 都江堰 · 熊猫基地",
+    "tags": [
+      "九寨沟",
+      "大熊猫",
+      "峨眉山"
+    ]
+  },
+  {
+    "slug": "tianjin-2026",
+    "title": "2026 天津 10 天全景攻略 · 海河津味深度游",
+    "cover": "images/tianjin/tianjin-cover.jpg",
+    "html": "tianjin-2026.html",
+    "date": "2026-08",
+    "destination": "天津",
+    "days": 10,
+    "difficulty": "城市休闲",
+    "summary": "天津 ⇄ 各地 · 海河夜景 · 万国建筑 · 蓟州山水",
+    "tags": [
+      "海河",
+      "洋楼",
+      "10天"
+    ]
+  },
+  {
+    "slug": "xinjiang-2026",
+    "title": "2026 新疆 10 天全景攻略 · 北疆环线 · 喀纳斯 + 独库公路",
+    "cover": "images/xinjiang/xinjiang-cover.jpg",
+    "html": "xinjiang-2026.html",
+    "date": "2026-08",
+    "destination": "新疆",
+    "days": 10,
+    "difficulty": "西域风光",
+    "summary": "乌鲁木齐 ⇄ 喀纳斯 ⇄ 独库公路 · 天山草原 · 大美新疆",
+    "tags": [
+      "喀纳斯",
+      "独库公路",
+      "吐鲁番"
+    ]
+  },
+  {
+    "slug": "xizang-2026",
+    "title": "2026 西藏 10 天全景攻略 · 雪域高原深度游",
+    "cover": "images/xizang/xizang-cover.jpg",
+    "html": "xizang-2026.html",
+    "date": "2026-08",
+    "destination": "西藏",
+    "days": 10,
+    "difficulty": "高海拔",
+    "summary": "拉萨 ⇄ 布达拉宫 · 纳木错 · 羊卓雍措 · 日喀则 · 珠峰大本营",
+    "tags": [
+      "布达拉宫",
+      "纳木错",
+      "珠峰"
+    ]
+  },
+  {
+    "slug": "yunnan-2026",
+    "title": "2026 云南 10 天全景攻略 · 彩云之南深度游",
+    "cover": "images/yunnan/yunnan-cover.jpg",
+    "html": "yunnan-2026.html",
+    "date": "2026-08",
+    "destination": "云南",
+    "days": 10,
+    "difficulty": "高原民族",
+    "summary": "昆明 ⇄ 大理 · 丽江 · 玉龙雪山 · 香格里拉",
+    "tags": [
+      "丽江",
+      "大理",
+      "玉龙雪山"
+    ]
+  },
+  {
+    "slug": "zhejiang-2026",
+    "title": "2026 浙江 10 天全景攻略 · 诗画江南深度游",
+    "cover": "images/zhejiang/zhejiang-cover.jpg",
+    "html": "zhejiang-2026.html",
+    "date": "2026-08",
+    "destination": "浙江",
+    "days": 10,
+    "difficulty": "江南水乡",
+    "summary": "诗画浙江 ⇄ 杭州西湖 · 千岛湖 · 乌镇 · 绍兴 · 普陀山",
+    "tags": [
+      "西湖",
+      "千岛湖",
+      "乌镇"
+    ]
   }
 ]

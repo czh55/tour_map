@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 浙江 10 天全景攻略 · 诗画江南深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #2e8b57;
+    --red-light: #39a56b;
+    --gold: #d9a441;
+    --ink: #26362e;
+    --muted: #7d8f84;
+    --bg: #f3f8f4;
+    --card: #ffffff;
+    --line: #dce9e0;
+    --blue: #3a6b50;
+    --cover1: #0f3d25;
+    --ov1: rgba(12,52,32,.88);
+    --ov2: rgba(24,86,52,.72);
+    --ov3: rgba(60,130,90,.38);
+    --ov4: rgba(80,160,110,.20);
+    --key-bg: #eff6ef;
+    --info-bg: #eaf4ed;
+    --head-bg: rgba(46,139,87,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/zhejiang/zhejiang-cover.jpg" alt="浙江旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 西湖 + 千岛湖 + 乌镇 + 普陀山</div>
+      <h1>浙江 10 天全景攻略</h1>
+      <div class="sub">诗画浙江 ⇄ 杭州西湖 · 千岛湖 · 乌镇 · 绍兴 · 普陀山</div>
+      <div class="meta">
+        <span>🚄 行程链：杭州 → 千岛湖 → 乌镇 → 绍兴 → 普陀山 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚄 省内主力：高铁 + 大巴 + 轮渡</span>
+        <span>🏞 主题：湖山胜景 + 水乡古镇 + 海天佛国</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">杭州</span>
+      <span class="arrow">→</span>
+      <span class="node">西湖/灵隐</span>
+      <span class="arrow">→</span>
+      <span class="node">千岛湖</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">乌镇</span>
+      <span class="arrow">→</span>
+      <span class="node">绍兴</span>
+      <span class="arrow">→</span>
+      <span class="node">普陀山</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      浙江是「<strong>湖、山、水乡、海天</strong>」样样俱全的江南：杭州看西湖与灵隐，千岛湖看千岛碧水，乌镇看枕水人家，绍兴看文脉，普陀山看海天佛国。城市间高铁 1–2 小时可达，<strong>10 天环线由西向东</strong>，节奏从容不赶。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（杭州 3 天 + 千岛湖 2 天 + 乌镇 2 天 + 绍兴 1 天 + 普陀山 2 天）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天下午/晚间返程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>杭州 → 千岛湖 → 乌镇 → 绍兴 → 普陀山</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 4000–5200 ／ 标准 6500–8500 ／ 舒适 10000–13000</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 普陀山船票+住宿提前 1 周订 ② 乌镇西栅住宿含门票提前抢 ③ 灵隐寺/雷峰塔提前 1–3 天购票</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>3–4 月春花与 10–11 月秋桂最佳；7–9 月台风季海岛班次可能停航</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>杭州地铁手机扫码，高铁串联各城，普陀山靠轮渡</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>普陀山只能乘船到达</strong>（朱家尖/沈家门码头），旺季与台风季船票紧张、班次调整频繁，务必提前订票并留足候船时间。② 乌镇西栅门票是<strong>当日有效、单次进出</strong>，入住景区内客栈可以刷指纹多次进出，选对住宿能省一天二次购票。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚由西向东的环线推荐节奏。湖山、水乡、海岛分三段走，避免疲劳。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵杭</td>
+<td>抵达杭州，入住湖滨/河坊街，傍晚河坊街 + 西湖夜景</td>
+<td>湖滨/河坊街</td>
+<td>抵达 + 预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>西湖经典：苏堤/断桥 → 花港观鱼 → 雷峰塔</td>
+<td>湖滨一带</td>
+<td>湖山胜景</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>灵隐寺 + 飞来峰 → 龙井村品茶</td>
+<td>灵隐/龙井</td>
+<td>禅意茶香</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>赴千岛湖：中心湖区游船（梅峰岛/龙山岛）</td>
+<td>千岛湖镇</td>
+<td>千岛碧水</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>千岛湖周边（文渊狮城/天屿山）→ 返杭州或直赴乌镇</td>
+<td>乌镇</td>
+<td>转场</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>乌镇东栅 → 西栅（夜宿西栅看夜景）</td>
+<td>乌镇西栅</td>
+<td>枕水人家</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>乌镇 → 绍兴：鲁迅故里、沈园、仓桥直街</td>
+<td>绍兴</td>
+<td>水乡文脉</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>绍兴 → 宁波 → 朱家尖 → 普陀山（轮渡）</td>
+<td>普陀山</td>
+<td>海天佛国</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>普陀山：普济寺 → 法雨寺 → 佛顶山 → 南海观音</td>
+<td>普陀山</td>
+<td>朝山礼佛</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午自由活动/采购，轮渡返朱家尖/宁波返程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      乌镇与西塘、南浔同为水乡可替换；千岛湖想轻松可只玩中心湖区半天。普陀山建议至少住 1 晚（香火旺盛的寺庙早课值得体验）。台风季（7–9 月）关注轮渡班次，行程留弹性。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达杭州</span>
+          <span class="d-desc">入住湖滨/河坊街</span>
+          <span class="d-tag alt">🚇 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">抵达杭州（高铁到杭州东/杭州站，飞机到萧山机场），地铁进城入住湖滨/河坊街</td></tr>
+          <tr><td class="t-time">17:30–18:30</td><td class="t-what">办理入住</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what"><b>河坊街</b>（免费）：南宋御街、特色小吃（定胜糕、葱包桧），然后西湖边看夜景</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">河坊街夜市热闹，西湖音乐喷泉（以官方为准）在湖滨步行街尽头。杭州地铁 1 号线直达湖滨。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 西湖经典 + 雷峰塔</span>
+          <span class="d-desc">湖山胜景一日</span>
+          <span class="d-tag ">🌊 西湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–11:30</td><td class="t-what"><b>西湖</b>（免费）：断桥 → 白堤 → 苏堤，晨光湖景最舒服</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：湖滨/岳王庙附近</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>花港观鱼</b>（免费）→ 乘船游湖（参考价 55–70 元）或电瓶车环湖</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>雷峰塔</b>（参考价 40 元）：登塔俯瞰西湖全景，白娘子传说</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：湖滨商圈</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">西湖免费步行段极长，建议「白堤+苏堤」二选一 + 电瓶车环湖；雷峰塔傍晚登塔看落日和夜景最佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 灵隐寺 + 龙井村</span>
+          <span class="d-desc">禅意茶香一日</span>
+          <span class="d-tag ">🍵 禅茶日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what"><b>灵隐寺</b>（参考价 45 元）+ <b>飞来峰</b>（参考价 45 元）：一线天、石刻造像</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">灵隐周边素斋/午餐</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>龙井村</b>（免费）：茶园漫步，农家品明前龙井</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">茶村晚餐或返市区，西湖群山日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">灵隐寺需购飞来峰景区票才能进入，联票更划算；早上 8 点前到人少。龙井村到九溪烟树徒步段是经典路线。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 千岛湖游船</span>
+          <span class="d-desc">千岛碧水一日</span>
+          <span class="d-tag ">🏝 千岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">高铁杭州→千岛湖站（约 1h），转接驳到中心湖区码头</td></tr>
+          <tr><td class="t-time">10:30–16:00</td><td class="t-what"><b>千岛湖中心湖区游船</b>（参考价 150–180 元含门票）：梅峰岛登顶看千岛全景、龙山岛海瑞祠</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">游船午餐（船上简餐）</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">入住千岛湖镇，湖边晚餐（千岛湖鱼头）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">湖边散步看夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">中心湖区一日游船上午班次 9 点前出发最佳，行程约 4–5 小时；梅峰岛是看「千岛碧水画中游」的最佳点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 千岛湖周边 + 转场</span>
+          <span class="d-desc">轻松转场一日</span>
+          <span class="d-tag ">🚄 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what">上午自由活动：<b>天屿山观景台</b>（免费）或 <b>文渊狮城</b>（参考价 80 元）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">千岛湖午餐</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">高铁/大巴赴乌镇（千岛湖→杭州→桐乡，全程约 3h）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">抵达乌镇，入住西栅景区内客栈（门票可多次进出）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what"><b>西栅夜景</b>：枕水人家、灯光夜色</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌镇西栅景区内客栈住宿性价比高（含门票优惠），晚上 10 点后游客散去，清晨的西栅最清净。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 乌镇东栅 + 西栅</span>
+          <span class="d-desc">枕水人家一日</span>
+          <span class="d-tag ">🛶 水乡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–11:00</td><td class="t-what"><b>东栅</b>（参考价 120 元联票含西栅）：茅盾故居、江南百床馆</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">东栅午餐：姑嫂饼、羊肉面</td></tr>
+          <tr><td class="t-time">13:00–17:00</td><td class="t-what"><b>西栅</b>（参考价 150 元）：草木本色染坊、昭明书院、摇橹船游河</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">西栅晚餐，看白莲塔夜景</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what">西栅夜游：酒吧街/评弹馆</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">东栅人文、西栅夜景，联票（东栅+西栅）参考价 200 元更划算；西栅白天团队多，下午 4 点后和夜晚体验最佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 绍兴文脉</span>
+          <span class="d-desc">水乡文脉一日</span>
+          <span class="d-tag ">📖 文脉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">乌镇→绍兴（大巴约 2h 或高铁桐乡→绍兴）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>鲁迅故里</b>（免费需预约）：百草园、三味书屋、鲁迅纪念馆</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">绍兴午餐：臭豆腐、梅干菜扣肉、黄酒</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>沈园</b>（参考价 40 元）：陆游唐婉爱情园，钗头凤碑</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>仓桥直街</b>（免费）：水乡老街，乌篷船体验</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：咸亨酒店（孔乙己茴香豆）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">鲁迅故里与沈园、仓桥直街步行相连；仓桥直街乌篷船（参考价 60–90 元）是绍兴特色。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 赴普陀山</span>
+          <span class="d-desc">海天佛国抵达日</span>
+          <span class="d-tag alt">⛴ 海岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">高铁绍兴→宁波（约 40 分钟）</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">宁波汽车南站→朱家尖蜈蚣峙码头（大巴约 1.5h）</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what"><b>轮渡</b>朱家尖→普陀山（快艇约 10–20 分钟，参考价 30 元）</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what">入住岛上客栈，游<b>普陀山码头周边</b>：紫竹林、不肯去观音院</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">晚餐：岛上素斋/海鲜</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">海边散步，看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">普陀山上岛门票参考价 160 元（含景区交通）。轮渡班次旺季加密，台风天停航，出发前一天务必确认班次。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 普陀山朝山</span>
+          <span class="d-desc">朝山礼佛一日</span>
+          <span class="d-tag ">🙏 佛国日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–07:30</td><td class="t-what">早课/早餐（寺庙早课可随缘体验）</td></tr>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>普济寺</b>：普陀山第一大寺，香火鼎盛</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>法雨寺</b>（步行/索道）→ 午餐</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what"><b>佛顶山</b>：慧济禅寺、登顶看海天景色</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><b>南海观音</b>立像：33 米观音像，看日落</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：岛上特色海鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">普陀山三大寺（普济、法雨、慧济）建议都走；岛内景区车（5–10 元/段）连接主要景点，佛顶山可坐缆车。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">离岛返程</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">自由活动：普陀山海岸线晨光、买佛珠/观音饼</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">轮渡返朱家尖，大巴返宁波/舟山</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">宁波/杭州东返程（高铁/飞机）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伴手礼推荐：龙井茶、绍兴黄酒与霉干菜、乌镇姑嫂饼、普陀山观音饼与素饼。返程务必预留轮渡+机场/车站衔接时间。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-cover.jpg" alt="杭州西湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">杭州西湖 <small>免费（游船另计）</small></div>
+          <div class="sc-feat">「欲把西湖比西子」。<b>苏堤、断桥、三潭印月</b>，世界文化遗产。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天–1 天 · 🚇 1 号线龙翔桥站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-2.jpg" alt="灵隐寺·飞来峰" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">灵隐寺·飞来峰 <small>参考价 45+45 元</small></div>
+          <div class="sc-feat">江南禅宗名刹。<b>一线天、石刻造像、千年古寺</b>，晨钟暮鼓。</div>
+          <div class="sc-meta">📅 7:00–17:45 · ⏱ 3–4h · 🚌 7 路/灵隐专线</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-3.jpg" alt="雷峰塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">雷峰塔 <small>参考价 40 元</small></div>
+          <div class="sc-feat">白娘子传说之地。<b>登塔俯瞰西湖全景</b>，夕阳时分最美。</div>
+          <div class="sc-meta">📅 8:00–17:30 · ⏱ 1.5h · 🚇 4 号线水澄桥站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-4.jpg" alt="千岛湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">千岛湖 <small>景区门票参考价 130 元</small></div>
+          <div class="sc-feat">1078 个岛屿。<b>梅峰岛看千岛全景</b>，乘船游湖如画中游。</div>
+          <div class="sc-meta">📅 8:00–16:00 · ⏱ 半天–1 天 · 🚄 高铁千岛湖站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-5.jpg" alt="乌镇" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乌镇 <small>西栅参考价 150 元</small></div>
+          <div class="sc-feat">「枕水江南」。<b>西栅夜景、染坊、摇橹船</b>，中国最后的枕水人家。</div>
+          <div class="sc-meta">📅 西栅 9:00–22:00 · ⏱ 1–2 天 · 🚄 高铁桐乡站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-6.jpg" alt="普陀山·普济寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">普陀山·普济寺 <small>上岛参考价 160 元</small></div>
+          <div class="sc-feat">观音道场。<b>普济寺、南海观音、佛顶山</b>，海天佛国。</div>
+          <div class="sc-meta">📅 6:00–18:00 · ⏱ 1–2 天 · ⛴ 朱家尖轮渡 20 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-7.jpg" alt="西湖·苏堤/断桥" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">西湖·苏堤/断桥 <small>免费</small></div>
+          <div class="sc-feat">西湖十景精华。<b>苏堤春晓、断桥残雪</b>，一步一景。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚇 1 号线龙翔桥/凤起路</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/zhejiang/zhejiang-1.jpg" alt="绍兴水乡" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">绍兴水乡 <small>免费（鲁迅故里）</small></div>
+          <div class="sc-feat">文脉水乡。<b>鲁迅故里、仓桥直街乌篷船</b>，黄酒与咸亨酒店。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚄 高铁绍兴站</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（西湖、千岛湖、乌镇、普陀山均为浙江实景，绍兴为同主题乌篷船示意图），用于页面配图。更多免费景点：河坊街、龙井村、仓桥直街、白塔公园。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为旺季参考价，以现场为准。城市间交通含高铁（杭州→千岛湖、绍兴→宁波等约 100–200 元）与轮渡；省外交通按高铁往返计，不同出发地浮动较大。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（4000–5200）</th>
+<th>标准（6500–8500）</th>
+<th>舒适（10000–13000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>高铁约 500–900</td>
+<td>高铁/飞机约 900–1600</td>
+<td>飞机+接送约 1800–2800</td>
+</tr>
+<tr>
+<td>省内交通</td>
+<td>高铁/大巴 350–500</td>
+<td>高铁+轮渡 500–700</td>
+<td>包车+轮渡 800–1200</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/快捷 800–1300</td>
+<td>连锁+客栈 1900–2800</td>
+<td>湖景/海景+民宿 4800–7000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 500</td>
+<td>含游船/联票约 750</td>
+<td>全含+演出约 1100</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>700–1000</td>
+<td>1300–1700（含湖鲜海鲜）</td>
+<td>2000–2800</td>
+</tr>
+<tr>
+<td>市内交通</td>
+<td>地铁/公交 120–180</td>
+<td>地铁+打车 280–400</td>
+<td>打车/包车 500–800</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 6700 元）</span>
+      高铁往返 1400 + 省内 600 + 住宿 9 晚 2400（双人分 4800）+ 门票 750 + 餐饮 1500 + 市内 350 ≈ <strong>7000 元</strong>。主要浮动项是普陀山住宿（岛上旺季涨价）与游船票，提前订可省 500–1000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 只看精华的 6 天版</h3>
+
+
+    <ul>
+
+      <li>D1 杭州西湖+河坊街</li>
+
+      <li>D2 灵隐寺+雷峰塔</li>
+
+      <li>D3 千岛湖一日</li>
+
+      <li>D4 乌镇（西栅夜宿）</li>
+
+      <li>D5 乌镇东栅→返杭州</li>
+
+      <li>D6 返程</li>
+
+    </ul>
+
+    <h3>7.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：杭州少年宫/杭州动物园、千岛湖水上乐园、乌镇民宿体验，替换部分寺庙行程；普陀山可缩减为一日往返（早出晚归），或替换为宁波方特东方神画。</p>
+
+    <h3>7.3 秋冬淡季版</h3>
+
+
+    <p>9–11 月秋桂飘香、西湖桂雨闻名；12–2 月淡季人少、乌镇和寺庙清净，住宿比旺季低 30–50%，但海岛海风大，普陀山需防风保暖。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 浙江 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>高铁（推荐）</td>
+<td>视出发地 3–6h</td>
+<td>二等座 300–1000 元</td>
+<td>杭州东/宁波/绍兴多站可选</td>
+</tr>
+<tr>
+<td>飞机</td>
+<td>视出发地 1–2.5h</td>
+<td>400–1600 元</td>
+<td>杭州萧山/宁波栎社/舟山普陀山机场</td>
+</tr>
+<tr>
+<td>自驾</td>
+<td>视出发地</td>
+<td>高速+停车费</td>
+<td>高速网密，乌镇/千岛湖停车方便</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 省内交通核心提醒</span>
+      杭州→千岛湖高铁约 1h、杭州→桐乡（乌镇）约 40 分钟、绍兴→宁波约 40 分钟，<strong>高铁串联全环线</strong>；去普陀山需「宁波→朱家尖大巴→轮渡」三段衔接，务必留足 1–2 小时缓冲。台风季轮渡可能停航。
+    </div>
+
+    <h3>8.2 省内交通</h3>
+    <ul>
+      <li><strong>高铁/动车</strong>：杭州/绍兴/宁波/千岛湖站互联，首选城际出行</li>
+      <li><strong>大巴</strong>：杭州汽车站直达乌镇/西塘/千岛湖</li>
+      <li><strong>轮渡</strong>：朱家尖蜈蚣峙码头→普陀山，快艇约 20 分钟</li>
+      <li><strong>地铁</strong>：杭州地铁扫码进站，覆盖西湖周边</li>
+      <li><strong>共享单车/电瓶车</strong>：西湖环湖、仓桥直街体验最佳</li>
+      <li><strong>景区车</strong>：普陀山岛内 5–10 元/段</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>杭州·湖滨</td>
+<td>快捷 400–600 / 星级 800–1600</td>
+<td>近西湖、地铁 1 号线</td>
+<td>游客多，旺季贵</td>
+</tr>
+<tr>
+<td>千岛湖镇</td>
+<td>客栈 350–600 / 湖景 800–1600</td>
+<td>湖景房看日出</td>
+<td>离码头需接驳</td>
+</tr>
+<tr>
+<td>乌镇西栅</td>
+<td>景区客栈 600–1200</td>
+<td>含门票多次进出、夜宿体验</td>
+<td>周末房源紧张</td>
+</tr>
+<tr>
+<td>绍兴·鲁迅故里</td>
+<td>快捷 300–500</td>
+<td>近景区、生活气息浓</td>
+<td>老城停车难</td>
+</tr>
+<tr>
+<td>普陀山岛</td>
+<td>客栈 400–800 / 海景 1000–2000</td>
+<td>近普济寺、看日出</td>
+<td>旺季涨价快，需提前 1 周订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>西湖醋鱼、东坡肉（杭州）</li>
+          <li>千岛湖鱼头（鱼头豆腐）</li>
+          <li>绍兴梅干菜扣肉、醉鸡、黄酒</li>
+          <li>普陀山观音饼、素斋</li>
+        </ul>
+        <h3>🥮 伴手礼</h3>
+        <ul>
+          <li>西湖龙井茶</li>
+          <li>绍兴黄酒、霉干菜</li>
+          <li>乌镇姑嫂饼、杭白菊</li>
+          <li>普陀山观音饼、佛珠</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 小吃街</h3>
+        <ul>
+          <li>杭州河坊街/南宋御街</li>
+          <li>乌镇姑嫂饼、羊肉面、定胜糕</li>
+          <li>绍兴仓桥直街（臭豆腐、奶油小攀）</li>
+          <li>宁波南塘老街</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>杭州楼外楼/外婆家（本帮）</li>
+          <li>绍兴咸亨酒店</li>
+          <li>千岛湖大排档湖鲜</li>
+          <li>普陀山码头海鲜街</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 西湖醋鱼等名菜老字号节假日排队 1 小时以上，提前订位；② 景区周边「特产店」贵且货杂，龙井茶认准茶农直购；③ 普陀山海鲜按斤计价，先问价再点。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝</li>
+        <li>舒适步行鞋（西湖/普陀山日行 2 万步）</li>
+        <li>雨伞/雨衣（江南多雨）</li>
+        <li>薄外套（海岛海风大）</li>
+      </ul>
+      <ul>
+        <li>普陀山船票+住宿提前 1 周订</li>
+        <li>乌镇西栅门票/客栈提前抢</li>
+        <li>灵隐寺/雷峰塔提前 1–3 天购票</li>
+        <li>关注台风季轮渡班次</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>普陀山轮渡是硬约束</strong>，船票与班次提前确认，别卡点赶船；② 乌镇西栅门票单次有效，选景区内住宿可多次进出；③ 寺庙进殿脱帽、殿内不拍照；④ 龙井村「免费品茶」常有推销，量力购买。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      浙江是「<strong>湖光、水乡、山海</strong>」浓缩的诗画江南——西湖看温柔、千岛湖看辽阔、乌镇看枕水人家、绍兴看文脉、普陀山看海天佛国。10 天环线由西向东，节奏从容。提前订好普陀山船票与乌镇客栈，剩下的就是慢慢走。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "D1-D7 湖山水乡线 · 西湖→千岛湖→乌镇→绍兴",
+    "pts": [
+      [
+        30.2471,
+        120.1444
+      ],
+      [
+        29.612,
+        119.047
+      ],
+      [
+        30.752,
+        120.489
+      ],
+      [
+        30.0,
+        120.58
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "D8-D9 海天佛国线 · 绍兴→普陀山",
+    "pts": [
+      [
+        30.0,
+        120.58
+      ],
+      [
+        29.984,
+        122.387
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 30.2471,
+    "lng": 120.1444,
+    "name": "西湖",
+    "t": "D2 全天 · 半天–1 天",
+    "fee": "免费",
+    "note": "苏堤、断桥、游船"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 30.241,
+    "lng": 120.099,
+    "name": "灵隐寺·飞来峰",
+    "t": "D3 上午 · 3–4h",
+    "fee": "参考价 90 元",
+    "note": "一线天、石刻"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 30.233,
+    "lng": 120.15,
+    "name": "雷峰塔",
+    "t": "D2 傍晚 · 1.5h",
+    "fee": "参考价 40 元",
+    "note": "俯瞰西湖全景"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 29.612,
+    "lng": 119.047,
+    "name": "千岛湖",
+    "t": "D4 全天 · 半天",
+    "fee": "参考价 130 元",
+    "note": "梅峰岛千岛全景"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 30.752,
+    "lng": 120.489,
+    "name": "乌镇",
+    "t": "D5-D6 · 1–2 天",
+    "fee": "西栅 150 元",
+    "note": "西栅夜景、染坊"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 29.984,
+    "lng": 122.387,
+    "name": "普陀山·普济寺",
+    "t": "D8-D9 · 1–2 天",
+    "fee": "上岛 160 元",
+    "note": "三大寺、南海观音"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 30.0,
+    "lng": 120.58,
+    "name": "绍兴水乡",
+    "t": "D7 全天 · 半天",
+    "fee": "免费",
+    "note": "鲁迅故里、乌篷船"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 30.241,
+    "lng": 120.169,
+    "name": "河坊街",
+    "t": "D1 傍晚 · 1–2h",
+    "fee": "免费",
+    "note": "南宋御街小吃"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[28.6, 118.6], [31.1, 122.7]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>D1-D7 湖山水乡线（西湖→千岛湖→乌镇→绍兴）<br><span class=\"sw\" style=\"background:#c9820e\"></span>D8-D9 海天佛国线（绍兴→普陀山）<span class=\"sw dash\"></span>轮渡段（朱家尖→普陀山）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

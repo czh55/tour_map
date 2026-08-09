@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 福建 10 天全景攻略 · 山海闽南深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #a63d2b;
+    --red-light: #c14930;
+    --gold: #d9a441;
+    --ink: #3a2b24;
+    --muted: #8a7a6f;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #eee2d5;
+    --blue: #5a3a2e;
+    --cover1: #7c2415;
+    --ov1: rgba(60,15,8,.88);
+    --ov2: rgba(110,30,16,.72);
+    --ov3: rgba(166,61,43,.38);
+    --ov4: rgba(190,75,48,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f6efe8;
+    --head-bg: rgba(166,61,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/fujian/fujian-cover.jpg" alt="福建旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 山海闽南 + 土楼 + 茶山</div>
+      <h1>福建 10 天全景攻略</h1>
+      <div class="sub">厦门 ⇄ 鼓浪屿 ⇄ 泉州 ⇄ 福州 ⇄ 武夷山 ⇄ 土楼 · 山海与人文双主题</div>
+      <div class="meta">
+        <span>🚄 行程链：厦门 → 鼓浪屿 → 泉州 → 福州 → 武夷山 → 南靖土楼 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚇 省内主力：高铁/动车 + 包车 + 公交</span>
+        <span>🏛 主题：世界遗产 + 茶文化 + 滨海风光</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">厦门</span>
+      <span class="arrow">→</span>
+      <span class="node">鼓浪屿</span>
+      <span class="arrow">→</span>
+      <span class="node">泉州</span>
+      <span class="arrow">→</span>
+      <span class="node">福州</span>
+      <span class="arrow">→</span>
+      <span class="node">武夷山</span>
+      <span class="arrow">→</span>
+      <span class="node">土楼</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      福建有<strong>5 处世界遗产</strong>（鼓浪屿、土楼、武夷山、泉州、丹霞泰宁等），且厦门、泉州、福州之间高铁 1 小时左右，<strong>10 天刚好走一条山海环线</strong>：前 3 天厦门 + 鼓浪屿，第 4 天泉州，第 5–6 天福州，第 7–8 天武夷山，第 9–10 天土楼后返程。节奏松弛，不会太赶。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（山海环线，沿海进山出）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天从土楼返厦门，下午/晚间返程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>厦门 → 鼓浪屿 → 泉州 → 福州 → 武夷山 → 土楼 → 厦门</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 4000–5000 ／ 标准 6000–8000 ／ 舒适 9500–13000</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 鼓浪屿轮渡提前 2–3 天购票 ② 武夷山竹筏票提前订 ③ 夏季台风季关注天气</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>3–5 月与 10–11 月最佳；7–9 月炎热且有台风风险</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>福建省内高铁直达主要城市，无需办交通卡</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>鼓浪屿轮渡需实名购票</strong>（游客只能从邮轮中心厦鼓码头出发，船票含往返），旺季提前 3 天抢。② 土楼各景区（田螺坑、云水谣、永定）<strong>相距较远，最好包车或拼车</strong>，公共交通班次少，别把两个大景区排在同一天。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏。每日主景点 ≤2 个，沿海段以高铁衔接，山区段预留整天。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵厦</td>
+<td>抵达厦门，入住中山路/曾厝垵，傍晚环岛路 + 白城沙滩日落</td>
+<td>厦门</td>
+<td>抵达 + 预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>鼓浪屿（全天）：日光岩、菽庄花园、龙头路，傍晚返厦</td>
+<td>厦门</td>
+<td>世界遗产·海岛</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>南普陀寺 → 厦门大学 → 沙坡尾/猫街，傍晚曾厝垵</td>
+<td>厦门</td>
+<td>大学与老街</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>高铁赴泉州：开元寺、西街、清净寺、洛阳桥</td>
+<td>泉州</td>
+<td>海丝古城</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>高铁赴福州：三坊七巷（全天）、上下杭、林则徐纪念馆</td>
+<td>福州</td>
+<td>闽都人文</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>福州烟台山/鼓山 → 傍晚高铁赴武夷山，宿三姑度假区</td>
+<td>武夷山</td>
+<td>转场武夷</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>武夷山：九曲溪竹筏 + 武夷宫 + 天游峰</td>
+<td>武夷山</td>
+<td>丹山碧水</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>武夷山：一线天/虎啸岩 或 大红袍茶区（可选），下午赴南靖</td>
+<td>南靖土楼</td>
+<td>茶山与转场</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>田螺坑土楼群 → 云水谣古镇（土楼民宿体验）</td>
+<td>南靖土楼</td>
+<td>土楼人家</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午裕昌楼/塔下村，午后返厦门，晚间返程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      武夷山与土楼都吃天气：雨天竹筏会停，可把 D8 的茶区换成备选。带孩子老人可以把泉州（D4）压缩成半天。喜欢海滨可加东山岛，但那会拆掉一天的武夷山行程。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达厦门</span>
+          <span class="d-desc">入住中山路/曾厝垵</span>
+          <span class="d-tag alt">🚄 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">抵达厦门（高铁到厦门北站，飞机到高崎机场），地铁/打车进城</td></tr>
+          <tr><td class="t-time">17:30–18:30</td><td class="t-what">办理入住（推荐中山路或曾厝垵，近地铁与海滨）</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what">环岛路骑行一段：白城沙滩、胡里山炮台外观，晚餐吃<strong>沙茶面/海蛎煎</strong></td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">回酒店休息，为 D2 鼓浪屿攒体力</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">曾厝垵是游客聚集的文创村，热闹但偏商业化；想安静可住中山路靠海一侧。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 鼓浪屿（全天）</span>
+          <span class="d-desc">海上花园世界遗产</span>
+          <span class="d-tag ">🏝 鼓浪屿日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:40</td><td class="t-what">邮轮中心厦鼓码头乘轮渡（约 20 分钟，船票含往返，需实名提前购票）</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>日光岩</b>（联票 90 元）：全岛最高点，俯瞰红顶老别墅与海</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>菽庄花园 + 钢琴博物馆</b>：闽南园林与钢琴文化，龙头路午餐</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">漫步<strong>笔山路/鸡山路</strong>老别墅区、三一堂、龙头路商业街，吃鱼丸与馅饼</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">码头乘船返厦门，晚餐中山路：<strong>土笋冻、姜母鸭</strong></td></tr>
+          </tbody></table></div>
+        <div class="hl-note">鼓浪屿不能走回头路出岛，登岛后逛到哪算哪。夏季紫外线强，防晒伞必备。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 厦门岛内</span>
+          <span class="d-desc">南普陀 + 厦大 + 沙坡尾</span>
+          <span class="d-tag ">🎓 人文日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>南普陀寺</b>（免费）：闽南名刹，可登五老峰远眺厦大与海</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><b>厦门大学</b>（需提前预约）：芙蓉湖、颂恩楼、芙蓉隧道</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">厦大西门附近午餐：沙茶面/海蛎煎/芋包</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>沙坡尾</b>（免费）：老渔港 + 文创街区，猫街、艺术西区</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">曾厝垵夜市：土笋冻、烤生蚝、花生汤，宿厦门</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">厦大需在微信小程序提前预约，周末名额紧张。沙坡尾日落时分最佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 泉州海丝一日</span>
+          <span class="d-desc">宋元中国的世界海洋商贸中心</span>
+          <span class="d-tag ">🛕 世遗日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">厦门站乘高铁至泉州站（约 30–40 分钟）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>开元寺</b>（免费）：东西塔、甘露戒坛，中国最大佛教寺院之一</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">西街美食：<strong>面线糊、姜母鸭、石花膏</strong></td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what"><b>清净寺</b>（免费）：中国现存最古老伊斯兰教寺之一；顺访天后宫</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>洛阳桥</b>（免费）：中国第一座跨海石桥，看桥墩与牡蛎固基</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返泉州站乘高铁赴福州（约 1.5h），宿三坊七巷附近</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">泉州 2021 年列入世界遗产「宋元中国的世界海洋商贸中心」，景点小而密，暴走即可。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 福州三坊七巷</span>
+          <span class="d-desc">明清建筑博物馆</span>
+          <span class="d-tag ">🏘 古厝日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>三坊七巷</b>（免费）：南后街 + 衣锦坊、文儒坊、郎官巷，看马鞍墙与闽都古厝</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">坊巷内午餐：<strong>佛跳墙、荔枝肉、鱼丸肉燕</strong></td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>林则徐纪念馆</b>（免费）或 严复故居、二梅书屋</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>上下杭</b>（免费）：老福州商埠风情，河畔散步看夜景</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：福州菜（太平燕、鼎边糊），宿福州</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">三坊七巷含 200 多处明清建筑，逛起来像翻开一本闽都建筑史。周末人较多，建议早到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 福州 → 武夷山</span>
+          <span class="d-desc">烟台山转场日</span>
+          <span class="d-tag ">🌉 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>烟台山</b>（免费）：万国建筑博览，老洋房 + 闽江视角</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">福州站乘高铁赴武夷山东站（约 2 小时）</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">入住<strong>三姑度假区</strong>（离景区最近）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">武夷宫 + 大王峰远眺，晚上看《印象大红袍》山水实景演出（可选）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：岚谷熏鹅、武夷山茶宴</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">高铁站是「武夷山东站」（南平市站），距景区约 20 分钟车程，别订错站。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 武夷山核心</span>
+          <span class="d-desc">九曲溪 + 天游峰</span>
+          <span class="d-tag ">⛰ 丹霞日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>九曲溪竹筏漂流</b>（130 元，需提前预约）：乘竹筏看九曲十八弯，约 90 分钟</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">武夷宫景区游览：宋街、柳永纪念馆</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：当地农家菜（红眼鱼、笋干）</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>天游峰</b>（武夷山大门票 + 观光车，联票约 140 元）：登峰俯瞰九曲溪，全程约 3 小时</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返回三姑度假区，泡脚休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">竹筏票非常抢手，务必提前 1–3 天在官方平台预订，雨天会停航。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 武夷山 → 土楼</span>
+          <span class="d-desc">茶区 + 转场南靖</span>
+          <span class="d-tag ">🍵 茶山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>大红袍景区</b>（含联票内）：看母树大红袍，走岩骨花香漫游道</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">可选：<b>一线天 / 虎啸岩</b>（体力型，可二选一）</td></tr>
+          <tr><td class="t-time">12:30</td><td class="t-what">午餐后前往武夷山东站</td></tr>
+          <tr><td class="t-time">13:30–18:00</td><td class="t-what">高铁经福州/厦门转南靖站（约 4–5h），抵南靖土楼景区</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">入住<strong>土楼民宿</strong>（田螺坑/云水谣），体验土楼人家生活</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">武夷山到南靖需中转，全程较久，安排成半天转场日比较从容。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 南靖土楼</span>
+          <span class="d-desc">田螺坑 + 云水谣</span>
+          <span class="d-tag ">🏘 土楼日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>田螺坑土楼群</b>（门票 90 元）：「四菜一汤」经典观景台，俯瞰五座土楼</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>裕昌楼</b>（东倒西歪楼）+ 塔下村，午餐农家菜</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>云水谣古镇</b>（门票 90 元）：和贵楼、怀远楼、大水车，溪畔漫步</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐在民宿尝<strong>客家菜（酿豆腐、梅菜扣肉）</strong></td></tr>
+          </tbody></table></div>
+        <div class="hl-note">田螺坑与云水谣相距约 10 公里，建议包车一天。土楼民宿多由本地人经营，很有特色。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">告别土楼回家</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">清晨再逛逛塔下村/土楼晨景，采购伴手礼（茶叶、客家米酒）</td></tr>
+          <tr><td class="t-time">10:30</td><td class="t-what">包车返回厦门（约 2.5h），或经南靖站转高铁</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">抵达厦门后午餐，采购伴手礼（鼓浪屿馅饼、沙茶酱）</td></tr>
+          <tr><td class="t-time">14:30–18:00</td><td class="t-what">赴厦门北站/高崎机场，返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伴手礼推荐：鼓浪屿馅饼、武夷岩茶（大红袍/肉桂）、沙茶酱、客家米酒、铁观音。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-4.jpg" alt="鼓浪屿" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">鼓浪屿 <small>轮渡 + 联票约 130 元</small></div>
+          <div class="sc-feat">海上花园世界遗产。<b>日光岩、菽庄花园、万国建筑</b>，需乘轮渡实名购票。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚢 厦鼓码头乘船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-1.jpg" alt="福建土楼（南靖）" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">福建土楼（南靖） <small>田螺坑 90 元 / 云水谣 90 元</small></div>
+          <div class="sc-feat">客家民居奇观。<b>四菜一汤、和贵楼、怀远楼</b>，世界文化遗产。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 1 天 · 🚗 包车游览</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-6.jpg" alt="武夷山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">武夷山 <small>大门票 + 观光车约 140 元</small></div>
+          <div class="sc-feat">丹霞碧水 + 岩茶原产地。<b>九曲溪竹筏、天游峰</b>，双遗产地。</div>
+          <div class="sc-meta">📅 7:30–17:00 · ⏱ 2 天 · 🚄 武夷山东站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-3.jpg" alt="三坊七巷" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">三坊七巷 <small>免费（部分故居收小票）</small></div>
+          <div class="sc-feat">明清古厝博物馆。<b>南后街、衣锦坊、林则徐纪念馆</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚇 福州地铁东街口</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-7.jpg" alt="泉州古城" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">泉州古城 <small>开元寺等免费</small></div>
+          <div class="sc-feat">宋元世界海洋商贸中心。<b>开元寺东西塔、清净寺</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚄 泉州站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-5.jpg" alt="厦门环岛路" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">厦门环岛路 <small>免费</small></div>
+          <div class="sc-feat">最美滨海公路。<b>骑行、白城沙滩、日落</b>，海景一绝。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚲 骑行或公交</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-cover.jpg" alt="沙坡尾/曾厝垵" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">沙坡尾/曾厝垵 <small>免费</small></div>
+          <div class="sc-feat">老渔港与文创村落。<b>艺术西区、猫街、夜市小吃</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3h · 🚌 公交直达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fujian/fujian-2.jpg" alt="福州烟台山" loading="lazy"><span class="sc-tag skip">可跳过</span></div>
+        <div class="sc-body">
+          <div class="sc-name">福州烟台山 <small>免费</small></div>
+          <div class="sc-feat">万国建筑博览。<b>老洋房、闽江视角</b>，适合拍照与闲逛。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚇 地铁烟台山站</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（鼓浪屿灯塔、土楼、茶园、古厝、闽南滨海均为实景或同主题示意），用于页面配图。更多免费景点：南普陀寺、鼓山、五老峰、洛阳桥。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为旺季参考价，以现场为准。交通按高铁往返计（从华东周边城市出发约 1200–1800 元），不同出发地浮动较大。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（4000–5000）</th>
+<th>标准（6000–8000）</th>
+<th>舒适（9500–13000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>高铁约 1200–1600</td>
+<td>高铁/飞机约 1600–2600</td>
+<td>飞机 + 接送约 3200–4500</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/快捷 900–1300</td>
+<td>连锁酒店 2000–3000</td>
+<td>海景/土楼精品 4800–6500</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 350</td>
+<td>含竹筏联票约 600</td>
+<td>全含 + 演出约 1100</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>650–900</td>
+<td>1300–1700（含海鲜）</td>
+<td>2200–3000（老字号/茶宴）</td>
+</tr>
+<tr>
+<td>省内交通</td>
+<td>高铁 + 公交 400–550</td>
+<td>高铁 + 包车 750–1000</td>
+<td>包车/拼车 1300–1800</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 7000 元）</span>
+      高铁往返 2000 + 住宿 9 晚 2400（双人分 4800）+ 门票联票 600 + 餐饮 1500 + 省内交通 800 ≈ <strong>7300 元</strong>。主要浮动项是武夷山竹筏联票与包车费用，提前订可省 500–1000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 只看精华的 6 天版</h3>
+
+
+    <ul>
+
+      <li>D1 厦门 + 鼓浪屿</li>
+
+      <li>D2 泉州</li>
+
+      <li>D3 福州三坊七巷</li>
+
+      <li>D4 武夷山（竹筏+天游峰）</li>
+
+      <li>D5 南靖土楼</li>
+
+      <li>D6 返程</li>
+
+    </ul>
+
+    <h3>7.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：厦门科技馆、鼓浪屿钢琴博物馆、泉州海外交通史博物馆、武夷山竹筏（小朋友最爱）。土楼行程放慢，一晚够玩。夏天空调房一定要提前订。</p>
+
+    <h3>7.3 夏季台风季版</h3>
+
+
+    <p>7–9 月台风可能停航停筏，出发前 1 周关注气象。若遇台风，鼓浪屿轮渡和九曲溪竹筏是第一批取消的项目，行程弹性安排。酒店淡季价低 20–30%。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 福建 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>高铁（推荐）</td>
+<td>视出发地 2–9h</td>
+<td>二等座 300–1800 元</td>
+<td>厦门北/福州站枢纽，班次密集</td>
+</tr>
+<tr>
+<td>飞机</td>
+<td>视出发地 1.5–3.5h</td>
+<td>400–2200 元</td>
+<td>厦门高崎 / 福州长乐两场</td>
+</tr>
+<tr>
+<td>自驾</td>
+<td>视出发地</td>
+<td>高速费 + 油费</td>
+<td>省内山路多，土楼段建议租车</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 省内交通核心提醒</span>
+      福建高铁以厦门、福州为双枢纽，<strong>厦门↔泉州约 40 分钟、泉州↔福州约 1.5 小时</strong>，城际极方便。去武夷山乘高铁到「武夷山东站」，去南靖土楼乘高铁到「南靖站」再转车。
+    </div>
+
+    <h3>8.2 省内交通</h3>
+    <ul>
+      <li><strong>高铁/动车</strong>：厦门—泉州—福州一线，班次密、票价低</li>
+      <li><strong>包车/拼车</strong>：南靖土楼景区之间必备，约 200–300 元/天</li>
+      <li><strong>公交</strong>：厦门公交发达，鼓浪屿禁机动车</li>
+      <li><strong>打车</strong>：市区短途 15–40 元</li>
+      <li><strong>去武夷山</strong>：高铁到武夷山东站 + 景区直通车</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>厦门中山路/曾厝垵</td>
+<td>快捷 250–450 / 海景 500–1200</td>
+<td>近海滨、美食与公交</td>
+<td>旺季一房难求</td>
+</tr>
+<tr>
+<td>泉州西街附近</td>
+<td>民宿 250–400</td>
+<td>近开元寺，古城市井气</td>
+<td>老房子隔音一般</td>
+</tr>
+<tr>
+<td>福州三坊七巷旁</td>
+<td>快捷 250–400</td>
+<td>近古厝与地铁</td>
+<td>离车站稍远</td>
+</tr>
+<tr>
+<td>武夷山三姑度假区</td>
+<td>民宿 250–500 / 星级 600–1200</td>
+<td>离景区最近，茶山环绕</td>
+<td>旺季价格翻倍</td>
+</tr>
+<tr>
+<td>南靖土楼民宿</td>
+<td>120–300</td>
+<td>住进土楼，客家氛围浓</td>
+<td>条件较简朴</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>沙茶面、海蛎煎（闽南招牌）</li>
+          <li>佛跳墙、荔枝肉（福州菜）</li>
+          <li>土笋冻、姜母鸭（厦门泉州）</li>
+          <li>面线糊、石花膏（泉州早餐）</li>
+        </ul>
+        <h3>🍵 茶文化</h3>
+        <ul>
+          <li>武夷岩茶（大红袍/肉桂/水仙）</li>
+          <li>安溪铁观音</li>
+          <li>武夷山茶宴、岚谷熏鹅</li>
+          <li>茶室体验：九曲溪畔品茶</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>曾厝垵夜市（烤生蚝、花生汤）</li>
+          <li>西街小吃（烧肉粽、蚵仔煎）</li>
+          <li>三坊七巷鱼丸肉燕、鼎边糊</li>
+          <li>鼓浪屿馅饼、沙茶酱</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>厦门：中山路、曾厝垵、沙坡尾</li>
+          <li>泉州：西街、钟楼周边</li>
+          <li>福州：三坊七巷、上下杭</li>
+          <li>武夷山：三姑度假区</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 海鲜按斤称时先问清价格与做法费；② 景区周边「老字号」多为游客店，认准居民区小店；③ 土笋冻是沙虫冻，接受不了可换海蛎煎；④ 佛跳墙适合多人点，人少选小份。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝</li>
+        <li>舒适步行鞋（鼓浪屿全靠走）</li>
+        <li>防晒霜、遮阳帽（夏季）</li>
+        <li>轻便雨具（多雨多雾）</li>
+      </ul>
+      <ul>
+        <li>鼓浪屿轮渡提前 2–3 天购票</li>
+        <li>武夷山竹筏票提前 1–3 天订</li>
+        <li>厦门大学预约（微信小程序）</li>
+        <li>关注台风季天气与竹筏停航</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>鼓浪屿轮渡是实名购票</strong>，忘带身份证无法乘船；② 土楼景区分散，别贪心一天跑两个大景区；③ 武夷山雨天竹筏停航，行程留缓冲；④ 夏季台风季出行关注航班与高铁动态。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      福建是「<strong>山海双遗产</strong>」的样板——厦门看海、鼓浪屿看万国建筑、泉州看海丝、福州看闽都、武夷山看丹山碧水、土楼看客家智慧，10 天一条环线刚好把福建的厚度走完。提前抢好鼓浪屿轮渡和竹筏票，剩下的就是慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "D1-D5 沿海线 · 厦门→鼓浪屿→泉州→福州",
+    "pts": [
+      [
+        24.4798,
+        118.0894
+      ],
+      [
+        24.4439,
+        118.066
+      ],
+      [
+        24.8741,
+        118.6757
+      ],
+      [
+        26.0745,
+        119.2965
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "D6-D9 内陆线 · 福州→武夷山→南靖土楼",
+    "pts": [
+      [
+        26.0745,
+        119.2965
+      ],
+      [
+        27.6567,
+        117.9579
+      ],
+      [
+        24.594,
+        117.0615
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 24.4798,
+    "lng": 118.0894,
+    "name": "厦门岛",
+    "t": "D1/D3 · 环岛路、南普陀",
+    "fee": "免费–90 元",
+    "note": "环岛路、曾厝垵、沙坡尾入口"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 24.4439,
+    "lng": 118.066,
+    "name": "鼓浪屿",
+    "t": "D2 全天",
+    "fee": "轮渡 + 联票约 130 元",
+    "note": "日光岩、菽庄花园，需实名购票"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 24.8741,
+    "lng": 118.6757,
+    "name": "泉州古城",
+    "t": "D4 全天",
+    "fee": "开元寺等免费",
+    "note": "开元寺、清净寺、洛阳桥"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 26.0835,
+    "lng": 119.2965,
+    "name": "三坊七巷",
+    "t": "D5 全天",
+    "fee": "免费",
+    "note": "南后街、林则徐纪念馆"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 27.6567,
+    "lng": 117.9579,
+    "name": "武夷山",
+    "t": "D7–D8",
+    "fee": "联票约 140 元",
+    "note": "九曲溪竹筏、天游峰"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 24.594,
+    "lng": 117.0615,
+    "name": "南靖土楼",
+    "t": "D9 全天",
+    "fee": "田螺坑 90 元",
+    "note": "田螺坑、云水谣、裕昌楼"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 24.45,
+    "lng": 118.12,
+    "name": "环岛路",
+    "t": "D1 傍晚 · 2h",
+    "fee": "免费",
+    "note": "骑行、白城沙滩日落"
+  },
+  {
+    "num": 8,
+    "prio": "skip",
+    "lat": 26.05,
+    "lng": 119.32,
+    "name": "烟台山",
+    "t": "D6 上午 · 2h",
+    "fee": "免费",
+    "note": "万国建筑、闽江视角"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[23.9, 115.9], [28.1, 120.4]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>D1-D5 沿海线<br><span class=\"sw\" style=\"background:#c9820e\"></span>D6-D9 内陆线（武夷山-土楼）<br><span class=\"sw dash\"></span>高铁转场段</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

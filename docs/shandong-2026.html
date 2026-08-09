@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 山东 10 天全景攻略 · 齐鲁山海深度游</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #1e6e8a;
+    --red-light: #2a87a6;
+    --gold: #d9a441;
+    --ink: #26343a;
+    --muted: #6f7d84;
+    --bg: #f4f8f8;
+    --card: #ffffff;
+    --line: #dce7ea;
+    --blue: #145a72;
+    --cover1: #0f4a5e;
+    --ov1: rgba(8,40,52,.88);
+    --ov2: rgba(18,74,92,.72);
+    --ov3: rgba(30,110,138,.38);
+    --ov4: rgba(60,140,170,.20);
+    --key-bg: #fdf6e3;
+    --info-bg: #edf5f7;
+    --head-bg: rgba(30,110,138,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/shandong/shandong-cover.jpg" alt="山东旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 泰山 + 孔庙 + 半岛海岸</div>
+      <h1>山东 10 天全景攻略</h1>
+      <div class="sub">济南 ⇄ 泰山 ⇄ 曲阜 ⇄ 青岛 ⇄ 烟台威海 ⇄ 返程 · 圣山儒海深度游</div>
+      <div class="meta">
+        <span>🚄 行程链：济南 → 泰山 → 曲阜 → 青岛 → 烟台 → 威海 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚇 省内主力：高铁 + 城际铁路 + 沿海公路</span>
+        <span>🏛 主题：五岳之首 + 儒家圣地 + 黄金海岸</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">济南</span>
+      <span class="arrow">→</span>
+      <span class="node">泰山</span>
+      <span class="arrow">→</span>
+      <span class="node">曲阜</span>
+      <span class="arrow">→</span>
+      <span class="node">青岛</span>
+      <span class="arrow">→</span>
+      <span class="node">烟台</span>
+      <span class="arrow">→</span>
+      <span class="node">威海</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      山东是「<strong>一山一水一圣人</strong>」加黄金海岸的复合目的地：泰山看日出、曲阜拜孔子、青岛烟台威海吹海风、济南看泉水。<strong>10 天从鲁中到胶东半岛是一条顺路环线</strong>：前 3 天济南—泰山—曲阜文化段，后 6 天青岛—烟台—威海海滨段。高铁串起全程，节奏松弛。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（济南进青岛出，文化+海滨双段）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天从威海返青岛/烟台，晚间返程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>济南 → 泰山 → 曲阜 → 青岛 → 烟台 → 威海 → 青岛</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 4200–5200 ／ 标准 6200–8200 ／ 舒适 9800–13500</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 泰山日出需提前看天气与预约 ② 青岛旺季住宿提前 2 周 ③ 曲阜三孔联票提前购</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>5–10 月最佳；夏季海滨旺季人多，秋冬海风大但人少价低</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>山东省内高铁直达主要城市，无需办交通卡</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>泰山看日出要夜爬或凌晨上山</strong>，需提前预约并看准天气，山顶与山下温差大，棉衣是刚需（可山顶租）。② 胶东半岛青岛、烟台、威海之间看着近，<strong>实际沿海线高铁车程 1.5–3 小时</strong>，别把三个城市排进同一整天，每天最多转一个城。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏。文化段节奏紧凑，海滨段放缓，每天最多一次转场。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵济南</td>
+<td>抵达济南，傍晚趵突泉夜游 + 泉城广场</td>
+<td>济南</td>
+<td>抵达 + 预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>济南：趵突泉 → 大明湖 → 芙蓉街 → 下午高铁赴泰安</td>
+<td>泰安</td>
+<td>泉城漫步</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>泰山（全天）：红门/天外村上山，南天门、玉皇顶看日落</td>
+<td>泰安/山上</td>
+<td>五岳之首</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>曲阜三孔（全天）：孔庙 → 孔府 → 孔林，宿曲阜</td>
+<td>曲阜</td>
+<td>儒家圣地</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>高铁赴青岛：栈桥 → 八大关 → 五四广场夜景</td>
+<td>青岛</td>
+<td>转场滨海</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>青岛：崂山（巨峰/太清）或 信号山 + 啤酒博物馆</td>
+<td>青岛</td>
+<td>山海青岛</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>赴烟台：蓬莱阁 → 长岛/八仙过海（可选），宿蓬莱</td>
+<td>烟台蓬莱</td>
+<td>仙境海岸</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>赴威海：刘公岛 → 环海路 → 悦海公园灯塔</td>
+<td>威海</td>
+<td>最宜居海岸</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>威海：成山头/神雕山动物园（可选）→ 那香海海边</td>
+<td>威海</td>
+<td>半岛东端</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午威海海滨，午后返青岛/烟台，晚间返程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      泰山日出对天气要求极高，连续阴天时可调整到 D4 前，把曲阜提前。半岛三个城市如果赶时间，烟台威海可合并在 D7–D9 各一天半。带孩子可去蓬莱海洋极地世界、青岛海底世界。海边看心情随时加减。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达济南</span>
+          <span class="d-desc">入住泉城广场附近</span>
+          <span class="d-tag alt">🚄 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">抵达济南（高铁到济南站/济南西站，飞机到遥墙机场），地铁进城</td></tr>
+          <tr><td class="t-time">17:30–18:30</td><td class="t-what">办理入住（推荐泉城广场/大明湖一带）</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what"><b>趵突泉夜游</b>（门票 40 元）：灯光下的泉水 + <strong>泉城广场喷泉</strong></td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">晚餐：把子肉、甜沫，回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">济南号称「泉城」，趵突泉、黑虎泉、五龙潭都值得看，泉城广场是城市中心地标。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 济南 → 泰安</span>
+          <span class="d-desc">泉城收尾转场</span>
+          <span class="d-tag ">🏞 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>趵突泉</b>（40 元）：天下第一泉，三股泉水喷涌</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><b>大明湖</b>（免费）：泉城明珠，四面荷花三面柳</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">芙蓉街/宽厚里午餐：油旋、甜沫、把子肉</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">乘高铁赴泰安（约 40 分钟），入住红门/天外村附近</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">泰安老街/岱庙外围漫步，采购登山补给</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：泰山三美（白菜豆腐水），早点休息准备 D3</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">看日出的攻略通常 D2 晚 22:00–24:00 开始夜爬（约 4–6 小时到玉皇顶）；不看日出可 D3 上午再上山。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 泰山（全天）</span>
+          <span class="d-desc">五岳之首</span>
+          <span class="d-tag ">⛰ 泰山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">04:30–08:00</td><td class="t-what">夜爬或凌晨乘索道/观光车上山，<b>玉皇顶看日出</b>（需提前看天气）</td></tr>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>南天门 + 天街</b>：泰山经典打卡地，瞻鲁台远眺</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">下山逛<b>碧霞祠、孔子庙</b>，泰山石刻文化</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：山顶简餐或自带干粮</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">中天门/天外村下山（索道或步行），回酒店休息</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">晚餐：泰安炒鸡，早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">泰山门票 115 元（含部分观光车），索道单程 100 元。红门—中天门—南天门是经典登山道，全程约 5 小时。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 曲阜三孔</span>
+          <span class="d-desc">儒家圣地一日</span>
+          <span class="d-tag ">🏛 儒风日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">泰安乘高铁赴曲阜东站（约 40 分钟），转车至三孔景区</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>孔庙</b>（三孔联票 140 元）：大成殿、杏坛、十三碑亭，天下第一庙</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：孔府家宴简版（诗礼银杏、麒麟玉书）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>孔府</b>：孔子嫡系后裔府邸，明故城</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>孔林</b>：孔子及其家族墓地，古木参天</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿曲阜，晚餐尝曲阜熏豆腐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">三孔联票含孔庙、孔府、孔林，各点相距约 1.5 公里，可乘马车或步行。晨钟暮鼓的开城仪式值得一看。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 赴青岛</span>
+          <span class="d-desc">转场滨海青岛</span>
+          <span class="d-tag ">🌊 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">曲阜东站乘高铁赴青岛（约 2.5–3h），入住市南/五四广场</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">午餐：青岛海鲜（辣炒蛤蜊、鲅鱼水饺）</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what"><b>栈桥</b>（免费）：青岛地标，海鸥成群</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>八大关</b>（免费）：万国建筑，花石楼、公主楼</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what"><b>五四广场夜景</b>：「五月的风」雕塑 + 浮山湾灯光秀</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">青岛是半岛起点，市南区景点密集，栈桥—八大关—五四广场一线步行可串起。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 青岛</span>
+          <span class="d-desc">崂山或市区</span>
+          <span class="d-tag ">⛰ 山海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">选择 A：乘地铁/大巴赴<strong>崂山</strong>（南线太清宫或巨峰），约 1h</td></tr>
+          <tr><td class="t-time">09:30–15:00</td><td class="t-what"><b>崂山太清景区</b>（门票 90–130 元）：太清宫、垭口、仰口，山海一线</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">崂山农家宴：石花菜凉粉、崂山绿茶</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">回市区后逛<b>信号山/小鱼山</b>俯瞰老城红瓦绿树</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：青岛啤酒 + 烤肉，宿青岛</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">不想去崂山可选啤酒博物馆（60 元）+ 台东步行街 + 天主教堂。崂山南线适合看海，巨峰线适合爬山。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 烟台蓬莱</span>
+          <span class="d-desc">仙境海岸</span>
+          <span class="d-tag ">🏛 仙岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">青岛乘高铁赴烟台南站（约 1.5–2h），转车赴蓬莱</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><b>蓬莱阁</b>（联票 100 元）：八仙过海传说，蓬莱水城</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：蓬莱小面、鲅鱼饺子</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">可选：<b>长岛</b>（船票 + 景点约 200 元）或 三仙山/八仙过海景区</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿蓬莱/烟台，晚餐海鲜大排档</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蓬莱阁是中国四大名楼之一，海市蜃楼在春夏之交最可能遇到（看运气）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 威海</span>
+          <span class="d-desc">最宜居城市海岸</span>
+          <span class="d-tag ">🌊 滨海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">烟台乘高铁/大巴赴威海（约 1–1.5h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>刘公岛</b>（门票 + 船票约 130 元）：甲午战争博物馆，海上仙山</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：威海海鲜（海肠捞饭、温拌海螺）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>环海路</b>骑行：悦海公园灯塔、威海之窗</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">宿威海，晚餐鲅鱼水饺 + 威海无花果</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">威海连续多年被评为中国最宜居城市之一，环海路骑行是精华体验，租车约 30 元/小时。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 半岛东端</span>
+          <span class="d-desc">成山头与那香海</span>
+          <span class="d-tag ">🗾 东极日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">包车/大巴赴<strong>成山头</strong>（约 1.5h）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>成山头</b>（门票 150 元）：中国海岸线最东端，「天尽头」</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：荣成海鲜</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>那香海</b>（免费）：钻石沙滩、风车海岸，海边漫步</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返威海市区，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">成山头号称「中国的好望角」，与韩国隔海相望。神雕山动物园也在附近，带娃可选。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">告别半岛回家</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">上午威海国际海水浴场/幸福门，采购伴手礼（威海无花果干、海鲜干货）</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">乘高铁返回青岛（约 1.5–2h）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">青岛午餐，采购伴手礼（青岛啤酒、崂山绿茶、海鲜干货）</td></tr>
+          <tr><td class="t-time">14:00–18:00</td><td class="t-what">赴青岛北站/胶东机场，返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伴手礼推荐：青岛啤酒、崂山绿茶、烟台苹果、威海无花果干、周村烧饼、鲁味酱菜。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-3.jpg" alt="泰山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">泰山 <small>115 元（索道另计）</small></div>
+          <div class="sc-feat">五岳之首。<b>日出云海、南天门、玉皇顶</b>，帝王封禅圣地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚄 高铁至泰安</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-4.jpg" alt="曲阜三孔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">曲阜三孔 <small>联票 140 元</small></div>
+          <div class="sc-feat">儒家文化圣地。<b>孔庙大成殿、孔府、孔林</b>，世界遗产。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 1 天 · 🚄 曲阜东站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-cover.jpg" alt="青岛八大关" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">青岛八大关 <small>免费（部分楼另收费）</small></div>
+          <div class="sc-feat">万国建筑博览。<b>花石楼、公主楼、红瓦绿树</b>，海边漫步。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚇 地铁太平角</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-1.jpg" alt="栈桥" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">栈桥 <small>免费</small></div>
+          <div class="sc-feat">青岛百年地标。<b>回澜阁、海鸥、老城天际线</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 🚇 青岛站步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-2.jpg" alt="崂山" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">崂山 <small>90–130 元</small></div>
+          <div class="sc-feat">海上第一名山。<b>太清宫、巨峰、仰口</b>，山海一线。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 1 天 · 🚌 景区直通车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-6.jpg" alt="蓬莱阁" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蓬莱阁 <small>联票 100 元</small></div>
+          <div class="sc-feat">八仙过海传说。<b>蓬莱水城、古建群</b>，中国四大名楼。</div>
+          <div class="sc-meta">📅 8:00–17:30 · ⏱ 半天 · 🚄 烟台转车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-5.jpg" alt="威海刘公岛" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">威海刘公岛 <small>门票 + 船票约 130 元</small></div>
+          <div class="sc-feat">海上仙山 + 甲午纪念地。<b>甲午战争博物馆</b>。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 半天 · 🚢 威海码头</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shandong/shandong-7.jpg" alt="成山头" loading="lazy"><span class="sc-tag skip">可跳过</span></div>
+        <div class="sc-body">
+          <div class="sc-name">成山头 <small>150 元</small></div>
+          <div class="sc-feat">中国海岸最东端。<b>天尽头、好望角</b>，海天一色。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚗 威海包车</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（青岛海岸、崂山、古建屋顶、山景云海、灯塔均为实景或同主题示意），用于页面配图。更多免费景点：大明湖、五四广场、环海路、那香海。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为旺季参考价，以现场为准。交通按高铁往返计（从华东周边城市出发约 1200–1700 元），不同出发地浮动较大。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（4200–5200）</th>
+<th>标准（6200–8200）</th>
+<th>舒适（9800–13500）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>高铁约 1200–1600</td>
+<td>高铁/飞机约 1600–2600</td>
+<td>飞机 + 接送约 3200–4500</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/快捷 950–1350</td>
+<td>连锁酒店 2100–2900</td>
+<td>海景/度假酒店 4800–6500</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 400</td>
+<td>含索道/船票约 700</td>
+<td>全含 + 演出约 1200</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>650–900</td>
+<td>1300–1700（含海鲜）</td>
+<td>2200–3000（老字号/海鲜宴）</td>
+</tr>
+<tr>
+<td>省内交通</td>
+<td>高铁 + 公交 450–600</td>
+<td>高铁 + 打车 850–1100</td>
+<td>包车 1400–1900</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 7000 元）</span>
+      高铁往返 2000 + 住宿 9 晚 2500（双人分 5000）+ 门票含索道船票 700 + 餐饮 1500 + 省内交通 900 ≈ <strong>7600 元</strong>。主要浮动项是半岛段城际交通与海滨住宿，提前订可省 600–1200 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 只看精华的 6 天版</h3>
+
+
+    <ul>
+
+      <li>D1 济南（趵突泉+大明湖）</li>
+
+      <li>D2 泰山</li>
+
+      <li>D3 曲阜三孔</li>
+
+      <li>D4 青岛（栈桥+八大关）</li>
+
+      <li>D5 崂山</li>
+
+      <li>D6 返程</li>
+
+    </ul>
+
+    <h3>7.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：青岛海底世界、啤酒博物馆、蓬莱海洋极地世界、威海神雕山野生动物园。泰山可乘索道上下、少爬台阶；三孔用马车代步。</p>
+
+    <h3>7.3 冬季错峰版</h3>
+
+
+    <p>11 月–次年 3 月海滨人少、酒店便宜 30–50%，海风大需厚外套；泰山雪景与冬雾凇很美，但要防滑。曲阜全年适合，冬季游客最少。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 山东 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>高铁（推荐）</td>
+<td>视出发地 1.5–9h</td>
+<td>二等座 300–1900 元</td>
+<td>济南/青岛双枢纽，京沪高铁沿线</td>
+</tr>
+<tr>
+<td>飞机</td>
+<td>视出发地 1.5–3.5h</td>
+<td>400–2300 元</td>
+<td>青岛胶东机场、济南遥墙机场</td>
+</tr>
+<tr>
+<td>自驾</td>
+<td>视出发地</td>
+<td>高速费 + 油费</td>
+<td>半岛沿海公路适合自驾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 省内交通核心提醒</span>
+      山东高铁密布，<strong>济南—泰安约 40 分钟、泰安—曲阜约 40 分钟、青岛—烟台约 1.5–2 小时、烟台—威海约 1 小时</strong>。青岛、烟台、威海三个沿海城市之间的城际铁路班次多，提前 1 天购票即可。
+    </div>
+
+    <h3>8.2 省内交通</h3>
+    <ul>
+      <li><strong>高铁/城际</strong>：济南—泰安—曲阜—青岛—烟台—威海全线通高铁</li>
+      <li><strong>地铁</strong>：济南、青岛有地铁，覆盖主要景点</li>
+      <li><strong>打车</strong>：市区短途 10–30 元，半岛城市打车方便</li>
+      <li><strong>骑行</strong>：青岛环海路、威海环海路骑行体验绝佳</li>
+      <li><strong>包车</strong>：成山头等远郊景点建议包车，约 300 元/天</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>济南泉城广场</td>
+<td>快捷 250–450 / 星级 500–1100</td>
+<td>近趵突泉、大明湖</td>
+<td>旺季房源紧俏</td>
+</tr>
+<tr>
+<td>泰安红门/天外村</td>
+<td>快捷 200–400</td>
+<td>近泰山登山口</td>
+<td>看日出需早起</td>
+</tr>
+<tr>
+<td>曲阜三孔附近</td>
+<td>民宿 200–400</td>
+<td>近景区、儒风氛围</td>
+<td>选择比大城市少</td>
+</tr>
+<tr>
+<td>青岛市南/五四广场</td>
+<td>快捷 300–500 / 海景 600–1400</td>
+<td>近栈桥、八大关、夜景</td>
+<td>旺季海景房贵</td>
+</tr>
+<tr>
+<td>威海环翠区</td>
+<td>快捷 250–450 / 海景 500–1100</td>
+<td>近环海路、最宜居</td>
+<td>冬春较冷清</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>青岛啤酒 + 辣炒蛤蜊</li>
+          <li>鲅鱼水饺、海肠捞饭</li>
+          <li>济南把子肉、糖醋鲤鱼</li>
+          <li>泰安三美（白菜豆腐水）</li>
+        </ul>
+        <h3>🥮 伴手礼</h3>
+        <ul>
+          <li>青岛啤酒、崂山绿茶</li>
+          <li>烟台苹果、莱阳梨</li>
+          <li>威海无花果干、海鲜干货</li>
+          <li>周村烧饼、鲁味酱菜</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>青岛台东夜市（烤鱿鱼、脂渣）</li>
+          <li>济南芙蓉街（油旋、甜沫）</li>
+          <li>烟台焖子、蓬莱小面</li>
+          <li>威海鲅鱼煎饼、无花果</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>青岛：台东、云霄路海鲜街</li>
+          <li>济南：芙蓉街、宽厚里</li>
+          <li>烟台：蓬莱美食街、海边大排档</li>
+          <li>威海：国际海水浴场周边</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 青岛海鲜按斤称，点菜先问清价格与加工费（加工费另收）；② 泰山山顶餐饮贵，自备干粮省钱；③ 烟台焖子和青岛脂渣都是本地人爱吃的小吃，游客店做的不地道；④ 崂山绿茶景区买贵，到茶产区买更划算。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝</li>
+        <li>舒适步行鞋（泰山/三孔靠走）</li>
+        <li>防晒霜、墨镜（海滨）</li>
+        <li>薄外套/棉衣（泰山看日出）</li>
+      </ul>
+      <ul>
+        <li>泰山门票与索道提前 1–3 天订</li>
+        <li>泰山看日出提前看天气</li>
+        <li>青岛/威海旺季住宿提前 2 周</li>
+        <li>三孔联票、刘公岛船票提前购</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>泰山日出需要碰运气</strong>，阴雨天改期或改看日景，别赌；② 海滨城市早晚温差大，夏季也带件薄外套；③ 青岛栈桥海鸥季节（11 月–次年 3 月）人挤人，想拍照早去；④ 三孔景区开城仪式、曲阜六艺城表演有时间表，出行前查好。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      山东是「<strong>文化 + 海岸</strong>」的双面选手——泰山看日出、曲阜拜孔子、济南赏泉水，然后一路向东奔青岛的啤酒、烟台的仙境、威海的海风，10 天刚好把齐鲁大地的厚度与胶东半岛的辽阔走完。提前订好泰山票与海滨住宿，剩下的就是慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "D1-D4 鲁中文化线 · 济南→泰山→曲阜",
+    "pts": [
+      [
+        36.6512,
+        117.1201
+      ],
+      [
+        36.253,
+        117.1048
+      ],
+      [
+        35.5908,
+        116.9856
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "D5-D10 半岛海岸线 · 青岛→烟台→威海",
+    "pts": [
+      [
+        36.0671,
+        120.3826
+      ],
+      [
+        37.4645,
+        121.4479
+      ],
+      [
+        37.5131,
+        122.1161
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 36.6512,
+    "lng": 117.1201,
+    "name": "济南",
+    "t": "D1–D2",
+    "fee": "趵突泉 40 元",
+    "note": "趵突泉、大明湖、泉城广场"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 36.253,
+    "lng": 117.1048,
+    "name": "泰山",
+    "t": "D3 全天",
+    "fee": "115 元",
+    "note": "玉皇顶日出、南天门"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 35.5908,
+    "lng": 116.9856,
+    "name": "曲阜三孔",
+    "t": "D4 全天",
+    "fee": "联票 140 元",
+    "note": "孔庙、孔府、孔林"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 36.0671,
+    "lng": 120.3826,
+    "name": "青岛",
+    "t": "D5–D6",
+    "fee": "八大关免费",
+    "note": "栈桥、八大关、五四广场"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 36.1965,
+    "lng": 120.6231,
+    "name": "崂山",
+    "t": "D6 全天",
+    "fee": "90–130 元",
+    "note": "太清宫、巨峰、仰口"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 37.8095,
+    "lng": 120.7529,
+    "name": "蓬莱阁",
+    "t": "D7",
+    "fee": "联票 100 元",
+    "note": "八仙过海、蓬莱水城"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 37.5095,
+    "lng": 122.1752,
+    "name": "威海",
+    "t": "D8–D9",
+    "fee": "刘公岛 130 元",
+    "note": "刘公岛、环海路、悦海公园"
+  },
+  {
+    "num": 8,
+    "prio": "skip",
+    "lat": 37.3921,
+    "lng": 122.6895,
+    "name": "成山头",
+    "t": "D9 上午 · 3h",
+    "fee": "150 元",
+    "note": "中国海岸线最东端"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[35.1, 116.4], [37.9, 122.9]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>D1-D4 鲁中文化线<br><span class=\"sw\" style=\"background:#c9820e\"></span>D5-D10 半岛海岸线<br><span class=\"sw dash\"></span>城际高铁段</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

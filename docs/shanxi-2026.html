@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 山西 10 天全景攻略 · 石窟古建与晋商大院</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #8a5a2b;
+    --red-light: #a5743e;
+    --gold: #d9b06a;
+    --ink: #3c2e22;
+    --muted: #8f7d6a;
+    --bg: #faf6f0;
+    --card: #ffffff;
+    --line: #ece0d0;
+    --blue: #6b4423;
+    --cover1: #3a2412;
+    --ov1: rgba(52,32,16,.88);
+    --ov2: rgba(138,90,43,.74);
+    --ov3: rgba(190,140,80,.38);
+    --ov4: rgba(220,180,130,.20);
+    --key-bg: #f5ead9;
+    --info-bg: #f7f0e4;
+    --head-bg: rgba(138,90,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/shanxi/shanxi-cover.jpg" alt="山西旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天深度 · 石窟 + 古建 + 黄河</div>
+      <h1>山西 10 天全景攻略</h1>
+      <div class="sub">山西 ⇄ 各地 · 云冈石窟 · 平遥古城 · 壶口瀑布</div>
+      <div class="meta">
+        <span>🚄 行程链：太原 → 大同 → 平遥 → 壶口 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>🚆 省内主力：高铁（太原—大同 1.5h）+ 包车</span>
+        <span>🏛 主题：石窟佛像 + 千年木构 + 晋商大院</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">太原</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">大同</span>
+      <span class="arrow">→</span>
+      <span class="node">悬空寺</span>
+      <span class="arrow">→</span>
+      <span class="node">平遥古城</span>
+      <span class="arrow">→</span>
+      <span class="node">王家大院</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">壶口瀑布</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      山西是「<strong>中国古建最密集的省份</strong>」，地上文物数量全国第一。一条 <b>南北纵贯线</b>串起所有精华：北边大同看云冈石窟、悬空寺，中部太原看晋祠，往南平遥古城与王家大院是晋商魂，最南端吉县的壶口瀑布则把黄河的咆哮端到眼前。10 天正好把「表里山河」从北走到南。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天 9 晚（太原 2 晚 + 大同 2 晚 + 平遥 2 晚 + 壶口 1 晚）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天下午/晚间返程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>太原 → 大同 → 悬空寺 → 平遥 → 王家大院 → 壶口 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 2800–3800 ／ 标准 4500–6000 ／ 舒适 7500–10000</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 悬空寺限量放票提前购 ② 云冈石窟上午错峰 ③ 壶口瀑布查汛期与开放</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>春秋最佳；冬季大同冷但游客少，壶口 12–2 月有冰瀑奇观</td>
+</tr>
+<tr>
+<td>交通卡</td>
+<td>太原—大同、太原—平遥均有高铁，壶口段需包车/大巴</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>悬空寺每日限流且排队极长</strong>，务必提前预约并按时间段到达，旺季可能排 2 小时以上。② <strong>山西景点之间车程远</strong>（大同—平遥约 300km），壶口瀑布一天之内往返太原很赶，建议在吉县住一晚看晨雾日出。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏。北段看石窟与悬崖古建，中段看晋祠与古城，南段收在黄河壶口，全程高铁 + 包车衔接。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵晋</td>
+<td>抵达太原，入住市区，晚上逛柳巷/食品街夜市</td>
+<td>太原</td>
+<td>抵达 + 太原夜市</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>晋祠 → 山西博物院（长信宫灯同级的镇馆之宝）</td>
+<td>太原</td>
+<td>三晋文脉</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>高铁赴大同，下午云冈石窟</td>
+<td>大同</td>
+<td>北魏石窟</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>悬空寺 → 恒山（或华严寺替代）</td>
+<td>大同</td>
+<td>悬崖古建</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>应县木塔 → 雁门关 → 返太原（包车）</td>
+<td>太原</td>
+<td>辽金木构</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>高铁赴平遥，平遥古城（城墙 + 县衙 + 日昇昌）</td>
+<td>平遥</td>
+<td>晋商古城</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>王家大院（或乔家大院），返平遥看《又见平遥》</td>
+<td>平遥</td>
+<td>晋商大院</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>包车赴吉县，壶口瀑布（山西侧）</td>
+<td>吉县</td>
+<td>黄河奇观</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>壶口日出 → 返太原（经临汾高铁）→ 太原夜市</td>
+<td>太原</td>
+<td>返程过渡</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>上午自由活动，下午返程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      喜欢佛教文化把恒山换成<strong>华严寺</strong>（辽代大雄宝殿）；时间紧可砍雁门关；带老人孩子建议恒山改乘索道、壶口段住两晚降低强度。五台山可替换壶口段（平遥→太原→五台山 3 天），但往返车程更远。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达太原</span>
+          <span class="d-desc">省城夜市开场</span>
+          <span class="d-tag alt">🚆 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">抵达太原（高铁至太原南站/武宿机场），市区入住</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">晚餐：山西面食（刀削面、剔尖、剪刀面）</td></tr>
+          <tr><td class="t-time">19:30–21:30</td><td class="t-what">柳巷 / 食品街夜市：沾片子、碗托、老陈醋体验店</td></tr>
+          <tr><td class="t-time">22:00</td><td class="t-what">回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">太原是山西高铁枢纽，太原南站班次密集。柳巷是老牌商圈，食品街集中了全省小吃，先在这里建立「山西味觉初印象」。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 晋祠 + 山西博物院</span>
+          <span class="d-desc">三晋文脉一日</span>
+          <span class="d-tag ">🏛 文脉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>晋祠</b>（参考价 80 元）：圣母殿、鱼沼飞梁、难老泉「三绝」，中国现存最早园林祠庙</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">晋祠周边午餐：刀削面、栲栳栳</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>山西博物院</b>（免费需预约）：晋国霸业、佛风遗韵、土木华章展厅</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">晚餐：太原打卤面/羊杂割</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">晋祠圣母殿前的鱼沼飞梁是现存唯一的宋代十字形古桥。山西博物院周一闭馆，务必提前预约，门口安检较严。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 大同云冈石窟</span>
+          <span class="d-desc">北魏佛国</span>
+          <span class="d-tag ">🪨 石窟日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">太原乘高铁赴大同（约 1.5 小时），办理入住</td></tr>
+          <tr><td class="t-time">10:30–15:00</td><td class="t-what"><b>云冈石窟</b>（参考价 120 元）：第 20 窟露天大佛为标志，前 20 窟是精华</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">景区简餐</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">大同古城墙（免费）：傍晚城墙骑行看日落</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：大同刀削面、兔头、烧麦</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">云冈石窟开凿于北魏，是世界文化遗产。建议上午到达避开旅行团，第 16–20 窟（昙曜五窟）最震撼；景区有电瓶车往返。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 悬空寺 + 恒山</span>
+          <span class="d-desc">悬崖上的古建</span>
+          <span class="d-tag ">🏔 奇观日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">大同出发包车/自驾（约 1.5h）到浑源悬空寺</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>悬空寺</b>（参考价 115 元，含登临）：建于悬崖峭壁 60 米高处，1500 年不坠</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：浑源凉粉（必吃）</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>恒山</b>（参考价 45 元，索道另计）：北岳恒山，会仙府、天峰岭</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">返回大同，或宿浑源县城</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">悬空寺门票分「入园票 + 登临票」，登临票限量每天约 2000 张，必须提前线上抢。登临栈道窄，恐高慎选。恒山海拔高，注意防风保暖。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 应县木塔 + 雁门关</span>
+          <span class="d-desc">辽金雄构</span>
+          <span class="d-tag ">🛕 木构日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">大同出发（包车约 1.5h）到应县</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>应县木塔</b>（参考价 50 元）：世界最高木塔，66 米全木结构无钉铆</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">应县午餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>雁门关</b>（参考价 90 元）：「天下九塞，雁门为首」，杨家将故地</td></tr>
+          <tr><td class="t-time">16:30–19:00</td><td class="t-what">返回太原（包车约 3h，或大同乘高铁）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">应县木塔已倾斜千年，现只开放一层参观，但外观极震撼。雁门关是长城重要关隘，秋季满山红叶最佳。当日车程较长，建议包车灵活掌握时间。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 平遥古城</span>
+          <span class="d-desc">晋商古城一日</span>
+          <span class="d-tag ">🏯 古城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">太原乘高铁赴平遥古城（约 40 分钟），入住城内客栈</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>平遥古城墙</b>（参考价 125 元通票）：登城墙看龟城格局</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：平遥牛肉、莜面栲栳栳</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">县衙 → <b>日昇昌票号</b> → 协同庆钱庄博物馆</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐后逛明清街夜景，看古城灯光</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">回客栈</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">平遥通票（125 元）3 天内有效，含 22 个景点，住城内客栈可反复出入。日昇昌是中国第一家票号，晋商金融史起点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 王家大院 + 《又见平遥》</span>
+          <span class="d-desc">晋商大院一日</span>
+          <span class="d-tag ">🏘 大院日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">平遥包车/拼车赴灵石（约 1.5h）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>王家大院</b>（参考价 55 元）：「王家归来不看院」，五巷六堡五祠堂</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">灵石午餐</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">返平遥，自由逛：清虚观、雷履泰故居、漆器店</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what">※ <b>《又见平遥》</b>（参考价 238 元起）：沉浸式情景剧，推荐</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">回客栈</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">王家大院比乔家大院大 3 倍以上，砖雕木雕极精。乔家大院在祁县更近太原，若时间紧也可二选一。演出票提前 2–3 天订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 壶口瀑布</span>
+          <span class="d-desc">黄河咆哮</span>
+          <span class="d-tag ">🌊 黄河日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">平遥包车赴吉县壶口（约 3h，途经灵石、临汾）</td></tr>
+          <tr><td class="t-time">11:30–15:00</td><td class="t-what"><b>壶口瀑布（山西侧）</b>（参考价 100 元，区间车另计）：看「千里黄河一壶收」</td></tr>
+          <tr><td class="t-time">15:30</td><td class="t-what">入住吉县酒店，晚餐：黄河大鲤鱼、吉县苹果</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">壶口瀑布夕阳，人少更出片</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">壶口瀑布 7–9 月汛期最壮观，水量可达平时的数十倍；冬季 12–2 月冰瀑也极震撼。山西侧与陕西侧隔河相望，山西侧看正面更佳。带雨衣，水雾打湿是常事。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 壶口日出 + 返太原</span>
+          <span class="d-desc">晨雾瀑布 + 返程</span>
+          <span class="d-tag alt">🚄 返城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00</td><td class="t-what">早起再看一次壶口晨雾（可选，光线极佳）</td></tr>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">早餐后出发，包车赴临汾（约 1.5h）</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">临汾乘高铁返太原（约 1.5h）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">太原自由活动：柳巷补货（老陈醋、平遥牛肉、红枣）</td></tr>
+          <tr><td class="t-time">15:30</td><td class="t-what">回酒店休整，晚餐：山西面食收尾</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">吉县—临汾—太原是高效返程路径；若直接自驾回太原约 4.5h。壶口日出为 5–6 月最佳，夏季多雨需看天气。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">采购伴手礼 + 回家</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">自由活动：山西博物院（补看）或太原古县城；采购老陈醋、汾酒、平遥牛肉</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">退房，赴太原南站/武宿机场，返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">山西伴手礼三件套：宁化府老陈醋、汾酒（青花系列）、平遥牛肉；另有太谷饼、沁州黄小米。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-cover.jpg" alt="云冈石窟" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">云冈石窟 <small>参考价 120 元</small></div>
+          <div class="sc-feat">北魏皇家石窟，世界文化遗产。<b>露天大佛 + 昙曜五窟</b>，5 万余尊佛像。</div>
+          <div class="sc-meta">📅 8:30–17:00 · ⏱ 3–4h · 🚌 大同市区公交/打车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-1.jpg" alt="悬空寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">悬空寺 <small>参考价 115 元（含登临）</small></div>
+          <div class="sc-feat">悬崖 60 米高空悬建 1500 年。<b>三教合一 + 木质栈道</b>，全球奇险古建。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 1.5h · 🚗 大同出发约 1.5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-2.jpg" alt="平遥古城" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">平遥古城 <small>参考价 125 元（通票）</small></div>
+          <div class="sc-feat">世界文化遗产，保存最完整古城。<b>城墙 + 县衙 + 日昇昌票号</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚄 高铁平遥古城站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-3.jpg" alt="壶口瀑布" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">壶口瀑布 <small>参考价 100 元</small></div>
+          <div class="sc-feat">「千里黄河一壶收」。<b>汛期水雾冲霄</b>，中华魂的具象化。</div>
+          <div class="sc-meta">📅 7:00–18:00 · ⏱ 2h · 🚗 吉县，平遥包车 3h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-4.jpg" alt="晋祠" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">晋祠 <small>参考价 80 元</small></div>
+          <div class="sc-feat">中国现存最早祠庙园林。<b>圣母殿 + 鱼沼飞梁 + 难老泉</b>三绝。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 2–3h · 🚌 太原市区公交 25 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-5.jpg" alt="应县木塔" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">应县木塔 <small>参考价 50 元</small></div>
+          <div class="sc-feat">世界现存最高木塔。<b>66 米纯木结构</b>，900 年无钉铆。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 1h · 🚗 大同/太原包车途经</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-6.jpg" alt="五台山" loading="lazy"><span class="sc-tag skip">可跳过</span></div>
+        <div class="sc-body">
+          <div class="sc-name">五台山 <small>参考价 135 元</small></div>
+          <div class="sc-feat">中国四大佛教名山之首。<b>台怀镇 + 五爷庙 + 菩萨顶</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2 天 · 🚗 太原出发约 3h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/shanxi/shanxi-7.jpg" alt="王家大院" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">王家大院 <small>参考价 55 元</small></div>
+          <div class="sc-feat">「王家归来不看院」。<b>五巷六堡</b>，晋商大院的集大成者。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 2–3h · 🚗 灵石县，平遥出发 1.5h</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（云冈石窟、悬空寺、平遥、壶口、木塔等山西主题），用于页面配图。更多免费去处：大同古城墙、太原汾河公园、平遥明清街夜景、灵石石膏山。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算；门票为参考价。山西景点分散，包车是主要弹性支出；高铁可覆盖太原—大同、太原—平遥等主干。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（2800–3800）</th>
+<th>标准（4500–6000）</th>
+<th>舒适（7500–10000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返交通</td>
+<td>高铁约 400–900</td>
+<td>高铁/飞机约 900–1600</td>
+<td>飞机+接送约 2500–3800</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/客栈 750–1050</td>
+<td>连锁+古城客栈 1500–2300</td>
+<td>精品客栈+温泉 3800–5200</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>核心约 350</td>
+<td>含石窟+悬空寺+壶口约 550</td>
+<td>全含+《又见平遥》约 850</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>550–850</td>
+<td>1100–1500（含面食全宴）</td>
+<td>2000–2600（地方宴席）</td>
+</tr>
+<tr>
+<td>省内交通</td>
+<td>高铁+公交 350–550</td>
+<td>高铁+拼车 700–1000</td>
+<td>全程包车 1500–2500</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 5000 元）</span>
+      往返高铁 600 + 住宿 9 晚 1700（双人分 3400）+ 门票 550 + 餐饮 1300 + 省内交通 850 ≈ <strong>5000 元</strong>。壶口段包车（平遥往返约 800–1000 元/车）拼 4 人最划算。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 精华 6 天版</h3>
+
+
+    <ul>
+
+      <li>D1 太原+晋祠</li>
+
+      <li>D2 大同云冈石窟</li>
+
+      <li>D3 悬空寺+应县木塔</li>
+
+      <li>D4 平遥古城</li>
+
+      <li>D5 王家大院+又见平遥</li>
+
+      <li>D6 返程</li>
+
+    </ul>
+
+    <h3>7.2 佛教文化版（五台山）</h3>
+
+
+    <p>把壶口段替换为五台山 3 天：平遥→太原→忻州→台怀镇，看五爷庙、菩萨顶、黛螺顶；带长辈尤其推荐，朝台需 2 天以上，整体节奏更慢。</p>
+
+    <h3>7.3 冬季冰瀑版</h3>
+
+
+    <p>12–2 月：壶口冰瀑「冰挂」奇观 + 大同古城雪景 + 平遥淡季人少，酒店便宜 30–40%；但悬空寺冬雪期间部分路段开放受限，提前确认。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 山西 ⇄ 各地 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>高铁（推荐）</td>
+<td>北京—太原 2h，其余视出发地</td>
+<td>二等座 130 元起</td>
+<td>太原南站/大同南站均可</td>
+</tr>
+<tr>
+<td>飞机</td>
+<td>视出发地 1–2.5h</td>
+<td>400–1500 元</td>
+<td>太原武宿机场，地铁/大巴进城</td>
+</tr>
+<tr>
+<td>自驾</td>
+<td>视出发地</td>
+<td>高速+停车费</td>
+<td>山路多，壶口段冬季注意结冰</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 省内交通核心提醒</span>
+      太原—大同高铁约 1.5h、太原—平遥约 40 分钟，但<strong>壶口瀑布无直达高铁</strong>，需包车（平遥 3h / 临汾 1.5h 再高铁）。悬空寺—应县—雁门关段建议包车一日，比分段换乘省 2 小时以上。
+    </div>
+
+    <h3>8.2 省内交通</h3>
+    <ul>
+      <li><strong>高铁</strong>：太原—大同、太原—平遥/临汾主干线，效率高</li>
+      <li><strong>包车</strong>：悬空寺—应县—壶口等散点段首选，4 人拼车更划算</li>
+      <li><strong>长途大巴</strong>：去五台山、壶口等景区有班次</li>
+      <li><strong>出租车/网约车</strong>：市区 10–30 元，景区门口统一价</li>
+      <li><strong>古城内</strong>：平遥住城内靠步行，城墙段可租自行车</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>太原市区</td>
+<td>快捷 250–400 / 星级 500–900</td>
+<td>高铁枢纽，柳巷商圈</td>
+<td>城市景观一般</td>
+</tr>
+<tr>
+<td>大同市区</td>
+<td>快捷 250–400 / 古城内 400–700</td>
+<td>近云冈与古城墙</td>
+<td>冬季冷</td>
+</tr>
+<tr>
+<td>平遥古城内</td>
+<td>客栈 300–600 / 精品 600–1200</td>
+<td>住进古城，夜游方便</td>
+<td>停车不便，隔音一般</td>
+</tr>
+<tr>
+<td>吉县（壶口）</td>
+<td>客栈 200–400</td>
+<td>近瀑布，看日出方便</td>
+<td>设施简单，选择少</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>刀削面（大同/太原）</li>
+          <li>平遥牛肉、碗托</li>
+          <li>莜面栲栳栳、剔尖</li>
+          <li>浑源凉粉、太原打卤面</li>
+        </ul>
+        <h3>🥮 伴手礼</h3>
+        <ul>
+          <li>宁化府老陈醋</li>
+          <li>汾酒（青花系列）</li>
+          <li>平遥牛肉真空装</li>
+          <li>沁州黄小米、红枣</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 地方味道</h3>
+        <ul>
+          <li>太原头脑（清和元）</li>
+          <li>大同兔头、烧麦</li>
+          <li>黄河大鲤鱼（吉县）</li>
+          <li>太谷饼、闻喜煮饼</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>太原柳巷/食品街</li>
+          <li>大同凤临阁（烧麦）</li>
+          <li>平遥明清街小吃</li>
+          <li>吉县黄河鱼庄</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 山西面食「一餐一味」，点面记得配醋才正宗；② 平遥古城内饭店价格是城外 1.5–2 倍，认准明码标价；③ 壶口景区餐厅溢价明显，建议在吉县县城吃黄河鱼。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>身份证、充电宝</li>
+        <li>保暖外套（大同/恒山风大）</li>
+        <li>防晒霜、墨镜（壶口）</li>
+        <li>雨具（壶口汛期水雾大）</li>
+      </ul>
+      <ul>
+        <li>悬空寺登临票提前抢</li>
+        <li>云冈/晋祠/山西博院提前约票</li>
+        <li>壶口查汛期与开放信息</li>
+        <li>下载高铁 12306 提前订票</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① 悬空寺登临票限量，提前 7 天刷票是常态；② 山西古建多为木构，景区内禁烟禁明火；③ 壶口瀑布汛期水量大，观景台注意防滑、听从工作人员指引；④ 五台山若遇法会人多车堵，进出预留 1 小时缓冲。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      山西是一本<strong>「立体的中国建筑史」</strong>——云冈的佛光、悬空寺的险绝、平遥的晋商气、壶口的黄河魂，串成一条从北魏走到民国的纵贯线。10 天从北到南，看的是千年木构不塌、听的是黄河咆哮不歇，离场时带走的是一身醋香和满脑子「表里山河」。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "北线 · 大同→悬空寺→应县木塔（石窟与悬崖古建）",
+    "pts": [
+      [
+        40.1117,
+        113.1227
+      ],
+      [
+        39.6647,
+        113.7067
+      ],
+      [
+        39.565,
+        113.18
+      ]
+    ]
+  },
+  {
+    "c": "#c9820e",
+    "d": 3,
+    "n": "南线 · 太原→平遥→王家大院→壶口（古城与黄河）",
+    "pts": [
+      [
+        37.8706,
+        112.5489
+      ],
+      [
+        37.2043,
+        112.1747
+      ],
+      [
+        36.859,
+        111.888
+      ],
+      [
+        36.1466,
+        110.4428
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 40.1117,
+    "lng": 113.1227,
+    "name": "云冈石窟",
+    "t": "D3 下午 · 3–4h",
+    "fee": "参考价 120 元",
+    "note": "露天大佛、昙曜五窟"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 39.6647,
+    "lng": 113.7067,
+    "name": "悬空寺",
+    "t": "D4 上午 · 1.5h",
+    "fee": "参考价 115 元",
+    "note": "悬崖古建，登临限量"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 37.2043,
+    "lng": 112.1747,
+    "name": "平遥古城",
+    "t": "D6-D7 · 1–2 天",
+    "fee": "通票 125 元",
+    "note": "城墙、县衙、日昇昌"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 36.1466,
+    "lng": 110.4428,
+    "name": "壶口瀑布",
+    "t": "D8 全天 · 2h",
+    "fee": "参考价 100 元",
+    "note": "黄河壶口，汛期最壮"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 37.7078,
+    "lng": 112.4344,
+    "name": "晋祠",
+    "t": "D2 上午 · 2–3h",
+    "fee": "参考价 80 元",
+    "note": "圣母殿、难老泉三绝"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 39.565,
+    "lng": 113.18,
+    "name": "应县木塔",
+    "t": "D5 上午 · 1h",
+    "fee": "参考价 50 元",
+    "note": "世界最高木塔"
+  },
+  {
+    "num": 7,
+    "prio": "skip",
+    "lat": 39.0083,
+    "lng": 113.588,
+    "name": "五台山",
+    "t": "可选 · 2 天",
+    "fee": "参考价 135 元",
+    "note": "台怀镇，需替换壶口段"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 36.859,
+    "lng": 111.888,
+    "name": "王家大院",
+    "t": "D7 上午 · 2–3h",
+    "fee": "参考价 55 元",
+    "note": "晋商大院集大成"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[34.5, 110.3], [40.9, 114.6]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>北线 石窟与悬崖古建<br><span class=\"sw\" style=\"background:#c9820e\"></span>南线 古城与黄河<br><span class=\"sw dash\"></span>可选段（五台山）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>
