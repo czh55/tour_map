@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>旅行攻略</title>
+  <title>旅行攻略 · 世界地图</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -37,8 +37,8 @@
     /* ===== 封面区 ===== */
     .cover {
       position: relative;
-      height: 42vh;
-      min-height: 280px;
+      height: 34vh;
+      min-height: 240px;
       overflow: hidden;
       display: flex;
       align-items: flex-end;
@@ -62,19 +62,19 @@
       position: relative;
       z-index: 2;
       text-align: center;
-      padding: 40px 24px 46px;
+      padding: 32px 24px 40px;
       color: #fff;
     }
     .cover h1 {
       font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
-      font-size: clamp(36px, 6vw, 52px);
+      font-size: clamp(34px, 5.5vw, 50px);
       font-weight: 400;
       letter-spacing: 6px;
       text-shadow: 0 2px 16px rgba(0,0,0,.5);
     }
     .cover p {
-      margin-top: 12px;
-      font-size: 15px;
+      margin-top: 10px;
+      font-size: 14.5px;
       opacity: .92;
       text-shadow: 0 1px 8px rgba(0,0,0,.5);
       letter-spacing: 1px;
@@ -82,12 +82,67 @@
 
     /* ===== 主体 ===== */
     .main {
-      max-width: 1000px;
-      margin: -24px auto 0;
-      padding: 0 24px 80px;
+      max-width: 1080px;
+      margin: -18px auto 0;
+      padding: 0 20px 80px;
       position: relative;
       z-index: 3;
     }
+
+    /* ===== 地图卡片 ===== */
+    .map-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 26px;
+    }
+    .map-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 18px 8px;
+    }
+    .map-head .map-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--red);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .map-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .map-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12.5px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-family: inherit;
+    }
+    .map-btn:hover { border-color: var(--gold); color: var(--red); }
+    .map-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+    .map-tip {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 0 18px 10px;
+    }
+    #worldMap, #chinaMap {
+      width: 100%;
+      height: 520px;
+    }
+    #chinaMap { display: none; }
 
     /* 搜索框 */
     .search-bar {
@@ -101,11 +156,7 @@
       gap: 10px;
       margin-bottom: 16px;
     }
-    .search-bar .icon {
-      font-size: 18px;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
+    .search-bar .icon { font-size: 18px; color: var(--muted); flex-shrink: 0; }
     .search-input {
       width: 100%;
       border: none;
@@ -136,15 +187,8 @@
       transition: all .2s ease;
       font-family: inherit;
     }
-    .chip:hover {
-      border-color: var(--gold);
-      color: var(--red);
-    }
-    .chip.active {
-      background: var(--red);
-      border-color: var(--red);
-      color: #fff;
-    }
+    .chip:hover { border-color: var(--gold); color: var(--red); }
+    .chip.active { background: var(--red); border-color: var(--red); color: #fff; }
 
     /* 卡片网格 */
     .grid {
@@ -228,11 +272,7 @@
     .empty .hint { font-size: 13px; margin-top: 6px; opacity: .8; }
 
     /* 统计 */
-    .count-line {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
+    .count-line { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
 
     footer {
       text-align: center;
@@ -243,7 +283,8 @@
 
     /* ===== 响应式 ===== */
     @media (max-width: 640px) {
-      .cover { height: 34vh; min-height: 220px; }
+      .cover { height: 30vh; min-height: 200px; }
+      #worldMap, #chinaMap { height: 400px; }
       .grid { grid-template-columns: 1fr; }
       .card .thumb { aspect-ratio: 16 / 9; }
     }
@@ -259,6 +300,20 @@
   </div>
 
   <div class="main">
+    <div class="map-card">
+      <div class="map-head">
+        <div class="map-title" id="mapTitle">🗺️ 世界地图 · 点击目的地查看攻略</div>
+        <div class="map-tools">
+          <button class="map-btn active" id="btnWorld">🌍 世界</button>
+          <button class="map-btn" id="btnChina">🇨🇳 中国</button>
+          <button class="map-btn" id="btnReset">⟲ 复位</button>
+        </div>
+      </div>
+      <div id="worldMap"></div>
+      <div id="chinaMap"></div>
+      <div class="map-tip" id="mapTip">提示：点击国家/省份区域或圆点可进入攻略；滚轮缩放、拖拽平移；中国地图可查看全部省份。</div>
+    </div>
+
     <div class="search-bar">
       <span class="icon">&#128269;</span>
       <input class="search-input" id="searchInput" type="text" placeholder="搜索目的地、天数、主题…">
@@ -275,6 +330,7 @@
 
   <footer>旅行攻略 · 持续更新中</footer>
 
+  <script src="lib/echarts.min.js"></script>
   <script>
     (function () {
       var grid = document.getElementById('grid');
@@ -282,11 +338,19 @@
       var tagsBar = document.getElementById('tagsBar');
       var countLine = document.getElementById('countLine');
       var searchInput = document.getElementById('searchInput');
+      var worldMapEl = document.getElementById('worldMap');
+      var chinaMapEl = document.getElementById('chinaMap');
+      var btnWorld = document.getElementById('btnWorld');
+      var btnChina = document.getElementById('btnChina');
+      var btnReset = document.getElementById('btnReset');
+      var mapTitle = document.getElementById('mapTitle');
+      var mapTip = document.getElementById('mapTip');
 
       var guides = [];
       var activeTags = [];
-
-      function getEl(id) { return document.getElementById(id); }
+      var worldChart = null;
+      var chinaChart = null;
+      var currentView = 'world'; // 'world' | 'china'
 
       function el(tag, cls, text) {
         var n = document.createElement(tag);
@@ -295,10 +359,10 @@
         return n;
       }
 
+      /* ============ 卡片列表（保留原功能） ============ */
       function buildCard(g) {
         var card = el('a', 'card');
         card.href = g.html;
-
         var thumb = el('div', 'thumb');
         if (g.cover) {
           var img = document.createElement('img');
@@ -306,15 +370,13 @@
           img.alt = g.title || '';
           img.loading = 'lazy';
           img.onerror = function () {
-            var ph = el('div', 'ph', '\uD83C\uDFD4');
-            thumb.insertBefore(ph, thumb.firstChild);
+            thumb.insertBefore(el('div', 'ph', '\uD83C\uDFD4'), thumb.firstChild);
             img.remove();
           };
           thumb.appendChild(img);
         } else {
           thumb.appendChild(el('div', 'ph', '\uD83C\uDFD4'));
         }
-
         card.appendChild(thumb);
         card.appendChild(el('div', 'title', g.title));
         return card;
@@ -350,7 +412,7 @@
       function matches(g) {
         var q = searchInput.value.trim().toLowerCase();
         if (q) {
-          var haystack = [g.title, g.summary || '', g.destination || '']
+          var haystack = [g.title, g.summary || '', g.destination || '', g.dest || '']
             .concat(g.tags || []).join(' ').toLowerCase();
           if (haystack.indexOf(q) === -1) return false;
         }
@@ -373,6 +435,237 @@
 
       searchInput.addEventListener('input', render);
 
+      /* ============ 地图视图 ============ */
+      function isChina(g) {
+        // 中国省份（map 为中文名）和三个特殊条目
+        return ['kailash-kora-2026','dalian-2026','liuzhou-2026'].indexOf(g.slug) !== -1 ||
+               /[\u4e00-\u9fa5]/.test(g.map || '');
+      }
+
+      function getLabel(g) {
+        // 大连/柳州/冈仁波齐用城市名；其他用 destination
+        return g.destination;
+      }
+
+      function chartBase() {
+        return {
+          backgroundColor: 'transparent',
+          tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(59,46,36,.92)',
+            borderColor: 'rgba(201,162,39,.4)',
+            textStyle: { color: '#F7F1E3', fontSize: 13 },
+            formatter: function (p) {
+              if (p.seriesType === 'scatter' || p.seriesType === 'effectScatter') {
+                var g = p.data.guide;
+                return '<b>' + g.destination + '</b> · ' + g.days + ' 天<br>' + (g.summary || '').slice(0, 40) + '…<br><span style="color:#C9A227">点击查看攻略</span>';
+              }
+              if (p.data && p.data.guide) {
+                var gg = p.data.guide;
+                return '<b>' + gg.destination + '</b> · ' + gg.days + ' 天<br>' + (gg.summary || '').slice(0, 40) + '…<br><span style="color:#C9A227">点击查看攻略</span>';
+              }
+              return p.name;
+            }
+          },
+          geo: null,
+          series: []
+        };
+      }
+
+      function loadGeo(url, cb) {
+        fetch(url).then(function (r) { return r.json(); }).then(cb);
+      }
+
+      function buildWorld() {
+        var worldGuides = guides.filter(function (g) { return !isChina(g); });
+        var worldGeo = null;
+
+        // 世界地图 scatter：每个国家一个点（在首都）
+        function renderWorld() {
+          var opt = chartBase();
+          opt.geo = {
+            map: 'world',
+            roam: true,
+            zoom: 1.1,
+            center: [10, 15],
+            itemStyle: {
+              areaColor: '#EFE7D6',
+              borderColor: '#C9BFA8',
+              borderWidth: .6
+            },
+            emphasis: {
+              itemStyle: { areaColor: '#E3C88F' },
+              label: { show: false }
+            },
+            select: {
+              itemStyle: { areaColor: '#D9B96F' },
+              label: { show: true, color: '#3B2E24' }
+            }
+          };
+          opt.series = [{
+            name: '攻略',
+            type: 'effectScatter',
+            coordinateSystem: 'geo',
+            data: worldGuides.map(function (g) {
+              return { name: g.destination, value: [g.lng, g.lat], guide: g, symbolSize: 12 };
+            }).concat([{ name: '中国', value: [104.195, 35.86], guide: null, isChinaAgg: true, symbolSize: 18 }]),
+            symbolSize: function (v) { return (v[2] || 12); },
+            rippleEffect: { brushType: 'stroke', scale: 3 },
+            itemStyle: {
+              color: '#8B2F1B',
+              shadowBlur: 6,
+              shadowColor: 'rgba(139,47,27,.5)'
+            },
+            label: {
+              show: true,
+              formatter: function (p) { return p.data.isChinaAgg ? '中国' : p.data.name; },
+              position: 'right',
+              fontSize: 11,
+              color: '#3B2E24'
+            },
+            emphasis: {
+              label: { show: true, fontSize: 13, fontWeight: 'bold', color: '#8B2F1B' },
+              itemStyle: { color: '#C9A227' }
+            }
+          }];
+          worldChart = echarts.init(worldMapEl);
+          worldChart.setOption(opt);
+          worldChart.on('click', function (p) {
+            // 1) 点击圆点（标记）→ 直接跳转
+            if (p.data && p.data.guide) {
+              window.location.href = p.data.guide.html;
+              return;
+            }
+            // 2) 点击「中国」聚合点 → 切到中国视图
+            if (p.data && p.data.isChinaAgg) {
+              showChina();
+              return;
+            }
+            // 3) 点击国家边界区域
+            if (p.componentType === 'geo' || (p.componentType === 'series' && p.seriesType === 'map')) {
+              var name = p.name;
+              var hit = guides.filter(function (g) { return g.map && g.map === name; });
+              if (hit.length) window.location.href = hit[0].html;
+              else if (name === 'China') showChina();
+            }
+          });
+          window.addEventListener('resize', function () { worldChart && worldChart.resize(); });
+        }
+
+        loadGeo('lib/maps/world.json', function (geo) {
+          echarts.registerMap('world', geo);
+          renderWorld();
+        });
+      }
+
+      function buildChina() {
+        var chinaGuides = guides.filter(isChina);
+        loadGeo('lib/maps/china.json', function (geo) {
+          echarts.registerMap('china', geo);
+          // 中国地图：省份区域 + 城市点
+          var opt = chartBase();
+          var provinceData = chinaGuides.filter(function (g) {
+            return !/[\u4e00-\u9fa5]·/.test(g.dest || g.destination) && ['kailash-kora-2026','dalian-2026','liuzhou-2026'].indexOf(g.slug) === -1;
+          });
+          // 省 map 名即中文名
+          var cityData = chinaGuides.filter(function (g) {
+            return ['kailash-kora-2026','dalian-2026','liuzhou-2026'].indexOf(g.slug) !== -1;
+          });
+          opt.geo = {
+            map: 'china',
+            roam: true,
+            zoom: 1.25,
+            itemStyle: {
+              areaColor: '#EFE7D6',
+              borderColor: '#C9BFA8',
+              borderWidth: .8
+            },
+            emphasis: {
+              itemStyle: { areaColor: '#E3C88F' },
+              label: { show: true, color: '#3B2E24' }
+            },
+            select: {
+              itemStyle: { areaColor: '#D9B96F' },
+              label: { show: true, color: '#3B2E24' }
+            }
+          };
+          // 省份 scatter（用省会坐标，但各省份也可直接点击区域）
+          opt.series = [{
+            name: '省份',
+            type: 'effectScatter',
+            coordinateSystem: 'geo',
+            data: provinceData.map(function (g) {
+              return { name: g.destination, value: [g.lng, g.lat], guide: g, symbolSize: 10 };
+            }).concat(cityData.map(function (g) {
+              return { name: g.destination, value: [g.lng, g.lat], guide: g, symbolSize: 14 };
+            })),
+            symbolSize: function (v) { return (v[2] || 10); },
+            rippleEffect: { brushType: 'stroke', scale: 2.5 },
+            itemStyle: {
+              color: '#8B2F1B',
+              shadowBlur: 5,
+              shadowColor: 'rgba(139,47,27,.5)'
+            },
+            label: {
+              show: true,
+              formatter: function (p) { return p.data.name; },
+              position: 'right',
+              fontSize: 10.5,
+              color: '#3B2E24'
+            },
+            emphasis: {
+              label: { show: true, fontSize: 12, fontWeight: 'bold', color: '#8B2F1B' }
+            }
+          }];
+          chinaChart = echarts.init(chinaMapEl);
+          chinaChart.setOption(opt);
+          chinaChart.on('click', function (p) {
+            if (p.data && p.data.guide) {
+              window.location.href = p.data.guide.html;
+            } else if (p.componentType === 'geo') {
+              var name = p.name;
+              // 匹配省份
+              var hit = guides.filter(function (g) {
+                return g.map && g.map === name && isChina(g) &&
+                       ['kailash-kora-2026','dalian-2026','liuzhou-2026'].indexOf(g.slug) === -1;
+              });
+              if (hit.length) window.location.href = hit[0].html;
+            }
+          });
+          window.addEventListener('resize', function () { chinaChart && chinaChart.resize(); });
+        });
+      }
+
+      function showWorld() {
+        currentView = 'world';
+        worldMapEl.style.display = 'block';
+        chinaMapEl.style.display = 'none';
+        btnWorld.classList.add('active');
+        btnChina.classList.remove('active');
+        mapTitle.textContent = '🗺️ 世界地图 · 点击目的地查看攻略';
+        mapTip.textContent = '提示：点击国家区域或圆点进入攻略；点击「中国」聚合点查看全国省份；滚轮缩放、拖拽平移。';
+        if (worldChart) setTimeout(function () { worldChart.resize(); }, 50);
+      }
+
+      function showChina() {
+        currentView = 'china';
+        worldMapEl.style.display = 'none';
+        chinaMapEl.style.display = 'block';
+        btnChina.classList.add('active');
+        btnWorld.classList.remove('active');
+        mapTitle.textContent = '🇨🇳 中国地图 · 点击省份或城市查看攻略';
+        mapTip.textContent = '提示：点击省份区域或城市圆点进入攻略；滚轮缩放、拖拽平移；「世界」按钮返回全球视图。';
+        if (chinaChart) setTimeout(function () { chinaChart.resize(); }, 50);
+      }
+
+      btnWorld.addEventListener('click', showWorld);
+      btnChina.addEventListener('click', showChina);
+      btnReset.addEventListener('click', function () {
+        if (currentView === 'world') worldChart.dispatchAction({ type: 'restore' });
+        else chinaChart.dispatchAction({ type: 'restore' });
+      });
+
+      /* ============ 初始化 ============ */
       fetch('guides.json')
         .then(function (r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -382,6 +675,8 @@
           guides = Array.isArray(data) ? data : [];
           buildTags();
           render();
+          buildWorld();
+          buildChina();
         })
         .catch(function () {
           grid.innerHTML = '';
