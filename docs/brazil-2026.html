@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 巴西 20 天全景攻略 · 里约伊瓜苏亚马逊</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #5e2b6e;
+    --red-light: #7c3a8f;
+    --gold: #e8b923;
+    --ink: #332a2e;
+    --muted: #8a7a80;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e0dc;
+    --blue: #2e6b46;
+    --cover1: #3a1a46;
+    --ov1: rgba(58,26,70,.88);
+    --ov2: rgba(94,43,110,.72);
+    --ov3: rgba(232,185,35,.38);
+    --ov4: rgba(46,107,70,.20);
+    --key-bg: #fdf3dc;
+    --info-bg: #eef5ef;
+    --head-bg: rgba(94,43,110,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/brazil/brazil-cover.jpg" alt="巴西旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 20 天环线 · 里约 + 伊瓜苏 + 亚马逊</div>
+      <h1>巴西 20 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 里约热内卢 · 伊瓜苏瀑布 · 圣保罗 · 萨尔瓦多 · 亚马逊马瑙斯 · 巴西利亚</div>
+      <div class="meta">
+        <span>🛫 行程链：北京✈圣保罗✈里约 → 伊瓜苏 → 圣保罗 → 萨尔瓦多 → 马瑙斯 → 巴西利亚 → 返程</span>
+        <span>📅 时间窗口：20 天 19 晚</span>
+        <span>✈️ 北京⇄圣保罗经马德里约 25h（国航 CA897，无真正直飞）</span>
+        <span>🛂 签证：中国护照需办巴西签证（旅游签约 10 天出签）</span>
+        <span>🕐 时差 -11h · 🔌 电压 127V A/B/C/N 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 20 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 20 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">里约热内卢</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">伊瓜苏</span>
+      <span class="arrow">→</span>
+      <span class="node">圣保罗</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">萨尔瓦多</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">亚马逊马瑙斯</span>
+      <span class="arrow">→</span>
+      <span class="node">巴西利亚</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 20 天怎么安排最合理</span>
+      巴西是「<strong>一国之境、四季皆反</strong>」的南美大国：里约把海滩、桑巴与基督山揉成一团热情，伊瓜苏用 275 条瀑布冲击感官，萨尔瓦多以非洲文化涂满彩色老城，马瑙斯带你钻进世界之肺亚马逊雨林，巴西利亚再把现代主义乌托邦推到极致。20 天刚好把<strong>里约 4 天 + 伊瓜苏 2 天 + 圣保罗 2 天 + 萨尔瓦多 2 天 + 亚马逊 3 天 + 巴西利亚 1 天</strong>串成一条东南—东北—北部大环线，全程靠巴西国内航班衔接，节奏适中。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办<strong>巴西旅游签证</strong>（e-Visa 电子签约 3–10 天出签，或使馆贴签）；有效期内单次最长停留 90 天，材料含机票、酒店、行程单、银行流水、在职证明</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>里约 4 天 → 伊瓜苏 2 天 → 圣保罗 2 天 → 萨尔瓦多 2 天 → 亚马逊 3 天 → 巴西利亚 1 天 + 返程</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 19–20 天从圣保罗返京（经马德里约 25h）；国际航班建议订凌晨起飞，留足 19 天完整行程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 里约 → 伊瓜苏 → 圣保罗 → 萨尔瓦多 → 马瑙斯 → 巴西利亚 → 北京</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 20000–30000 ／ 标准 40000–60000 ／ 舒适 90000–130000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办巴西签证 ② 订国内航班（圣保罗—马瑙斯等长航线提前 1 个月）③ 基督山/糖面包门票提前 2 周官网订</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>12–3 月夏季湿热 + 狂欢节（2 月中下旬）；5–9 月旱季凉爽、亚马逊水位低看沙滩；南部冬天（6–8 月）可去伊瓜苏但水温低</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>雷亚尔现金 + Visa/Master 卡为主；Uber/99 打车 App 全巴西通用，比出租车便宜 30–50%</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>巴西签证是硬门槛</strong>：中国护照去巴西必须办签证（电子签 e-Visa 目前对中国大陆申请人开放，需机票酒店行程单，约 10 个工作日，出行前至少 1 个月办理最稳）。② <strong>国内段机票要提前订</strong>：圣保罗⇄马瑙斯、马瑙斯⇄巴西利亚等长航线航班少且贵（巴西国内平均票价已涨到 R$630+），提前 1 个月订能省 30%–50%。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 20 天版</h2>
+
+    <p>以下为 20 天 19 晚的推荐节奏：东南进（里约）、东北过（萨尔瓦多）、北部深入亚马逊，最后经巴西利亚回圣保罗返程。每日主景点 ≤2 个，国内段全部靠飞机，亚马逊段留足 3 天进雨林。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵里约</td>
+<td>北京✈圣保罗（约 25h）→ 转机✈里约，入住科帕卡巴纳，休整</td>
+<td>里约</td>
+<td>抵达+倒时差</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>基督山（小火车）→ 糖面包山缆车，俯瞰瓜纳巴拉湾全景</td>
+<td>里约</td>
+<td>里约名片</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>科帕卡巴纳/伊帕内玛海滩 → 塞勒隆阶梯 → 拉帕拱桥</td>
+<td>里约</td>
+<td>海滩+街区</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>里约大教堂 → 马拉卡纳球场 → 机动（贫民窟 tour/植物园）</td>
+<td>里约</td>
+<td>机动日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>里约✈伊瓜苏（约 2h），巴西侧全景栈道</td>
+<td>伊瓜苏</td>
+<td>飞伊瓜苏</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>过境阿根廷侧：魔鬼咽喉栈道 + 上下环线步道</td>
+<td>伊瓜苏</td>
+<td>魔鬼咽喉</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>伊瓜苏✈圣保罗，保利斯塔大道 + 日本街</td>
+<td>圣保罗</td>
+<td>飞圣保罗</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>MASP 艺术馆 → 市政市场 → 傍晚✈萨尔瓦多</td>
+<td>圣保罗</td>
+<td>圣保罗收尾</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>佩洛里尼奥老城（世界遗产）+ 圣方济教堂 + 战舞表演</td>
+<td>萨尔瓦多</td>
+<td>老城一日</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>红瓦市场购物 → 萨尔瓦多✈马瑙斯（经圣保罗）</td>
+<td>马瑙斯</td>
+<td>飞亚马逊</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>两河交汇 → 进丛林旅馆 → 徒步 → 夜间找凯门鳄</td>
+<td>亚马逊</td>
+<td>雨林day1</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>粉红海豚 → 食人鱼垂钓 → 河上村落</td>
+<td>亚马逊</td>
+<td>雨林day2</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>返马瑙斯：亚马逊剧院 → ✈巴西利亚</td>
+<td>巴西利亚</td>
+<td>回城+转场</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>三权广场 + 国会 + 巴西利亚大教堂 + 伊塔马拉蒂宫</td>
+<td>巴西利亚</td>
+<td>现代主义日</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>JK 纪念堂 → ✈圣保罗，傍晚自由购物</td>
+<td>圣保罗</td>
+<td>飞圣保罗</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>圣保罗购物日：Havaianas、咖啡、蜂胶，回程补给</td>
+<td>圣保罗</td>
+<td>购物日</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>市政市场 → 蝙蝠侠巷涂鸦 → 整理行李</td>
+<td>圣保罗</td>
+<td>机动日</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>自由安排：Ibirapuera 公园 / 圣保罗大教堂</td>
+<td>圣保罗</td>
+<td>机动日</td>
+</tr>
+<tr>
+<td>D19 返程</td>
+<td>圣保罗瓜鲁柳斯✈北京（经马德里约 25h，凌晨起飞）</td>
+<td>机上</td>
+<td>返程日</td>
+</tr>
+<tr>
+<td>D20</td>
+<td>马德里经停 → 抵京，结束 20 天巴西之旅</td>
+<td>—</td>
+<td>到家</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍巴西利亚（D14–15 并入圣保罗机动）或萨尔瓦多（缩短为 1 天）；亚马逊是巴西独有体验，建议保留 3 天 2 晚丛林团。想体验狂欢节可把行程调到 2 月中下旬，里约床位与机票贵 2–3 倍且需提前 3 个月抢。带娃家庭建议删掉贫民窟 tour，增加水上乐园与海滩时间。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 20 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达里约</span>
+          <span class="d-desc">入住科帕卡巴纳</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">13:30–次日10:00</td><td class="t-what">北京✈圣保罗（国航 CA897 经马德里，总程约 25h，787-9）。圣保罗瓜鲁柳斯入境，转机✈里约（约 1h10min）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">入住<b>科帕卡巴纳海滩</b>附近酒店（里约最安全便利的游客区），倒时差休息</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what"><b>科帕卡巴纳海滨大道</b>（免费）：黑白马赛克步道 + 瓜纳巴拉湾海风，第一眼里约</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>伊帕内玛海滩</b>（免费）：阿普多角看日落，波萨诺瓦歌曲诞生地</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：巴西烤肉 churrasco 自助（人均 R$80–120），早点睡倒时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">北京与里约时差 11h，第一晚务必早睡；里约夏季（12–2 月）湿热，防晒 + 驱蚊液必备。圣保罗到里约也可坐大巴（6h）但建议转机省时间。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 基督山 + 糖面包山</span>
+          <span class="d-desc">里约双名片</span>
+          <span class="d-tag ">⛰ 基督山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:00</td><td class="t-what">乘<b>科帕卡巴纳小火车</b>（trem do Corcovado）上山，提前 2 周官网订票避免售罄</td></tr>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>基督救世主像</b>（小火车往返+门票约 R$130–150）：里约地标，俯瞰全城与瓜纳巴拉湾</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">下山转场到糖面包山缆车站（Urica）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：山下餐厅 feijoada 黑豆炖肉（巴西国菜，周五传统）</td></tr>
+          <tr><td class="t-time">13:30–17:30</td><td class="t-what"><b>糖面包山</b>（两段式缆车往返约 R$150）：登顶看全城 + 科尔科瓦多山同框，日落前光影最佳</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：Lapa 区巴西烤肉，感受桑巴街区氛围</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">基督山和糖面包山都需官网提前购票、分时段入场；基督山上午云少视野好，下午多云会遮住眺望。穿运动鞋，两处都有大量台阶。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 海滩 + 塞勒隆阶梯</span>
+          <span class="d-desc">色彩与海风一日</span>
+          <span class="d-tag alt">🏖 海滩日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>塞勒隆阶梯</b>（Escadaria Selarón，免费）：215 级彩色瓷砖阶梯，艺术家塞拉隆献给里约的礼物，清晨人少</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>拉帕拱桥</b>（Arcos da Lapa，免费）：18 世纪引水渠，如今是桑巴酒吧街区地标</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：伊帕内玛 botequim 小酒馆小吃（cod fish balls 炸鱼球 + 生啤）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>科帕卡巴纳/伊帕内玛海滩</b>（免费）：日光浴、沙滩排球、冲浪（可选），夕阳时分最出片</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：海滨海鲜餐厅（烤虾、炸鱿鱼），看夜幕下的海滩</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海滩区贵重物品勿带、手机挂绳缠手腕；塞勒隆阶梯正午暴晒，上午 9 点前到最好。海滩租伞+躺椅约 R$40–60/天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 里约机动</span>
+          <span class="d-desc">教堂球场与自由行</span>
+          <span class="d-tag ">🏟 机动日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>里约大教堂</b>（免费）：圆锥形现代主义建筑，彩色玻璃从顶部洒下光线</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>马拉卡纳体育场</b>（门票约 R$60，含导览）：足球圣殿，1950/2014 世界杯决赛场地</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：滨海大道快餐/本地排挡</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">自由选择：<b>贫民窟导览 tour</b>（约 R$100–150 含向导）或<b>里约植物园</b>（约 R$45，王莲池+兰花温室）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐 + 收拾行李，准备次日清晨飞伊瓜苏</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">贫民窟 tour 务必选正规持证公司（如 Favela Tour），绝不要独自步行进入；马拉卡纳球场月内可能有比赛封场，提前查官网。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 飞伊瓜苏</span>
+          <span class="d-desc">巴西侧全景</span>
+          <span class="d-tag alt">🛫 飞伊瓜苏</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">里约✈伊瓜苏（约 2h，Gol/LATAM），机场打车/预订接机去巴西侧公园</td></tr>
+          <tr><td class="t-time">10:30–11:00</td><td class="t-what"><b>伊瓜苏国家公园</b>（外国成人约 R$113，官网预约时段）：进门即闻水声</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>全景步道</b>（Panoramic Trail）：275 条瀑布连成的 3km 水墙，最出片机位</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">园内 buffet 午餐（约 R$50）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>魔鬼咽喉观景栈道</b>：半圆形悬挑平台正对最宽瀑布群</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">入住伊瓜苏小镇（Foz do Iguaçu）酒店，晚餐阿根廷烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伊瓜苏瀑布跨国：巴西侧看全景、阿根廷侧看近距离冲击，两边都值得；持美签/申根可当天往返阿根廷侧（记得带护照）。公园 16:30 停止入园，午后 14 点后游客少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 伊瓜苏阿根廷侧</span>
+          <span class="d-desc">魔鬼咽喉正面冲击</span>
+          <span class="d-tag ">🌊 魔鬼咽喉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">打车/巴士过境到<b>阿根廷侧伊瓜苏公园</b>（外国成人 AR$60,000，官网购票）</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>上环线</b>（Upper Circuit）：从瀑布顶上俯瞰，水汽扑面</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>下环线</b>（Lower Circuit）：贴近瀑布底部，彩虹频现</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">园内午餐（阿根廷 empanada 饺子 + 牛排）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>魔鬼咽喉栈道</b>（Garganta del Diablo）：乘丛林小火车后步行 1.1km 栈道，世界最大瀑布群的正面冲击</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返回巴西侧，晚餐 + 准备次日飞圣保罗</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿根廷侧需预留全天，魔鬼咽喉栈道往返约 2h；两国时差 1h（阿根廷慢 1h），过境办手续留 30min。11–2 月雨季水量最大但步道湿滑。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 飞圣保罗</span>
+          <span class="d-desc">保利斯塔大道 + 日本街</span>
+          <span class="d-tag alt">🛫 飞圣保罗</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:10</td><td class="t-what">伊瓜苏✈圣保罗（约 1h40min），入住保利斯塔大道（Avenida Paulista）附近</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>保利斯塔大道</b>（免费）：金融街 + 街头艺人 + 周末封路变步行街</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：<b>自由区日本街</b>（Liberdade）拉面/寿司——全球最大日裔社区，灯柱都是日式鸟居</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>圣保罗艺术博物馆 MASP</b>（约 R$70）：红色悬挑立柱建筑 + 梵高/莫奈/德加名画，地下展藏免费</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：保利斯塔餐厅 fogo de chão 系巴西烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣保罗常住人口约 1200 万，是南半球最大城市；治安注意保管财物，MASP 屋顶可看日落，周日保利斯塔大道全程步行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 圣保罗收尾</span>
+          <span class="d-desc">艺术与市场，傍晚飞萨尔瓦多</span>
+          <span class="d-tag ">🎨 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>圣保罗大教堂</b>（免费）+ 市中心 Sé 广场（自由广场的鸽子与咖啡）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>市政市场</b>（Mercado Municipal）：彩色玻璃穹顶 + mortadella 三明治、巴西咖啡、水果杯</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：市场内 Pastel de feira 炸馅饼</td></tr>
+          <tr><td class="t-time">15:00–15:05</td><td class="t-what">圣保罗✈萨尔瓦多（约 2.5h，Gol/LATAM）</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">入住萨尔瓦多<b>上城老城区</b>酒店，晚上佩洛里尼奥老城初逛</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣保罗→萨尔瓦多直飞约 2.5h；萨尔瓦多是巴西第一任首都（1549–1763）、非洲文化之都，老城夜游结伴而行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 萨尔瓦多老城</span>
+          <span class="d-desc">彩色殖民世界遗产</span>
+          <span class="d-tag ">🏛 佩洛里尼奥日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>佩洛里尼奥</b>（Pelourinho，世界遗产，免费）：彩色殖民建筑 + 鹅卵石巷 + 街头乐手</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>圣方济各教堂</b>（约 R$10）：内外贴满金箔的巴洛克杰作，「黄金教堂」</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：<b>Acarajé</b> 炸豆饼夹虾（巴伊亚街头名物，约 R$15）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>黑人玫瑰圣母堂</b>（免费）+ 广场看<b>巴西战舞 capoeira</b>即兴表演</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>拉塞达升降机</b>（Lacerda Elevator，单程 R$0.15）：上城/下城垂直交通，俯瞰海湾日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：<b>Moqueca</b> 椰香炖鱼/炖虾 + 手鼓音乐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">佩洛里尼奥是世界最大殖民建筑群之一，1985 年列入世界遗产；老城乞讨与小贩多，礼貌摇头即可。周日教堂弥撒 + 广场聚会最热闹。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 萨尔瓦多✈马瑙斯</span>
+          <span class="d-desc">红瓦市场 + 飞亚马逊</span>
+          <span class="d-tag alt">🛫 飞亚马逊</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>红瓦市场</b>（Mercado Modelo，约 R$20 可逛 1–2h）：巴伊亚彩裙、木雕、陶瓷手工艺品，砍价空间大</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">午餐：萨尔瓦多最后一餐（moqueca 或 acarajé）</td></tr>
+          <tr><td class="t-time">13:00–19:00</td><td class="t-what">萨尔瓦多✈马瑙斯（约 3.5h，多数经圣保罗中转，总程 5–7h），选上午段航班</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">入住马瑙斯市区酒店，晚餐亚马逊河鱼（tambaqui）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">萨尔瓦多→马瑙斯无直飞，通常经圣保罗转机；抵达马瑙斯已是傍晚，市区先住一晚，次日再进丛林。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 亚马逊雨林 day1</span>
+          <span class="d-desc">两河交汇 + 丛林徒步</span>
+          <span class="d-tag ">🌴 雨林日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">向导到酒店接人，乘快艇沿<b>内格罗河</b>（黑水河）进亚马逊</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>两河交汇</b>（Meeting of Waters）：黑水内格罗河与黄水索利蒙伊斯河并行 6km 不相融，巴西最奇观之一</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">抵达<b>丛林旅馆</b>（floating lodge）入住，午餐丛林简餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>丛林徒步</b>：向导讲解药用植物、巨型王莲、蚂蚁与猴子，运气好看到树懒</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">夜间独木舟<b>寻找凯门鳄</b>（caiman），手电扫过水面闪红光</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">2–3 天丛林团约 USD 420–580/人（含向导、食宿、所有活动）；雨季（12–5 月）水位高、可划进黑水支流，旱季（6–11 月）河边露沙滩。长袖长裤 + 强效驱蚊液。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 亚马逊雨林 day2</span>
+          <span class="d-desc">粉红海豚 + 食人鱼垂钓</span>
+          <span class="d-tag alt">🐬 雨林日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30</td><td class="t-what">日出独木舟<b>观鸟</b>：金刚鹦鹉、翠鸟、朱鹮成排站枝</td></tr>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>粉红河豚</b>（boto）观赏：亚马逊独有的粉色淡水豚，部分团可下水互动（额外约 USD 55）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">丛林午餐：上午钓的鱼现场烤（食人鱼刺少味美）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>食人鱼垂钓</b>：向导发钓竿，鸡肉饵，好钓程度看季节</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>河上村落</b>访问：高脚屋社区、木薯加工、手工艺交换</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐 + 篝火，南半球星空银河清晰可见</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">雨季粉红海豚更常见；涉水区域穿防滑凉鞋，注意水下树枝。丛林团普遍条件朴素（发电限时、冷水澡），这是雨林体验的一部分。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 返马瑙斯 + 飞巴西利亚</span>
+          <span class="d-desc">亚马逊剧院 + 首都转场</span>
+          <span class="d-tag ">🏟 回城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">丛林晨间散步 + 早餐</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">乘快艇<b>返回马瑙斯</b>，途中再看河岸村落与独木舟渔夫</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：马瑙斯市区</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>亚马逊剧院</b>（Teatro Amazonas，门票约 R$40）：橡胶时代用欧洲材料建成的金碧歌剧殿堂，穹顶彩绘必看</td></tr>
+          <tr><td class="t-time">16:30–20:00</td><td class="t-what">马瑙斯✈巴西利亚（约 3.5h，部分需经停），入住酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">马瑙斯→巴西利亚航班少、多为傍晚，提前 1 个月订；亚马逊剧院后身就是鱼市，可以顺路看亚马逊巨骨舌鱼。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 巴西利亚</span>
+          <span class="d-desc">尼迈耶现代主义日</span>
+          <span class="d-tag ">🏛 首都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>三权广场</b>（Praça dos Três Poderes，免费）：国会双子塔 + 上下碗形穹顶、总统府高原宫、最高法院，尼迈耶三部曲</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>巴西利亚大教堂</b>（免费）：16 根弧形混凝土柱如双手祈祷，彩色玻璃天顶，上午光线最好</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：巴西利亚本地烤肉/ buffet</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>伊塔马拉蒂宫</b>（外交部，免费）：水面上的白色宫殿，内部是巴西现当代艺术殿堂</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>电视塔观景台</b>（免费）：俯瞰「飞机形」城市中轴线，日落时分</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">巴西利亚 1960 年建成、1987 年入选世界遗产，是世界首个现代主义城市遗产；全城无步行尺度，全程 Uber/99 打车（每程 R$15–30）。国会可预约免费导览。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 飞圣保罗</span>
+          <span class="d-desc">蓝色穹顶 + 回大城市</span>
+          <span class="d-tag alt">🛫 飞圣保罗</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>博斯克大教堂</b>（Santuário Dom Bosco，免费）：整片蓝色玻璃穹顶，光影绝美，巴西利亚最被低估的教堂</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><b>JK 纪念堂</b>（免费外观）或补拍尼迈耶建筑</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">14:00–15:40</td><td class="t-what">巴西利亚✈圣保罗（约 1h40min，航班密集）</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">入住圣保罗酒店，傍晚自由活动（可去蝙蝠侠巷拍涂鸦）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">巴西利亚→圣保罗是巴西最繁忙航线之一，航班多价格便宜（单程约 R$300–600）；圣保罗住宿选保利斯塔大道或 Jardins 区。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 圣保罗购物日</span>
+          <span class="d-desc">巴西伴手礼集中扫货</span>
+          <span class="d-tag ">🛍 购物日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>市政市场</b>（Mercado Municipal）：mortadella 三明治 + 整颗巴西坚果 + 咖啡豆伴手礼</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>蝙蝠侠巷</b>（Batman Alley，免费）：全天候街头涂鸦艺术街，出片圣地</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：圣保罗市中心</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">购物补货：Havaianas 人字拖（约 R$50–80）、蜂胶、Casas Bahia 药妆、咖啡</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：日本街或意大利区（圣保罗 120 万日裔 + 意裔）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣保罗是巴西最大消费城市，回程前集中补货最方便；免税购物需单店消费达标并在离境时办理退税（保留小票）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 圣保罗机动</span>
+          <span class="d-desc">公园与市集慢逛</span>
+          <span class="d-tag ">🌳 机动日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>伊比拉普埃拉公园</b>（Ibirapuera，免费）：南美最大城市公园之一，日本馆 + 现代艺术馆 + 湖泊喷泉</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>圣保罗大教堂</b>（免费）：哥特复兴建筑，Sé 广场鸽子群</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：Pastel 炸馅饼 + caldo de cana 甘蔗汁</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">自由安排：MASP 补看地下展藏 / 保利斯塔博物馆 / 夜游丽贝卡区</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐 + 打包行李</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伊比拉普埃拉公园周日最热闹（手作市集 + 跑步人群）；圣保罗博物馆周一闭馆，行程避开周一。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 圣保罗自由日</span>
+          <span class="d-desc">城市里最后一天</span>
+          <span class="d-tag alt">☕ 自由日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">自由活动：咖啡店慢坐（巴西是全球最大咖啡生产国）/ 圣保罗艺术博物馆补课</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">午间小逛：奥斯卡·弗莱雷大道（Faria Lima）街区</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">回酒店休整，提前处理退税单据、整理免税购物</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：最后一顿巴西烤肉 + 开胃酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">如果体力允许，可加奥赛罗山（São Paulo Zoo）或足球博物馆；建议 20:00 前回酒店收拾行李，第二天凌晨出发去机场。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 返程</span>
+          <span class="d-desc">圣保罗✈北京</span>
+          <span class="d-tag return">✈ 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">20:00–21:00</td><td class="t-what">退房，打车到<b>瓜鲁柳斯国际机场</b>（GRU），提前 3h 值机 + 退税盖章</td></tr>
+          <tr><td class="t-time">23:55–次日09:10</td><td class="t-what">圣保罗✈马德里（国航 CA898，约 10h50min）</td></tr>
+          <tr><td class="t-time">11:00–次日05:30</td><td class="t-what">马德里经停后✈北京（约 11h），机上跨日</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">巴西出境退税需在 GRU 离境航站楼先盖章再托运，退税单据放随身包；返程航班建议订凌晨班，把第 19 天完整留白。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 抵达北京</span>
+          <span class="d-desc">到家休整</span>
+          <span class="d-tag return">🏠 到家</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–07:00</td><td class="t-what">抵达北京首都机场，入境、取行李</td></tr>
+          <tr><td class="t-time">07:30–12:00</td><td class="t-what">回家休整，补觉倒时差（巴西比北京慢 11h）</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">午餐后自由安排，巴西 20 天行程正式结束</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">回程若遇经停延误，第 20 天为机动缓冲；出国前建议买覆盖南美的旅行保险（含急诊与行程延误）。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-cover.jpg" alt="里约·基督救世主像" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">里约·基督救世主像 <small>R$130–150（含小火车）</small></div>
+          <div class="sc-feat">巴西地标。<b>科科瓦多山顶 38m 基督像</b>，俯瞰瓜纳巴拉湾与糖面包山同框。</div>
+          <div class="sc-meta">📅 8:00–19:00 · ⏱ 2–3h · 🚇 科帕卡巴纳小火车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-1.jpg" alt="里约·糖面包山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">里约·糖面包山 <small>约 R$150（缆车）</small></div>
+          <div class="sc-feat">里约名片。<b>两段式缆车 + 360° 海湾全景</b>，日落前光影最绝。</div>
+          <div class="sc-meta">📅 8:30–20:00 · ⏱ 2h · 🚠 Urica 缆车站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-2.jpg" alt="里约·科帕卡巴纳海滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">里约·科帕卡巴纳海滩 <small>免费</small></div>
+          <div class="sc-feat">世界最著名海滩。<b>黑白马赛克步道 + 桑巴沙滩排球</b>，里约生活本味。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h+ · 🏖 科帕卡巴纳站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-3.jpg" alt="伊瓜苏瀑布" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伊瓜苏瀑布 <small>巴西侧 R$113 / 阿根廷侧 AR$60,000</small></div>
+          <div class="sc-feat">275 条瀑布连成 3km 水墙。<b>魔鬼咽喉栈道正面冲击</b>，世界新七大自然奇迹。</div>
+          <div class="sc-meta">📅 8:30–17:00 · ⏱ 1 天/侧 · ✈ 伊瓜苏机场</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-4.jpg" alt="圣保罗·保利斯塔大道" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">圣保罗·保利斯塔大道 <small>免费</small></div>
+          <div class="sc-feat">南半球最大城市中轴。<b>MASP 红柱悬挑 + 街头文化</b>，周日全程步行。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚇 Paulista 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-5.jpg" alt="萨尔瓦多·佩洛里尼奥" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">萨尔瓦多·佩洛里尼奥 <small>免费（教堂另计）</small></div>
+          <div class="sc-feat">世界遗产彩色老城。<b>殖民彩屋 + 黄金教堂 + 战舞</b>，巴西非洲文化之都。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚶 老城步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-6.jpg" alt="亚马逊·粉红河豚与雨林" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">亚马逊·粉红河豚与雨林 <small>丛林团 USD 420–580</small></div>
+          <div class="sc-feat">世界之肺。<b>粉红海豚 + 食人鱼垂钓 + 夜间凯门鳄</b>，此生难有的雨林体验。</div>
+          <div class="sc-meta">📅 2–3 天 · ⏱ 全天 · 🚤 马瑙斯出发</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brazil/brazil-7.jpg" alt="巴西利亚·大教堂" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">巴西利亚·大教堂 <small>免费</small></div>
+          <div class="sc-feat">尼迈耶现代主义杰作。<b>16 根弧形柱 + 彩色玻璃天顶</b>，世界遗产之城。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 1.5h · 🚕 Uber 前往</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（基督山、糖面包山、科帕卡巴纳、伊瓜苏、保利斯塔、萨尔瓦多老城、亚马逊雨林、巴西利亚等均为巴西实景），用于页面配图。更多免费景点：里约植物园、拉帕拱桥、圣保罗伊比拉普埃拉公园、萨尔瓦多红瓦市场、巴西利亚电视塔。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 人民币 ≈ 0.7 巴西雷亚尔（1 BRL ≈ 1.43 元）估算。往返国际机票按淡季转机 7000–11000 元、经马德里一停 11000–15000 元计；巴西国内段 6 程是第二大开支。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（20000–30000）</th>
+<th>标准（40000–60000）</th>
+<th>舒适（90000–130000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机 7000–9000</td>
+<td>国航经马德里 11000–15000</td>
+<td>可改签/灵活舱 22000–28000</td>
+</tr>
+<tr>
+<td>住宿（19 晚）</td>
+<td>民宿/青旅 250–400/晚</td>
+<td>三星+景区酒店 600–900/晚</td>
+<td>五星/度假村 1800–3000/晚</td>
+</tr>
+<tr>
+<td>境内交通（6 程）</td>
+<td>提前 1 个月订 2500–3500</td>
+<td>Gol/LATAM 正价 4000–6000</td>
+<td>灵活时段/商务舱 9000–13000</td>
+</tr>
+<tr>
+<td>门票与活动</td>
+<td>基础景点 800–1200</td>
+<td>含丛林团/球场 3500–5000</td>
+<td>高端丛林团+向导 8000–12000</td>
+</tr>
+<tr>
+<td>餐饮（20 天）</td>
+<td>街头小吃+快餐 3500–4500</td>
+<td>正常下馆子 6500–9000</td>
+<td>烤肉/海鲜高配 15000–22000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 47000 元）</span>
+      往返机票 13000 + 住宿 19 晚 14000（平均 740/晚）+ 国内 6 程机票 5000 + 丛林团/门票 4200 + 餐饮 7500 + 签证杂费 1200 ≈ <strong>43000–50000 元</strong>。大头是国际机票与住宿，国内段提前 1 个月订能省 1500–2500 元；亚马逊丛林团是全行程最贵单项。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>20.1 砍巴西利亚的 18 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D5 里约（含基督山/糖面包/海滩）</li>
+
+      <li>D6–D8 伊瓜苏 + 圣保罗</li>
+
+      <li>D9–D11 萨尔瓦多</li>
+
+      <li>D12–D15 亚马逊 4 天（加河上村落过夜）</li>
+
+      <li>D16–D18 圣保罗购物 + 返程</li>
+
+    </ul>
+
+    <h3>20.2 狂欢节季版（2 月中下旬）</h3>
+
+
+    <p>把行程整体挪到狂欢节（圣灰星期三前 5 天）：里约延长到 6 天看桑巴游行（球馆/街区派对）、萨尔瓦多老城狂欢节也全球知名；机票住宿贵 2–3 倍且需提前 3–4 个月抢，亚马逊雨季可下水。带娃或预算有限的建议避开。</p>
+
+    <h3>20.3 潘塔纳尔湿地替换版</h3>
+
+
+    <p>如果更想看野生动物（美洲豹、巨嘴鸟、水豚），可砍亚马逊马瑙斯段，改为飞库亚巴（Cuiabá）进入潘塔纳尔湿地 3 天（旱季 6–9 月最佳，野生动物密度全球最高）；其余城市顺序不变，湿地团费与亚马逊团相仿。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 巴西 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>北京⇄圣保罗（一停）</td>
+<td>总程约 25h（经马德里）</td>
+<td>往返 11000–15000 元</td>
+<td>国航 CA897/898 787-9，周一/四/日执飞，圣保罗到北京无真正直飞</td>
+</tr>
+<tr>
+<td>北京⇄圣保罗（转机）</td>
+<td>28–35h（1–2 停）</td>
+<td>6000–11000 元</td>
+<td>经迪拜/多哈/阿姆斯特丹，阿联酋/荷航/法航，旺季涨价</td>
+</tr>
+<tr>
+<td>里约/圣保罗✈伊瓜苏</td>
+<td>约 1h40min–2h</td>
+<td>单程 500–900 元</td>
+<td>Gol/LATAM 多班，提前 30 天订便宜 30%+</td>
+</tr>
+<tr>
+<td>圣保罗✈萨尔瓦多</td>
+<td>约 2.5h</td>
+<td>单程 700–1100 元</td>
+<td>Gol/LATAM，每天多班</td>
+</tr>
+<tr>
+<td>萨尔瓦多✈马瑙斯</td>
+<td>3.5h–5h（多经圣保罗）</td>
+<td>单程 1000–1600 元</td>
+<td>无直飞，选上午航班避开延误连锁</td>
+</tr>
+<tr>
+<td>马瑙斯✈巴西利亚✈圣保罗</td>
+<td>3.5h + 1h40min</td>
+<td>单程 900–1500 元</td>
+<td>马瑙斯—首都段航班少，提前 1 个月订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 巴西境内交通核心提醒</span>
+      巴西国土横跨 5 个时区（首都区 UTC-3），国内段<strong>全部靠飞机</strong>，Gol/LATAM/Azul 三大航，建议提前 1 个月订（平均票价已涨到 R$630+）。圣保罗有 3 个机场（GRU/CGH/VCP），里约 2 个（GIG/SDU），订票务必核对机场代码。长途大巴（圣保罗—里约 6h）便宜但耗时长，只适合机动日。
+    </div>
+
+    <h3>19.2 巴西境内交通</h3>
+    <ul>
+      <li><strong>国内航班</strong>：Gol/LATAM/Azul，里约—圣保罗是「空中巴士」班次最密，长航线提前订</li>
+      <li><strong>Uber/99</strong>：全巴西通用，比出租车便宜 30–50%，夜间更安全，机场打车首选</li>
+      <li><strong>里约地铁</strong>：2 条线覆盖机场—科帕卡巴纳—市中心，单程 R$6.50</li>
+      <li><strong>里约城市观光</strong>：观光巴士（约 R$85）环线看基督山/海滩/市中心，一日票可上车下车</li>
+      <li><strong>巴西利亚</strong>：无地铁覆盖景点，全程 Uber/99（每程 R$15–30）</li>
+      <li><strong>马瑙斯</strong>：进雨林靠旅行社快艇/皮卡接送，市区步行 + Uber</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>里约·科帕卡巴纳</td>
+<td>经济 300–500 / 标准 600–1000</td>
+<td>海滩 + 地铁 + 游客区安全</td>
+<td>旺季（12–2 月）贵，旧楼多</td>
+</tr>
+<tr>
+<td>里约·伊帕内玛</td>
+<td>标准 800–1500</td>
+<td>更清净高档，日落绝美</td>
+<td>价格高，离地铁稍远</td>
+</tr>
+<tr>
+<td>伊瓜苏小镇</td>
+<td>经济 250–400 / 标准 450–700</td>
+<td>离两国公园近，物价低</td>
+<td>城市本身没有亮点</td>
+</tr>
+<tr>
+<td>圣保罗·保利斯塔</td>
+<td>经济 300–450 / 标准 500–900</td>
+<td>地铁枢纽，吃喝方便</td>
+<td>周末街静</td>
+</tr>
+<tr>
+<td>萨尔瓦多·上城老城</td>
+<td>经济 250–400 / 标准 400–700</td>
+<td>步行到佩洛里尼奥</td>
+<td>老楼隔音一般，夜游注意安全</td>
+</tr>
+<tr>
+<td>马瑙斯·市区</td>
+<td>经济 250–400 / 标准 450–750</td>
+<td>进丛林团集合点近</td>
+<td>夏季湿热，设施偏旧</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍖 必吃经典</h3>
+        <ul>
+          <li>巴西烤肉 churrasco：连续上肉的自助，R$80–120/人</li>
+          <li>Feijoada 黑豆炖肉：周五传统国菜</li>
+          <li>Moqueca 椰香炖鱼/炖虾：巴伊亚招牌</li>
+          <li>Pão de queijo 芝士面包球：早餐必配</li>
+        </ul>
+        <h3>☕ 在地名物</h3>
+        <ul>
+          <li>巴西咖啡：全球最大生产国，精品豆产区 Minas</li>
+          <li>Caipirinha 鸡尾酒：甘蔗酒+青柠，国民饮品</li>
+          <li>巴西坚果 + 蜂胶（伴手礼）</li>
+          <li>Tambaqui 亚马逊河鱼（马瑙斯特色）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>Acarajé 炸豆饼夹虾（萨尔瓦多街头名片）</li>
+          <li>Pastel de feira 炸馅饼（市场标配）</li>
+          <li>Coxinha 鸡肉炸丸子</li>
+          <li>Açaí 巴西莓碗（北部热带水果）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>里约科帕卡巴纳/伊帕内玛海滨餐厅</li>
+          <li>圣保罗日本街 Liberdade + 市政市场</li>
+          <li>萨尔瓦多佩洛里尼奥老城</li>
+          <li>伊瓜苏小镇阿根廷烤肉店</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 巴西烤肉自助「连续上肉」传统，吃完翻桌上小牌；② 伊瓜苏与萨尔瓦多的「游客价」菜单常见，先看本地人点的；③ 海鲜注意问清时价（peixe do dia）；④ 自来水不可直饮，全程买瓶装水（R$3–5）；⑤ 街边水果摊秤可能不准，选明码标价店。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 巴西签证（e-Visa 电子签，出行前 1 个月办）</li>
+        <li>雷亚尔现金（小额场景多，2000–3000 BRL 备用）+ Visa/Master 卡</li>
+        <li>充电转接头（127V A/B/C/N 型）</li>
+        <li>防晒霜 SPF50+ + 遮阳帽 + 驱蚊液（亚马逊必备）</li>
+      </ul>
+      <ul>
+        <li>国内航班提前 1 个月订（Gol/LATAM）</li>
+        <li>基督山/糖面包/伊瓜苏门票官网提前预约</li>
+        <li>下载 Uber + 99 + Google 地图，离线地图缓存</li>
+        <li>查天气：里约雨季、伊瓜苏水量、亚马逊水位</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证必须提前办</strong>：中国护照进巴西需签证，电子签也要 1 个月，机票酒店行程单一次给齐；② <strong>治安问题</strong>：里约/圣保罗海滩不戴贵重物品，夜间不走路过大桥与贫民窟入口，打车用 App；③ <strong>圣保罗/里约机场多</strong>：圣保罗 GRU/CGH 两场相距 30km，走错机场误机风险高，出发前核对代码；④ <strong>伊瓜苏跨两国</strong>：巴西侧与阿根廷侧各需半天+，持美签/申根可当天往返，别忘了带护照。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      巴西是「<strong>热情与野性并存</strong>」的目的地——里约的海滩与桑巴、伊瓜苏的万钧瀑布、萨尔瓦多的非洲色彩、亚马逊的粉红海豚与食人鱼、巴西利亚的现代主义乌托邦，20 天刚好串成一条东南—东北—北部的大环线。签证和国内航班是两道硬门槛，办好事、订好票，剩下的就是跟着巴西的节奏慢慢热起来。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#5e2b6e",
+    "d": 3,
+    "n": "巴西主线 · 里约→伊瓜苏→圣保罗→萨尔瓦多→马瑙斯→巴西利亚",
+    "pts": [
+      [
+        -22.907,
+        -43.173
+      ],
+      [
+        -25.695,
+        -54.437
+      ],
+      [
+        -23.551,
+        -46.633
+      ],
+      [
+        -12.977,
+        -38.501
+      ],
+      [
+        -3.119,
+        -60.022
+      ],
+      [
+        -15.794,
+        -47.882
+      ]
+    ]
+  },
+  {
+    "c": "#e8b923",
+    "d": 2,
+    "n": "返程转场 · 巴西利亚→圣保罗",
+    "pts": [
+      [
+        -15.794,
+        -47.882
+      ],
+      [
+        -23.551,
+        -46.633
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -22.952,
+    "lng": -43.21,
+    "name": "里约·基督山",
+    "t": "D2 上午 · 2.5h",
+    "fee": "R$130–150",
+    "note": "科科瓦多小火车、俯瞰全城"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -22.949,
+    "lng": -43.155,
+    "name": "里约·糖面包山",
+    "t": "D2 下午 · 2h",
+    "fee": "约 R$150",
+    "note": "两段缆车、海湾日落"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -22.971,
+    "lng": -43.182,
+    "name": "里约·科帕卡巴纳海滩",
+    "t": "D3 下午 · 2h+",
+    "fee": "免费",
+    "note": "马赛克步道、沙滩排球"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -25.695,
+    "lng": -54.437,
+    "name": "伊瓜苏瀑布",
+    "t": "D5–D6 · 2 天",
+    "fee": "R$113 + AR$60,000",
+    "note": "全景步道、魔鬼咽喉"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -23.562,
+    "lng": -46.654,
+    "name": "圣保罗·保利斯塔大道",
+    "t": "D7 下午 · 2h",
+    "fee": "免费",
+    "note": "MASP、街头文化"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": -12.973,
+    "lng": -38.51,
+    "name": "萨尔瓦多·佩洛里尼奥",
+    "t": "D9 全天 · 1 天",
+    "fee": "免费",
+    "note": "黄金教堂、战舞"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": -3.119,
+    "lng": -60.022,
+    "name": "亚马逊·马瑙斯",
+    "t": "D11–D13 · 3 天",
+    "fee": "团费 USD 420–580",
+    "note": "两河交汇、粉红海豚"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": -15.793,
+    "lng": -47.866,
+    "name": "巴西利亚·三权广场",
+    "t": "D14 上午 · 2.5h",
+    "fee": "免费",
+    "note": "国会双子塔、尼迈耶建筑"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-27.0, -62.0], [-1.5, -41.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#5e2b6e\"></span>巴西主线（里约→伊瓜苏→圣保罗→萨尔瓦多→马瑙斯→巴西利亚）<br><span class=\"sw\" style=\"background:#e8b923\"></span>返程转场（巴西利亚→圣保罗）<br><span class=\"sw dash\"></span>萨尔瓦多—马瑙斯段为航班转场（经圣保罗中转）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

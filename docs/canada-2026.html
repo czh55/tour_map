@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 加拿大 20 天全景攻略 · 枫叶之国东西大环线</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #c0392b;
+    --red-light: #d05a45;
+    --gold: #d9a441;
+    --ink: #2e2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e6ddcc;
+    --blue: #2a9d8f;
+    --cover1: #7c1018;
+    --ov1: rgba(124,16,24,.88);
+    --ov2: rgba(192,57,43,.72);
+    --ov3: rgba(222,90,60,.38);
+    --ov4: rgba(240,140,90,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #eef4f0;
+    --head-bg: rgba(192,57,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/canada/canada-cover.jpg" alt="加拿大旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 20 天环线 · 东西海岸 + 落基山</div>
+      <h1>加拿大 20 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 多伦多 · 尼亚加拉瀑布 · 班夫路易斯湖 · 魁北克城</div>
+      <div class="meta">
+        <span>🛫 行程链：多伦多 → 尼亚加拉 → 温哥华 → 班夫/路易斯湖 → 贾斯珀 → 渥太华/蒙特利尔 → 魁北克城</span>
+        <span>📅 时间窗口：20 天 19 晚 · 最佳 6–9 月</span>
+        <span>✈️ 北京⇄多伦多 直飞约 12.5–13 小时 · 往返 7000–14000 元</span>
+        <span>🛂 签证：中国护照需加拿大访问签证（eTA 不适用）</span>
+        <span>🕐 时差 -13h（东部）· 🔌 电压 120V A/B 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 20 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 20 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">多伦多</span>
+      <span class="arrow">→</span>
+      <span class="node">尼亚加拉瀑布</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">温哥华</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">班夫/路易斯湖</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">贾斯珀</span>
+      <span class="arrow">→</span>
+      <span class="node">渥太华</span>
+      <span class="arrow">→</span>
+      <span class="node">蒙特利尔</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">魁北克城</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 20 天怎么安排最合理</span>
+      加拿大是「<strong>一国之境、两种世界</strong>」：落基山的翡翠湖泊与冰川、东岸的法式古城与大都会。20 天拆成三段最顺——<strong>多伦多+尼亚加拉 4 天、温哥华+落基山（班夫/路易斯湖/贾斯珀）9 天、渥太华+蒙特利尔+魁北克城 7 天</strong>，中间用两次内陆航班衔接。核心认知：东西海岸直线距离 4000+ 公里，<strong>跨段必须坐飞机</strong>，落基山段再自驾，别幻想坐火车横穿加拿大。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需提前申请<strong>加拿大访问签证（10 年多次）</strong>；eTA 仅适用免签国，中国护照不适用，周期 2–6 周</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>东部（多伦多/渥太华/蒙特利尔/魁北克城）+ 西部（温哥华/班夫/贾斯珀）两段拼图</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 20 天从多伦多返程，直飞约 13h；6–9 月旺季机票需提前 2–3 个月订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>多伦多 → 尼亚加拉 → 温哥华 → 班夫/路易斯湖 → 贾斯珀 → 渥太华 → 蒙特利尔 → 魁北克城</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 20000–30000 ／ 标准 35000–50000 ／ 舒适 80000–120000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办签证（含指纹采集）② 订内陆机票（多伦多—温哥华）③ 班夫/路易斯湖住宿提前 3 个月</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>6–9 月落基山黄金季；9 月底–10 月中东岸枫叶季；12–3 月滑雪季（班夫/惠斯勒）</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>信用卡（Visa/Master）覆盖极广 + 少量现金；小费文化：餐厅 15–20%</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证别拖</strong>：加拿大访问签要在线填表 + 录指纹 + 递交材料，周期 2–6 周、旺季更久，eTA 对中国护照无效，出发前至少留 2 个月。② <strong>东西海岸距离是隐形预算</strong>：多伦多—温哥华飞行约 5h、单程 800–2000 元，落基山段建议卡尔加里租车自驾，旺季租车要提前订且务必确认全险。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 20 天版</h2>
+
+    <p>以下为 20 天 19 晚的推荐节奏：先东部 4 天，飞西部 9 天（温哥华 + 落基山自驾），再飞回东部 7 天收尾。每日主景点 ≤2 个，落基山段以自驾串联。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵多伦多</td>
+<td>北京✈多伦多（直飞约 12.5–13h），入住市中心，傍晚湖滨看日落</td>
+<td>多伦多</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>CN塔 + 安大略水族馆 → 圣劳伦斯市场 → 古酿酒厂区</td>
+<td>多伦多</td>
+<td>都市核心</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>皇家安大略博物馆 ROM → 卡萨罗玛城堡 → 央街/伊顿中心</td>
+<td>多伦多</td>
+<td>博物馆与城堡</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>尼亚加拉瀑布一日：游船 + 瀑布步道 + 夜间灯光秀</td>
+<td>多伦多</td>
+<td>尼亚加拉日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>✈温哥华（约 5h）：斯坦利公园海堤骑行 → 格兰维尔岛</td>
+<td>温哥华</td>
+<td>飞抵+海岸公园</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>卡皮拉诺吊桥 → 煤气镇蒸汽钟 → 英吉利湾日落</td>
+<td>温哥华</td>
+<td>吊桥与老镇</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>出海观鲸（可选）→ 下午✈卡尔加里，宿机场附近</td>
+<td>卡尔加里</td>
+<td>出海+转场</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>车到班夫（约 1.5h）：硫磺山缆车 + 班夫镇 + 弓河瀑布</td>
+<td>班夫</td>
+<td>班夫初探</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>路易斯湖 + 梦莲湖：翠湖木舟 + 十峰谷徒步</td>
+<td>班夫</td>
+<td>湖光山色</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>冰原大道：弓湖 → 佩托湖 → 哥伦比亚冰原雪车，宿贾斯珀</td>
+<td>贾斯珀</td>
+<td>冰原大道</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>玛琳湖游船（精灵岛）+ 玛琳峡谷</td>
+<td>贾斯珀</td>
+<td>贾斯珀湖谷</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>金字塔湖晨雾 → 返卡尔加里✈渥太华（夜抵）</td>
+<td>渥太华</td>
+<td>转场东岸</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>国会山 + 里多运河 + 拜沃德市场</td>
+<td>渥太华</td>
+<td>首都日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>蒙特利尔：圣母大教堂 + 老港 + 皇家山</td>
+<td>蒙特利尔</td>
+<td>法式风情</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>蒙特利尔：麦吉尔大学 + 小意大利 + 圣约瑟夫大教堂</td>
+<td>蒙特利尔</td>
+<td>老城漫步</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>魁北克城：芳堤娜城堡 + 小香普兰街 + 老城墙</td>
+<td>魁北克城</td>
+<td>北美最古老</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>蒙莫朗西瀑布 + 圣安妮峡谷，晚返蒙特利尔</td>
+<td>蒙特利尔</td>
+<td>瀑布与峡谷</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>蒙特利尔→多伦多（VIA 火车约 5h），下午自由活动</td>
+<td>多伦多</td>
+<td>火车转场</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>尼亚加拉湖边小镇（可选）或多伦多购物/博物馆自由日</td>
+<td>多伦多</td>
+<td>自由日</td>
+</tr>
+<tr>
+<td>D20 返程</td>
+<td>多伦多✈北京（直飞约 13h），到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍维多利亚观鲸（D7）与尼亚加拉湖边小镇（D19）；落基山段缩为 5 天（班夫 2+路易斯湖 1+贾斯珀 2）也能走完精华。枫叶季（9 月底–10 月中）优先东岸蒙特利尔—魁北克一带；冬季（12–3 月）改走班夫滑雪 + 温哥华，东岸缩为 4 天。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 20 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达多伦多</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–15:00</td><td class="t-what">北京✈多伦多（直飞约 12.5–13h，时差 -13h，机上调整作息）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">入境取行李，皮尔逊机场坐 UP 机场快线（约 25 分钟、12.35 加元）到市中心联合车站</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">入住市中心酒店，圣劳伦斯市场或央街简单晚餐</td></tr>
+          <tr><td class="t-time">20:30–22:00</td><td class="t-what">湖滨步道散步看安大略湖日落，倒时差早睡</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">时差 -13h：北京中午 = 多伦多前一晚 23 点，前 2 天行程安排轻松些；UP 快线比打车省很多。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · CN塔 + 水族馆</span>
+          <span class="d-desc">都市核心一日</span>
+          <span class="d-tag ">🏙 都市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>CN塔</b>（成人约 38 加元）：360° 观景台 + 玻璃地板，俯瞰安大略湖与天际线</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>安大略水族馆 Ripley's</b>（成人约 49 加元）：海底隧道、水母区，亲子必去</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：圣劳伦斯市场（世界最佳市场之一）：龙虾卷、腌肉三明治</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>古酿酒厂区 Distillery District</b>（免费）：维多利亚红砖厂房 + 艺廊咖啡馆</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what">央街/伊顿中心购物 + 晚餐：唐人街或小意大利</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣劳伦斯市场周六有农夫市集最热闹；CN塔黄昏登塔能同时看到白天与夜景。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 博物馆与城堡</span>
+          <span class="d-desc">ROM + 卡萨罗玛</span>
+          <span class="d-tag alt">🏛 博物馆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>皇家安大略博物馆 ROM</b>（成人约 25 加元）：恐龙骨骼 + 中国馆 + 原住民文明</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：皇后西街 Queen West 网红早午餐/咖啡</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>卡萨罗玛城堡</b>（成人约 40 加元）：北美最大私人城堡，60 间房 + 地下隧道</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">湖心岛渡轮（往返约 8.6 加元）：多伦多天际线最佳机位，骑行/散步</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：安大略湖畔餐厅或市区海鲜吧</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">湖心岛渡轮从湖滨码头出发，夏季末班船约 21:00；ROM 周五夜场营业到 21:00。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 尼亚加拉瀑布</span>
+          <span class="d-desc">世界奇观一日</span>
+          <span class="d-tag ">💦 尼亚加拉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">多伦多乘大巴/自驾到尼亚加拉瀑布城（约 1.5–2h）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>霍恩布洛尔游船</b>（成人约 37 加元）：近距离冲进马蹄瀑布水雾，备雨衣</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：瀑布观景餐厅或 Table Rock 简餐</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>瀑布步道 + 观景塔</b>（观景免费，塔约 22 加元）：从高到低多角度看三大瀑布</td></tr>
+          <tr><td class="t-time">18:00–21:00</td><td class="t-what">夜间彩灯瀑布 + 烟火（夏季周五/周日），返多伦多</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">游船全程约 20 分钟，5–10 月开放；瀑布小镇 Clifton Hill 的鬼屋与过山车适合带娃。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 飞抵温哥华</span>
+          <span class="d-desc">斯坦利公园 + 格兰维尔岛</span>
+          <span class="d-tag alt">🛫 飞西部</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">多伦多✈温哥华（约 5h，加航/西捷，提前订单程约 800–2000 元）</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">入住温哥华市中心，午餐：Robson 街拉面/寿司</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what"><b>斯坦利公园</b>（免费）：海堤步道骑行/徒步 + 图腾柱 + 狮门桥全景</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what"><b>格兰维尔岛</b>（免费）：公共市场吃海鲜 + 街头艺人，日落返酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">斯坦利公园租单车约 10–15 加元/小时，骑行一圈约 2h；夏季周末人多建议错峰。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 吊桥与老镇</span>
+          <span class="d-desc">卡皮拉诺 + 煤气镇</span>
+          <span class="d-tag ">🌉 吊桥日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>卡皮拉诺吊桥</b>（成人约 75 加元，含公园）：450 英尺高空吊桥 + 树顶探险</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：北温渔人码头炸鱼薯条</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>煤气镇</b>（免费）：蒸汽钟 + 红砖老建筑 + 精品店</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>英吉利湾</b>（免费）：沙滩看日落 + 日落沙滩草坪</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：温哥华海鲜（三文鱼/生蚝/帝王蟹）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卡皮拉诺吊桥票价高但体验值；煤气镇蒸汽钟每 15 分钟鸣笛，整点拍照最出片。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 出海 + 转场卡尔加里</span>
+          <span class="d-desc">观鲸 / 维多利亚可选</span>
+          <span class="d-tag alt">🐳 出海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–11:00</td><td class="t-what"><b>出海观鲸/观海豚</b>（可选，约 120–160 加元）：温哥华外海虎鲸、座头鲸</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：渔人码头/市中心简餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">下午✈卡尔加里（约 1.5h，班次密），宿机场附近酒店</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：卡尔加里牛排/艾伯塔牛肉，早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">观鲸季节性（4–10 月）且晕船率高，备晕船药；也可改为维多利亚一日游但回程航班较晚。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 班夫初探</span>
+          <span class="d-desc">硫磺山缆车 + 班夫镇</span>
+          <span class="d-tag ">🏔 班夫日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">卡尔加里取车/乘巴士到班夫镇（约 1.5h，一路落基山风光）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>班夫硫磺山缆车</b>（成人约 70 加元往返）：山顶俯瞰弓河谷 + 班夫镇全景</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：班夫镇主街 Cascade 街区（麋鹿肉汉堡/烤三文鱼）</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what"><b>弓河瀑布 + 惊喜角</b>（免费）：弓河碧水与雪山背景</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">班夫镇漫步：手作店 + 班夫公园博物馆；晚餐镇内</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">硫磺山缆车旺季排队 1h+，早上 9 点前到最稳；6–9 月班夫镇停车一位难求，尽量住镇内步行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 路易斯湖 + 梦莲湖</span>
+          <span class="d-desc">翡翠湖光山色</span>
+          <span class="d-tag alt">🏞 湖光日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">班夫出发到路易斯湖（约 1h 车程）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>路易斯湖</b>（免费）：翡翠色冰川湖 + 湖畔木舟（约 90 加元/1h）+ 费尔蒙城堡酒店</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：路易斯湖滑雪场山顶餐厅/湖畔简餐</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>梦莲湖</b>（免费）：十峰谷全景 + 岩石堆步道，全球拍照打卡地</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">返班夫，路上佩托湖观景点（蓝绿色冰川湖）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">梦莲湖 6–10 月需预约公园穿梭巴士/自驾车位；想避开人流建议下午 3 点后前往。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 冰原大道 → 贾斯珀</span>
+          <span class="d-desc">哥伦比亚冰原雪车</span>
+          <span class="d-tag ">❄️ 冰原日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">沿<strong>冰原大道（93 号公路）</strong>北上：北美最壮观公路之一</td></tr>
+          <tr><td class="t-time">09:30–10:30</td><td class="t-what">弓湖 Bow Lake：湖畔红色小木屋 + 雪山倒影</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">佩托湖 Peyto Lake 观景台：冰川湖经典蓝</td></tr>
+          <tr><td class="t-time">12:30–15:30</td><td class="t-what"><b>哥伦比亚冰原冰原雪车</b>（成人约 119 加元）：上冰川行走 + 天空步道（联票）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">抵达贾斯珀镇，晚餐 + 休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">冰原大道全程 232 公里，沿途多观景台，冬季（11 月–5 月）部分路段封闭；雪车/天空步道联票提前官网订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 贾斯珀玛琳湖</span>
+          <span class="d-desc">精灵岛 + 玛琳峡谷</span>
+          <span class="d-tag alt">🛶 贾斯珀日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">贾斯珀镇出发到玛琳湖（约 40min 车程）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>玛琳湖游船</b>（成人约 90 加元）：翡翠湖 + 斯皮里特岛精灵岛</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：湖滨野餐或返镇简餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>玛琳峡谷</b>（免费）：六桥徒步，瀑布与峡谷深谷</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">贾斯珀镇晚餐：鹿肉/手工披萨；夜观星空（暗夜保护区）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">玛琳湖游船夏季班次密集但旺季仍要早到；贾斯珀是暗夜星空保护区，9 月后银河肉眼可见。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 转场渥太华</span>
+          <span class="d-desc">金字塔湖晨雾 → 飞东岸</span>
+          <span class="d-tag ">🛫 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">贾斯珀自由：金字塔湖/帕特里夏湖晨雾（免费）</td></tr>
+          <tr><td class="t-time">10:30–14:00</td><td class="t-what">驱车/巴士返卡尔加里（约 4h），机场简餐</td></tr>
+          <tr><td class="t-time">15:30–20:00</td><td class="t-what">卡尔加里✈渥太华（经多伦多/温哥华转机，全程约 5–6h）</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">入住渥太华市中心，早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">转机城市视当日航班而定，行李直挂省心；渥太华夏季舒适，7–9 月晚上国会山有灯光秀。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 渥太华首都日</span>
+          <span class="d-desc">国会山 + 里多运河</span>
+          <span class="d-tag alt">🏛 首都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>国会山</b>（免费）：和平塔 + 国会图书馆，7–9 月有免费导览</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：拜沃德市场 ByWard Market：枫糖培根汉堡/奶酪</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>里多运河</b>（免费）：夏季可租皮划艇/骑行，冬季是世界最大滑冰场</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>加拿大国家美术馆</b>（成人约 20 加元）：大蜘蛛雕塑 + 当代馆</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：Sparks 街或市场区</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国会山导览需安检排队，热门时段提前 1h 到；7–9 月夜间有灯光音乐秀。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 蒙特利尔法式风情</span>
+          <span class="d-desc">圣母大教堂 + 皇家山</span>
+          <span class="d-tag ">🇫🇷 法式日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">渥太华乘 VIA 火车/大巴到蒙特利尔（约 2h）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>圣母大教堂</b>（成人约 10 加元）：北美最大教堂之一，蓝金穹顶 + AURA 灯光秀（晚间另购）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：老港法餐/肉汁奶酪薯条 Poutine</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>老港</b>（免费）：圣劳伦斯河畔 + 摩天轮（约 25 加元）</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>皇家山</b>（免费）：观景台俯瞰蒙特利尔天际线</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣母大教堂 AURA 灯光秀（约 30 加元）是必体验；皇家山观景台日落绝佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 蒙特利尔老城漫步</span>
+          <span class="d-desc">麦吉尔 + 小意大利</span>
+          <span class="d-tag alt">🚶 老城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>麦吉尔大学</b>（免费）：红砖校园 + 罗迪克公园</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>小意大利 + Jean-Talon 市场</b>：农场直供市场 + 手工意面</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>圣约瑟夫大教堂</b>（免费）：北美最大圆顶教堂 + 观景台</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">高原区 Plateau：彩虹门廊 + 咖啡店街拍，晚餐：百吉饼/熏肉三明治（Schwartz's）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Jean-Talon 市场冬季也有室内部分；Schwartz's 熏肉店排队久，可外带。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 魁北克城老城</span>
+          <span class="d-desc">芳堤娜城堡 + 小香普兰街</span>
+          <span class="d-tag ">🏰 魁北克日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">蒙特利尔乘 VIA 火车/大巴到魁北克城（约 3h）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">入住老城酒店，午餐：法式油封鸭/枫糖奶油</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>芳堤娜城堡</b>（大堂免费参观）：北美最上镜酒店 + 杜夫兰步道</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>小香普兰街</b>（免费）：鹅卵石街道 + 手工艺品店 + 街头画家</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">老城墙夜景 + 晚餐：魁北克法餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">芳堤娜城堡建于 1893 年，是新法兰西地标；老城是世界遗产，鹅卵石路穿平底鞋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 魁北克瀑布峡谷</span>
+          <span class="d-desc">蒙莫朗西 + 圣安妮峡谷</span>
+          <span class="d-tag alt">💧 瀑布日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>蒙莫朗西瀑布</b>（成人约 16 加元）：尼亚加拉 1.5 倍高，缆车 + 瀑布吊桥</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：瀑布观景餐厅</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>圣安妮峡谷</b>（成人约 17 加元）：三座吊桥穿越峡谷瀑布群</td></tr>
+          <tr><td class="t-time">16:30–19:00</td><td class="t-what">返蒙特利尔（约 3h），晚餐 + 休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣安妮峡谷秋季枫叶红遍峡谷最震撼；两个瀑布可买联票。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 蒙特利尔 → 多伦多</span>
+          <span class="d-desc">VIA 火车转场</span>
+          <span class="d-tag ">🚄 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–14:00</td><td class="t-what">蒙特利尔乘 VIA 火车到多伦多（约 5h，沿途安大略湖景色）</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">自由活动：CN塔补夜景/古酿酒厂区逛买</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：多伦多中餐/日料（华人区一绝）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">VIA 经济舱提前订有折扣，比机票省心；多伦多北约克/万锦中餐密度北美前列。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 多伦多自由日</span>
+          <span class="d-desc">湖边小镇 / 购物</span>
+          <span class="d-tag ">🛍 自由日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">尼亚加拉湖边小镇 Niagara-on-the-Lake（可选）：英式小镇 + 酒庄品酒（约 30 加元/人）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：小镇酒庄餐厅/湖边</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">回多伦多：伊顿中心/约克维尔购物补货，或皇家安大略博物馆补漏</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">告别晚餐：湖畔牛排/生蚝吧</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">尼亚加拉湖边小镇往返约 3h；也可改多伦多动物园或央街扫货，按体力取舍。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 返程</span>
+          <span class="d-desc">多伦多✈北京</span>
+          <span class="d-tag return">🚀 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">自由活动 + 退房，前往皮尔逊机场</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">免税店扫货：枫糖浆、冰酒、枫叶纪念品</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：机场</td></tr>
+          <tr><td class="t-time">15:00</td><td class="t-what">多伦多✈北京（直飞约 13h），次日抵达</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">冰酒是加拿大特色伴手礼（需托运）；离境多留时间过安检，多伦多机场国际区人多。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-cover.jpg" alt="班夫·路易斯湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">班夫·路易斯湖 <small>免费（木舟约 90 加元）</small></div>
+          <div class="sc-feat">加拿大落基山名片。<b>翡翠湖 + 费尔蒙城堡</b>，冰川湖蓝。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚗 班夫出发 1h 车程</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-1.jpg" alt="尼亚加拉大瀑布" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">尼亚加拉大瀑布 <small>免费（游船约 37 加元）</small></div>
+          <div class="sc-feat">世界三大瀑布之一。<b>马蹄瀑布 + 霍恩布洛尔游船</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 4–6h · 🚗 多伦多 1.5–2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-2.jpg" alt="多伦多·CN塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">多伦多·CN塔 <small>约 38 加元</small></div>
+          <div class="sc-feat">多伦多地标。<b>360° 观景台 + 玻璃地板</b>，俯瞰安大略湖。</div>
+          <div class="sc-meta">📅 9:00–22:30 · ⏱ 1–2h · 🚇 地铁联合站/湖滨</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-3.jpg" alt="温哥华·斯坦利公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">温哥华·斯坦利公园 <small>免费</small></div>
+          <div class="sc-feat">北美最大城市公园。<b>海堤骑行 + 图腾柱 + 狮门桥</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–4h · 🚌 市中心步行可达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-4.jpg" alt="班夫·梦莲湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">班夫·梦莲湖 <small>免费（需预约车位）</small></div>
+          <div class="sc-feat"><b>十峰谷全景</b>，加拿大 20 加元纸币经典机位。</div>
+          <div class="sc-meta">📅 6–10 月开放 · ⏱ 2h · 🚗 路易斯湖 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-5.jpg" alt="贾斯珀·哥伦比亚冰原" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">贾斯珀·哥伦比亚冰原 <small>雪车约 119 加元</small></div>
+          <div class="sc-feat"><b>冰原大道 + 阿萨巴斯卡冰川</b>，可上冰川行走。</div>
+          <div class="sc-meta">📅 4–10 月 · ⏱ 3h · 🚗 冰原大道旁</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-6.jpg" alt="蒙特利尔·圣母大教堂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒙特利尔·圣母大教堂 <small>约 10 加元</small></div>
+          <div class="sc-feat">北美最大教堂之一。<b>蓝金穹顶 + AURA 灯光秀</b>。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 1–2h · 🚇 地铁 Place-d'Armes</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/canada/canada-7.jpg" alt="魁北克城·芳堤娜城堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">魁北克城·芳堤娜城堡 <small>大堂免费参观</small></div>
+          <div class="sc-feat">北美最上镜酒店。<b>老城 + 小香普兰街</b>，世界遗产。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚶 老城内步行</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（路易斯湖、尼亚加拉瀑布、CN塔、斯坦利公园、梦莲湖、哥伦比亚冰原、圣母大教堂、芳堤娜城堡均为加拿大实景）。更多免费景点：班夫弓河瀑布、温哥华煤气镇、蒙特利尔皇家山、渥太华国会山。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 人民币 ≈ 0.19 加元估算。往返机票按淡旺季混合 7000–14000 元计，旺季（6–9 月）上浮 30–50%。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（20000–30000）</th>
+<th>标准（35000–50000）</th>
+<th>舒适（80000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄多伦多 7000–10000</td>
+<td>含内陆段 9000–13000</td>
+<td>直飞商务/灵活 20000–30000</td>
+</tr>
+<tr>
+<td>住宿（19 晚）</td>
+<td>青旅/民宿 350–550/晚</td>
+<td>三星/连锁 800–1500/晚</td>
+<td>费尔蒙/高端 2000–4000/晚</td>
+</tr>
+<tr>
+<td>交通（租车+内陆航班）</td>
+<td>内陆航班+巴士 5000–7000</td>
+<td>租车+航班 8000–12000</td>
+<td>租车+包车+头等 18000–30000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 1500–2500</td>
+<td>含缆车/雪车/游船约 3000–5000</td>
+<td>全含+直升机遇难 8000–12000</td>
+</tr>
+<tr>
+<td>餐饮（20 天）</td>
+<td>快餐+超市 3500–5000</td>
+<td>正常下馆子 7000–10000</td>
+<td>法餐/牛排/海鲜 20000–30000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 45000 元）</span>
+      往返机票 11000 + 住宿 19 晚 18000（平均 950/晚）+ 租车与内陆航班 10000 + 门票 4000 + 餐饮 8500 + 签证/杂费 1500 ≈ <strong>43000–47000 元</strong>。大头是住宿与内陆交通；落基山段租车+班夫住宿提前 3 个月订能省 3000–5000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>18.1 只看落基山与东岸的 15 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D3 多伦多+尼亚加拉</li>
+
+      <li>D4–D9 温哥华+班夫+路易斯湖+贾斯珀</li>
+
+      <li>D10–D14 渥太华+蒙特利尔+魁北克城</li>
+
+      <li>D15 返程</li>
+
+    </ul>
+
+    <h3>18.2 冬季滑雪版（12–3 月）</h3>
+
+
+    <p>落基山段延长为 10 天：班夫+路易斯湖滑雪场（如阳光村、路易斯湖滑雪场）+ 冰原大道雪景 + 班夫温泉；东岸缩为 3–4 天。冬季机票便宜 30–40%，但自驾必须确认雪胎与四驱。班夫滑雪季 11 月–次年 5 月。</p>
+
+    <h3>18.3 亲子版调整</h3>
+
+
+    <p>带娃推荐：多伦多水族馆+动物园（2 天）、尼亚加拉蝴蝶馆、温哥华斯坦利公园骑行、班夫缆车与梦莲湖；砍掉观鲸与贾斯珀长线徒步。加拿大国家公园门票按车计费（约 20–30 加元/天），亲子自驾最划算。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 加拿大 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→多伦多约 12.5–13h</td>
+<td>往返 7000–14000 元</td>
+<td>国航/海航/加航，旺季上浮明显</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>14–20h</td>
+<td>5000–9000 元</td>
+<td>经上海/香港/首尔/东京，便宜但费时</td>
+</tr>
+<tr>
+<td>境内航班</td>
+<td>多伦多—温哥华约 5h</td>
+<td>单程 800–2000 元</td>
+<td>加航/西捷，跨东西岸必飞</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 加拿大境内交通核心提醒</span>
+      跨省距离是隐形时间杀手：<strong>多伦多—温哥华飞行约 5h</strong>，别幻想火车横穿。落基山段<strong>自驾最自由</strong>（卡尔加里租车、班夫/埃德蒙顿还车），旺季（6–9 月）提前 2–3 个月租；冬季冰原大道部分路段封闭，出发前查路况。VIA 火车只建议蒙特利尔—多伦多这类中短程。
+    </div>
+
+    <h3>19.2 加拿大境内交通</h3>
+    <ul>
+      <li><strong>内陆航班</strong>：多伦多—温哥华 5h、卡尔加里/埃德蒙顿—渥太华 4.5h，加航/西捷提前 2 个月订</li>
+      <li><strong>自驾（落基山）</strong>：卡尔加里取车→班夫→路易斯湖→贾斯珀→埃德蒙顿还车，每段 1.5–4h</li>
+      <li><strong>火车 VIA Rail</strong>：蒙特利尔—多伦多约 5h，经济舱提前订有折扣；横贯线耗时长不建议</li>
+      <li><strong>城际巴士</strong>：多伦多—渥太华 4.5h、渥太华—蒙特利尔 2h，Megabus/灰狗</li>
+      <li><strong>市内交通</strong>：多伦多 TTC 地铁、蒙特利尔 STM、温哥华 SkyTrain，单程 3–5 加元</li>
+      <li><strong>出租车/Uber</strong>：起步价 4–6 加元，市区短途方便；机场快线/天车更省</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>多伦多·市中心</td>
+<td>经济 450–750 / 标准 900–1500</td>
+<td>景点步行可达，地铁方便</td>
+<td>旺季贵</td>
+</tr>
+<tr>
+<td>温哥华·市中心/煤气镇</td>
+<td>经济 500–800 / 标准 1000–1800</td>
+<td>海景与美食集中</td>
+<td>停车贵，酒店老</td>
+</tr>
+<tr>
+<td>班夫镇/路易斯湖</td>
+<td>经济 800–1500 / 标准 1800–3500</td>
+<td>国家公园核心，出门即景</td>
+<td>旺季 3 个月一房难求</td>
+</tr>
+<tr>
+<td>贾斯珀镇</td>
+<td>经济 600–1000 / 标准 1200–2500</td>
+<td>暗夜星空，小镇安静</td>
+<td>房源少，旺季抢手</td>
+</tr>
+<tr>
+<td>蒙特利尔·老港/高原区</td>
+<td>经济 450–750 / 标准 800–1400</td>
+<td>法式风情，夏季节庆多</td>
+<td>老建筑隔音一般</td>
+</tr>
+<tr>
+<td>魁北克城·老城</td>
+<td>经济 500–900 / 标准 1000–1800</td>
+<td>城墙内步行，夜景绝美</td>
+<td>冬季冷，车位难找</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍁 必吃经典</h3>
+        <ul>
+          <li>肉汁奶酪薯条 Poutine：魁北克国民小吃</li>
+          <li>蒙特利尔百吉饼 + 熏肉三明治（Schwartz's）</li>
+          <li>枫糖浆松饼/枫糖黄油</li>
+          <li>班夫麋鹿肉汉堡、艾伯塔牛排</li>
+        </ul>
+        <h3>🥩 西餐硬菜</h3>
+        <ul>
+          <li>艾伯塔牛排（卡尔加里）</li>
+          <li>魁北克油封鸭、法式洋葱汤</li>
+          <li>多伦多牛排馆/湖畔生蚝吧</li>
+          <li>温哥华帝王蟹、日料</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🦞 海鲜与特产</h3>
+        <ul>
+          <li>大西洋龙虾卷（圣劳伦斯市场）</li>
+          <li>太平洋三文鱼、温哥华生蚝吧</li>
+          <li>渔人码头炸鱼薯条</li>
+          <li>冰酒（尼亚加拉产区，伴手礼首选）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>多伦多圣劳伦斯市场、唐人街</li>
+          <li>温哥华格兰维尔岛公共市场</li>
+          <li>蒙特利尔老港 + Jean-Talon 市场</li>
+          <li>班夫镇 Cascade 街区</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① <strong>小费是硬规矩</strong>：餐厅 15–20%、小餐馆可 10%、快餐不给；② 加拿大餐厅分量普遍大，点菜别贪多；③ 落基山小镇餐厅旺季排队 1h+，热门店提前电话预约；④ 冰酒与枫糖浆免税店价格与市内差不多，机场买省行李额度。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 加拿大访问签证（提前 2–6 周，含录指纹）</li>
+        <li>信用卡 Visa/Master + 少量加元现金</li>
+        <li>电源转接头（120V A/B 美标插头）</li>
+        <li>手机卡/eSIM（可跨加美漫游）</li>
+      </ul>
+      <ul>
+        <li>内陆机票提前订（多伦多—温哥华）</li>
+        <li>班夫/路易斯湖住宿提前 3 个月</li>
+        <li>租车确认全险与冬季雪胎（如自驾）</li>
+        <li>下载 Google 地图离线包（落基山无信号）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证别拖</strong>：加拿大访问签材料多（在职证明、流水、行程）、要录指纹，周期 2–6 周，旺季更久；② <strong>东西岸机票 + 落基山租车是预算大头</strong>，提前 2–3 个月订；③ 国家公园门票买年票更划算（约 72 加元/年，两三次回本）；④ 冬季自驾冰原大道部分路段封闭，出发前查 Parks Canada 路况。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      加拿大是「<strong>一国之境、两种世界</strong>」——落基山的翡翠湖泊与冰川、东岸的法式古城与都会天际线。20 天一条大环线：尼亚加拉的水声、路易斯湖的翠色、魁北克老城的石板路，东西海岸各留 7 天、落基山 6 天，签证搞定、机票抢早，就是一场教科书级的枫叶国之旅。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c0392b",
+    "d": 3,
+    "n": "主环线 · 多伦多→尼亚加拉→温哥华→班夫→路易斯湖→贾斯珀",
+    "pts": [
+      [
+        43.6532,
+        -79.3832
+      ],
+      [
+        43.0962,
+        -79.0411
+      ],
+      [
+        49.2827,
+        -123.1207
+      ],
+      [
+        51.1784,
+        -115.5708
+      ],
+      [
+        51.4254,
+        -116.1773
+      ],
+      [
+        52.8737,
+        -118.0823
+      ]
+    ]
+  },
+  {
+    "c": "#2a9d8f",
+    "d": 3,
+    "n": "东部环线 · 渥太华→蒙特利尔→魁北克城",
+    "pts": [
+      [
+        45.4215,
+        -75.6972
+      ],
+      [
+        45.5019,
+        -73.5674
+      ],
+      [
+        46.8139,
+        -71.208
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 43.6426,
+    "lng": -79.3871,
+    "name": "多伦多·CN塔",
+    "t": "D2 上午 · 2h",
+    "fee": "约 38 加元",
+    "note": "360° 观景台、玻璃地板"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 43.0962,
+    "lng": -79.0411,
+    "name": "尼亚加拉·马蹄瀑布",
+    "t": "D4 全天 · 6h",
+    "fee": "免费（游船约 37 加元）",
+    "note": "霍恩布洛尔游船、夜间灯光秀"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 49.3043,
+    "lng": -123.1443,
+    "name": "温哥华·斯坦利公园",
+    "t": "D5 下午 · 3h",
+    "fee": "免费",
+    "note": "海堤骑行、图腾柱、狮门桥"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 51.1784,
+    "lng": -115.5708,
+    "name": "班夫·硫磺山",
+    "t": "D8 上午 · 2h",
+    "fee": "缆车约 70 加元",
+    "note": "弓河谷全景、班夫镇"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 51.4254,
+    "lng": -116.1773,
+    "name": "班夫·路易斯湖",
+    "t": "D9 上午 · 3h",
+    "fee": "免费（木舟约 90 加元）",
+    "note": "翡翠湖、费尔蒙城堡、木舟"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 52.2183,
+    "lng": -117.244,
+    "name": "贾斯珀·哥伦比亚冰原",
+    "t": "D10 中午 · 3h",
+    "fee": "雪车约 119 加元",
+    "note": "冰原雪车、天空步道"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 45.5045,
+    "lng": -73.5569,
+    "name": "蒙特利尔·圣母大教堂",
+    "t": "D14 上午 · 2h",
+    "fee": "约 10 加元",
+    "note": "蓝金穹顶、AURA 灯光秀"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 46.8117,
+    "lng": -71.2078,
+    "name": "魁北克城·芳堤娜城堡",
+    "t": "D16 下午 · 2h",
+    "fee": "大堂免费参观",
+    "note": "老城、小香普兰街"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[42.5, -124.5], [54.0, -70.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c0392b\"></span>主环线（多伦多→尼亚加拉→温哥华→班夫→贾斯珀）<br><span class=\"sw\" style=\"background:#2a9d8f\"></span>东部环线（渥太华→蒙特利尔→魁北克城）<br><span class=\"sw dash\"></span>多伦多—温哥华、贾斯珀—渥太华为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

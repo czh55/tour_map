@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 尼泊尔 12 天全景攻略 · 雪山之国</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #c0392b;
+    --red-light: #d6554a;
+    --gold: #d4a017;
+    --ink: #33383e;
+    --muted: #7c8a96;
+    --bg: #f8f6f0;
+    --card: #ffffff;
+    --line: #e6e0d2;
+    --blue: #2c6e9e;
+    --cover1: #14394f;
+    --ov1: rgba(44,110,158,.88);
+    --ov2: rgba(60,132,184,.72);
+    --ov3: rgba(192,57,43,.38);
+    --ov4: rgba(212,160,23,.20);
+    --key-bg: #fdf5df;
+    --info-bg: #eef4f8;
+    --head-bg: rgba(44,110,158,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/nepal/nepal-cover.jpg" alt="尼泊尔旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 12 天环线 · 加德满都谷地 + 博卡拉 + 奇特旺</div>
+      <h1>尼泊尔 12 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 加德满都 · 雪山之国 · 圣城与丛林</div>
+      <div class="meta">
+        <span>🛫 行程链：加德满都 → 博卡拉 → 奇特旺 → 纳加阔特 → 返程</span>
+        <span>📅 时间窗口：12 天 11 晚</span>
+        <span>✈️ 北京⇄加德满都 直飞约 5 小时（喜马拉雅航空）</span>
+        <span>🛂 签证：中国护照落地签免费（15/30/90 天自选）</span>
+        <span>🕐 时差 -2 小时 15 分 · 🔌 电压 230V C/D 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 12 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 12 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">加德满都</span>
+      <span class="arrow">→</span>
+      <span class="node">帕坦</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">博卡拉</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">奇特旺</span>
+      <span class="arrow">→</span>
+      <span class="node">纳加阔特</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 12 天怎么安排最合理</span>
+      尼泊尔是「<strong>离天空最近的国家</strong>」：加德满都谷地藏着 7 处世界文化遗产，博卡拉守着鱼尾峰与费瓦湖的宁静，奇特旺是独角犀牛与孟加拉虎的家园。12 天刚好把「<strong>圣城 + 雪山 + 丛林</strong>」三张名片一次走完，节奏上<strong>每段都从容</strong>：谷地 3 天、湖区 4 天、丛林 2 天、纳加阔特看日出收尾。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>落地签免费</strong>，15/30/90 天自选（默认 30 天），入境自助机填表即可，一年累计停留不超 150 天</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>加德满都谷地 3 天 + 博卡拉 4 天 + 奇特旺 2 天 + 购物/纳加阔特 3 天收尾</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 12 天从加德满都返京；直飞每周班次有限，旺季提前 1 个月订票</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>加德满都 → 帕坦 → 博卡拉 → 奇特旺 → 纳加阔特 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 5000–8000 ／ 标准 9000–14000 ／ 舒适 20000–30000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 订北京⇄加德满都往返机票 ② 加德满都—博卡拉机票/大巴 ③ 奇特旺套餐与滑翔伞提前订</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>10–11 月、3–5 月最佳（雪山能见度最高）；6–9 月雨季；12–2 月山区冷但晴空万里</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>加德满都—博卡拉的路比想象中难走</strong>：大巴 6–8 小时、山路颠簸易晕车，预算允许建议去程坐 25 分钟短途航班（约 ¥700–800），风景还更好。② 尼泊尔<strong>基础设施与卫生条件一般</strong>：只喝瓶装水、备好肠胃药，泰米尔区偶有停电，充电宝与转换插头必备，现金要备足（小商铺只收卢比）。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 12 天版</h2>
+
+    <p>以下为 12 天 11 晚的推荐节奏：加德满都谷地 → 博卡拉（湖区）→ 奇特旺（丛林）→ 加德满都购物 → 纳加阔特日出返程。每日主景点 ≤2 个，城市间以航班 + 旅游大巴为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵加德满都</td>
+<td>北京✈加德满都（约 5h），落地签入境，入住泰米尔区，傍晚街区踩点</td>
+<td>加德满都</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>猴庙日出 → 杜巴广场 → 泰米尔购物</td>
+<td>加德满都</td>
+<td>谷地圣迹</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>博达哈大佛塔 → 帕斯帕提那寺 → 帕坦古城</td>
+<td>加德满都</td>
+<td>信仰一日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>加德满都✈博卡拉（25min），入住费瓦湖畔，湖边日落</td>
+<td>博卡拉</td>
+<td>飞向湖区</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>萨朗科日出+鱼尾峰 → 费瓦湖泛舟 → 和平塔徒步</td>
+<td>博卡拉</td>
+<td>雪山日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>萨朗科滑翔伞 → 湖边复盘 → 摩托车环湖</td>
+<td>博卡拉</td>
+<td>天空日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>自由活动：班迪普尔一日 / 骑行环湖 / 热气球蹦极</td>
+<td>博卡拉</td>
+<td>自由日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>博卡拉→奇特旺（大巴约 6h），入住索拉哈，塔鲁族文化晚会</td>
+<td>奇特旺</td>
+<td>转场丛林</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>独木舟观鳄 → 丛林徒步 → 大象繁育中心 → 吉普车猎游</td>
+<td>奇特旺</td>
+<td>丛林日</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>清晨吉普车 → 大巴返加德满都</td>
+<td>加德满都</td>
+<td>返程日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>加德满都扫货：羊绒/颂钵/唐卡 → 巴克塔普尔补漏</td>
+<td>加德满都</td>
+<td>购物日</td>
+</tr>
+<tr>
+<td>D12 返程</td>
+<td>纳加阔特喜马拉雅日出（可选）→ 加德满都✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      想加徒步版（ABC / Poon Hill）可砍掉 D7 自由日与 D11 购物日，换成 4–5 天徒步，博卡拉即是徒步门户；带孩子可把滑翔伞换成费瓦湖游船与和平塔短程徒步，奇特旺选吉普车比丛林徒步更安全。雨季（6–9 月）加都—博卡拉航班易取消，建议备好大巴方案。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 12 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达加德满都</span>
+          <span class="d-desc">落地签 + 泰米尔预热</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–09:30</td><td class="t-what">北京✈加德满都（喜马拉雅航空直飞约 5h，大兴机场出发，注意值机截止时间）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">特里布万机场入境：自助机填表办<b>落地签（免费）</b>，换少量卢比、办 Ncell 电话卡（约 ¥50 含流量）</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">打车（约 ¥40–60）到泰米尔区入住，午餐 momo + 奶茶</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">泰米尔街区踩点：羊绒围巾、颂钵店比价，登屋顶看加都全景</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐 Dal Bhat（豆汤饭），早睡倒时差（时差仅 -2h15min）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">加德满都机场落地签自助机人多，填表后排队盖章，签证章写 GRATIS 即为免费；机场换汇汇率差，只换够打车和当天的钱。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 猴庙 + 杜巴广场</span>
+          <span class="d-desc">谷地圣迹一日</span>
+          <span class="d-tag ">🏛 谷地圣迹日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–08:30</td><td class="t-what"><b>猴庙（斯瓦扬布纳，200 卢比）</b>：清晨爬 365 级台阶，山顶四眼佛塔俯瞰加德满都全景，猴子会抢食别带零食</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>加德满都杜巴广场（1000 卢比）</b>：活女神库玛丽庙、哈努曼多卡宫、卡斯特曼达普</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">老城 Asan 集市午餐：纽瓦丽传统菜</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">泰米尔购物：Pashmina 羊绒、纸灯笼、手工铜器（砍价从 5 折起）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：泰米尔 rooftop 餐厅看加都夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">杜巴广场门票在票亭购买，票有效期内可反复进出；2015 年地震后部分建筑仍在修缮，主广场开放区域充足。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 博达哈 + 帕斯帕提那 + 帕坦</span>
+          <span class="d-desc">信仰一日三地</span>
+          <span class="d-tag alt">☸ 信仰一日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:30</td><td class="t-what"><b>博达哈大佛塔（400 卢比）</b>：世界最大佛塔，绕塔顺时针转经三圈，屋顶咖啡馆视角最佳</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what"><b>帕斯帕提那寺（1000 卢比）</b>：巴格玛蒂河畔印度教圣地，非教徒在河对岸观礼（严禁拍照火葬仪式）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：博达哈周边藏式餐馆（藏面、酥油茶）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>帕坦杜巴广场（1000 卢比）</b>：三座古城中最精致，金庙 + 帕坦博物馆（木雕藏品绝佳）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返加德满都，晚餐：尼泊尔咖喱</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">帕斯帕提那寺对非印度教徒不开放殿内，河对岸观景台是最佳位置；三地间打车约 10–20 分钟，也可包半天车。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 飞博卡拉</span>
+          <span class="d-desc">25 分钟飞进湖区</span>
+          <span class="d-tag alt">🛫 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:00</td><td class="t-what">早班机加德满都✈博卡拉（25 分钟，¥700–800，清晨航班能见度最好，可窗外看雪山）</td></tr>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">入住费瓦湖畔酒店，湖边早餐看雪山</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what">费瓦湖东岸散步，划船游湖（约 ¥50/小时）看湖心瓦拉希神庙</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what">湖区闲逛：吊桥、书店、咖啡馆，顺路预订明日滑翔伞（¥500 上下）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">湖边晚餐：烤湖鱼 + 安纳普尔纳日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">博卡拉机场到湖边打车约 ¥40；想省预算可坐旅游大巴（6–8h ¥150），回程再体验山路风情。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 萨朗科日出 + 鱼尾峰</span>
+          <span class="d-desc">世界最佳雪山日出</span>
+          <span class="d-tag ">🗻 雪山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">04:30–06:00</td><td class="t-what">包车/打车到<b>萨朗科观景台</b>（约 45 分钟），占位等日出</td></tr>
+          <tr><td class="t-time">06:00–07:30</td><td class="t-what"><b>鱼尾峰 + 安纳普尔纳群峰日照金山</b>：世界最著名的雪山日出之一，出片率极高</td></tr>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">返湖边早餐，看滑翔伞陆续起飞</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>费瓦湖泛舟</b>：船至湖心拍鱼尾峰倒影，登湖心瓦拉希神庙祈福</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>世界和平塔</b>徒步（约 1h 上山），塔顶 360° 雪山 + 湖区全景</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：湖畔牛排或尼泊尔火锅（可选）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">萨朗科日出云海概率高，11 月–2 月最稳；清晨山上很冷，务必带厚外套和帽子。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 萨朗科滑翔伞</span>
+          <span class="d-desc">双人伞飞越费瓦湖</span>
+          <span class="d-tag alt">🪂 天空日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">旅行社接驳到萨朗科起飞场（1,600m，含在套餐内）</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>双人滑翔伞 25–30 分钟（约 8500 卢比，¥470 上下）</b>：从雪山之上盘旋飞越费瓦湖上空</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">湖边咖啡馆复盘照片视频（GoPro 免费），午餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">自由安排：摩托车环湖 / 重走和平塔 / 天空塔观景</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：momo 夜宵 + 湖边驻唱酒吧</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">滑翔伞价格由尼泊尔航空运动协会统一定价，含接送+保险+照片视频，只选有执照的持证公司；天气不好会顺延，务必留半天缓冲。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 博卡拉自由日</span>
+          <span class="d-desc">机动安排</span>
+          <span class="d-tag ">🚶 自由日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what">可选 A：<b>班迪普尔一日</b>（巴士约 2h，山顶木屋小镇 + 雪山观景）</td></tr>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what">可选 B：费瓦湖骑行环湖 + 戴维斯瀑布</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：湖边各国料理（中餐选择多）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">可选 C：滑翔伞加长 / 热气球（约 ¥900）/ 峡谷蹦极（约 ¥600）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐 + 湖区夜市闲逛</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">博卡拉是中国游客最多的尼泊尔城市，随处有中文菜单和华人旅行社；体力充沛者可选安纳普尔纳观景徒步半天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 转场奇特旺</span>
+          <span class="d-desc">6 小时大巴进丛林</span>
+          <span class="d-tag alt">🌴 丛林日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–14:00</td><td class="t-what">博卡拉→索拉哈旅游大巴（约 6h，¥60–100），沿途山区与特莱平原风光</td></tr>
+          <tr><td class="t-time">14:30–15:30</td><td class="t-what">酒店接驳入住丛林小屋，短暂休整</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what"><b>塔鲁族村落漫步</b>：土墙民居、手工编织、吊桥</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what"><b>塔鲁族文化晚会</b>（棍棒舞 + 火舞，套餐含）</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">早睡，明早 5 点吉普车猎游</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">索拉哈大巴站到酒店通常免费接驳；丛林 2 日套餐（住宿+餐+全部活动约 ¥1100–1500/人）最省心，现场零散项目加起来更贵。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 丛林探险</span>
+          <span class="d-desc">犀牛与独木舟</span>
+          <span class="d-tag ">🦏 丛林日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–08:00</td><td class="t-what">清晨<b>丛林徒步/观鸟</b>：娑罗双树林看独角犀牛晨浴（有 700 余头）</td></tr>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>独木舟漂流</b>：拉普提河上近距离看鳄鱼、翠鸟与水鸟（540+ 种鸟类）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>大象繁育中心</b> + 大象洗澡互动</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>吉普车猎游 4h</b>：深入核心区找犀牛、鹿、懒熊，运气好见孟加拉虎</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：塔鲁风味咖喱，早睡</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">吉普车清晨/黄昏命中率最高，坐靠边位置视野最好；全程听向导指挥，不要投喂或惊扰动物。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返加德满都</span>
+          <span class="d-desc">6 小时大巴回城</span>
+          <span class="d-tag return">🚌 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">清晨吉普车短程猎游（可选）或睡到自然醒</td></tr>
+          <tr><td class="t-time">09:30–10:30</td><td class="t-what">早餐后退房，采购当地蜂蜜、手工皂</td></tr>
+          <tr><td class="t-time">11:00–17:00</td><td class="t-what">索拉哈→加德满都旅游大巴（约 6h）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">入住泰米尔，晚餐：庆功宴</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">伴手礼补比价：羊绒围巾、颂钵、喜马拉雅盐灯</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大巴班次以早班为主，晕车者提前吃晕车药；回程想轻松可先大巴到博卡拉再飞加都，多花半天换舒适。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 加德满都购物</span>
+          <span class="d-desc">扫货与补漏</span>
+          <span class="d-tag ">🛍 扫货日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what">泰米尔扫货：<b>Pashmina 羊绒围巾、颂钵、唐卡、纸灯笼</b>（对半砍价）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：Asan 集市小吃巡游</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>巴克塔普尔补漏</b>（1500 卢比）：中世纪陶艺广场，酸奶 Juju Dhau 必吃</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：杜巴广场附近屋顶餐厅</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">回酒店打包行李，护照/登机牌再三确认</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Pashmina 看标牌辨真假，真品轻软有光泽；大件商品支持刷卡，小店只收现金，钱包里留够打车钱。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 纳加阔特日出 + 返程</span>
+          <span class="d-desc">喜马拉雅日出收官</span>
+          <span class="d-tag return">🛫 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">04:30–06:00</td><td class="t-what">出发<b>纳加阔特</b>（车程约 1.5h），山顶看喜马拉雅群峰日出（天晴可远眺珠峰与安纳普尔纳）</td></tr>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">返加德满都早餐，退房</td></tr>
+          <tr><td class="t-time">10:30–15:30</td><td class="t-what">加德满都✈北京（约 5h），大兴机场入境</td></tr>
+          <tr><td class="t-time">16:00</td><td class="t-what">到家休息，整理照片与攻略笔记</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">纳加阔特到机场约 2h，务必留足时间；不想早起可跳过纳加阔特直接去机场，或改为加都城内睡到自然醒。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-1.jpg" alt="加德满都·杜巴广场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">加德满都·杜巴广场 <small>1000 卢比</small></div>
+          <div class="sc-feat">谷地世界遗产核心。<b>活女神库玛丽庙 + 哈努曼多卡宫</b>，纽瓦丽木雕的天花板。</div>
+          <div class="sc-meta">📅 7:00–19:00 · ⏱ 2–3h · 🚕 泰米尔打车 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-2.jpg" alt="猴庙·斯瓦扬布纳" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">猴庙·斯瓦扬布纳 <small>200 卢比</small></div>
+          <div class="sc-feat">2500 年古寺。<b>四眼佛塔 + 加都全景</b>，清晨猴子与诵经声最治愈。</div>
+          <div class="sc-meta">📅 全天开放 · ⏱ 2h · 🚕 打车 20min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-3.jpg" alt="博达哈大佛塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">博达哈大佛塔 <small>400 卢比</small></div>
+          <div class="sc-feat">世界最大佛塔。<b>绕塔转经三圈</b>，藏传佛教信众的日常。</div>
+          <div class="sc-meta">📅 全天开放 · ⏱ 1.5h · 🚕 打车 30min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-4.jpg" alt="博卡拉·费瓦湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">博卡拉·费瓦湖 <small>免费（游船另计）</small></div>
+          <div class="sc-feat">安纳普尔纳倒影。<b>鱼尾峰镜面</b>只出现在清晨平静湖面，泛舟湖心最出片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–4h · 🚶 湖畔步行可达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-5.jpg" alt="萨朗科·滑翔伞" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">萨朗科·滑翔伞 <small>约 8500 卢比</small></div>
+          <div class="sc-feat">世界级滑翔伞圣地。<b>从 1600m 起飞场飞跃费瓦湖</b>，30 分钟云端慢生活。</div>
+          <div class="sc-meta">📅 日出后起飞 · ⏱ 30min · 🚗 含酒店接送</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-6.jpg" alt="奇特旺国家公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">奇特旺国家公园 <small>1500 卢比/天</small></div>
+          <div class="sc-feat">独角犀牛与孟加拉虎。<b>吉普车猎游 + 独木舟观鳄</b>，尼泊尔最后的荒野。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2 天 · 🚌 加都/博卡拉大巴 6h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-7.jpg" alt="尼泊尔美食 · momo" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">尼泊尔美食 · momo <small>¥6–15</small></div>
+          <div class="sc-feat">雪山下的烟火气。<b>蒸/炸 momo + Dal Bhat</b>，人均 20 元吃到扶墙。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 随时 · 🚶 街边摊最地道</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/nepal/nepal-cover.jpg" alt="纳加阔特雪山日出" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">纳加阔特雪山日出 <small>免费</small></div>
+          <div class="sc-feat">喜马拉雅观景台。<b>晴日可远眺珠峰</b>，世界最轻松的雪山日出机位。</div>
+          <div class="sc-meta">📅 日出前到达 · ⏱ 1h · 🚗 加都出发 1.5h</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（加德满都、博达哈大佛塔、费瓦湖、奇特旺等均为尼泊尔实景），用于页面配图。更多免费/低费景点：帕坦杜巴广场、和平塔、班迪普尔、巴克塔普尔陶艺广场。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 人民币 ≈ 18 尼泊尔卢比（1 美元 ≈ 130 卢比）估算，往返机票按淡季 3000 元上下计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（5000–8000）</th>
+<th>标准（9000–14000）</th>
+<th>舒适（20000–30000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄加德满都 2500–3500</td>
+<td>直飞含国内段 3500–4500</td>
+<td>直飞+灵活舱位 6000–9000</td>
+</tr>
+<tr>
+<td>住宿（11 晚）</td>
+<td>青旅/民宿 700–1200</td>
+<td>经济酒店 2200–3500</td>
+<td>精品度假村 7000–11000</td>
+</tr>
+<tr>
+<td>国内交通+活动</td>
+<td>大巴为主 1000–1800</td>
+<td>航班+滑翔伞+奇特旺套餐 2000–3000</td>
+<td>包车+全活动 3500–6000</td>
+</tr>
+<tr>
+<td>餐饮+门票</td>
+<td>路边馆+遗产门票 700–1200</td>
+<td>正常下馆子 1500–2200</td>
+<td>高档餐饮+观景餐厅 2500–4000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 11000 元）</span>
+      往返机票 4000 + 住宿 11 晚 3000（平均 270/晚）+ 国内交通与活动 2500（加德满都⇄博卡拉航班 + 滑翔伞 + 奇特旺 2 日套餐）+ 餐饮门票 2000 ≈ <strong>10000–12000 元</strong>。大头是机票与活动，奇特旺套餐多人拼团能省 20%，滑翔伞旺季提前订避免加价。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>12.1 徒步版 · ABC / Poon Hill（4–5 天）</h3>
+
+
+    <ul>
+
+      <li>D4 加德满都✈博卡拉 → 午后包车到南丫浦（Nayapul）热身</li>
+
+      <li>D5–D8 Poon Hill 环线：Ghandruk → Ghorepani → Poon Hill 日出 → Ulleri 下山（约 4 天）</li>
+
+      <li>或换 ABC 大环线（约 5–6 天，需再请 1–2 天假）</li>
+
+      <li>徒步许可证：ACAP + TIMS 约 5000 卢比，可独立办理或经旅行社</li>
+
+      <li>徒步结束回博卡拉休整 1 天再返加德满都，滑翔伞照样可玩</li>
+
+    </ul>
+
+    <h3>12.2 亲子 / 舒适版</h3>
+
+
+    <p>带孩子推荐：加德满都只留 2 天（猴庙 + 杜巴广场），奇特旺住 3 天玩吉普车、骑大象与大象繁育中心，博卡拉滑翔伞换成乘船 + 和平塔短程徒步，全程包车减少转场。奇特旺丛林徒步 12 岁以下谨慎参加，吉普车后排颠簸备好晕车药。</p>
+
+    <h3>12.3 冬季 / 雨季版</h3>
+
+
+    <p>12–2 月山区早晚极冷但晴空万里，纳加阔特看喜马拉雅日出概率全年最高，博卡拉比加德满都暖 5–8℃；6–9 月雨季加都—博卡拉航班易延误改期，奇特旺植被更茂密、独木舟观鸟更佳，但务必注意饮食卫生。时间紧可把奇特旺缩为 1 天或取消纳加阔特。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>11.1 北京 ⇄ 尼泊尔 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→加德满都约 5h</td>
+<td>往返 3000–4500 元</td>
+<td>喜马拉雅航空直飞大兴，每周班次有限，旺季提前 1 个月订</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>8–14h</td>
+<td>2500–4000 元</td>
+<td>经成都/昆明/曼谷/香港，选择多但费时</td>
+</tr>
+<tr>
+<td>陆路</td>
+<td>—</td>
+<td>—</td>
+<td>经拉萨—吉隆口岸可陆路入境（需提前办边防与入境手续），行程长、慎选</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 尼泊尔境内交通核心提醒</span>
+      加德满都→博卡拉：<strong>飞机 25 分钟约 ¥700–800</strong>，旅游大巴 6–8 小时 ¥60–150；建议去程飞、回程大巴，两头都有惊喜。奇特旺段只能大巴（博卡拉→索拉哈约 6h）。所有长途大巴早 7 点发车，泰米尔区有直达。国内航班可在 Buddha Air / Yeti Airlines 官网提前预订，清晨班次能见度最好。
+    </div>
+
+    <h3>11.2 尼泊尔境内交通</h3>
+    <ul>
+      <li><strong>国内航班</strong>：加德满都—博卡拉 25 分钟（¥700–800），Buddha Air / Yeti Airlines 每日多班</li>
+      <li><strong>旅游大巴</strong>：加德满都—博卡拉 6–8h（¥60–150）、加德满都—索拉哈 5–6h，早 7 点发车</li>
+      <li><strong>出租车/包车</strong>：泰米尔区内起步约 ¥5–10，跨市包车 ¥300–500/天，上车前谈价是必修课</li>
+      <li><strong>市内交通</strong>：加德满都打车比走路划算，博卡拉湖边步行即可，可租摩托车约 ¥50/天</li>
+      <li><strong>换汇</strong>：机场汇率最差，市区换汇点多且可谈价；ATM（Visa/Master）可直接取卢比</li>
+      <li><strong>打车 App</strong>：Pathao（尼泊尔版滴滴）比招手便宜 30%，输入地址免谈价</li>
+    </ul>
+
+    <h3>11.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>加德满都·泰米尔区</td>
+<td>青旅 40–80 / 经济 100–250 / 标准 300–600</td>
+<td>游客中心，餐厅换汇旅行社一应俱全</td>
+<td>街道吵闹，老楼隔音差</td>
+</tr>
+<tr>
+<td>加德满都·博达哈区</td>
+<td>标准 300–800</td>
+<td>大佛塔旁清净，藏式风情浓</td>
+<td>离泰米尔约 30 分钟车程</td>
+</tr>
+<tr>
+<td>博卡拉·费瓦湖畔</td>
+<td>经济 100–250 / 标准 300–700 / 度假村 800–1500</td>
+<td>湖景+雪山，咖啡馆酒吧集中</td>
+<td>旺季房源紧，提前 2 周订</td>
+</tr>
+<tr>
+<td>奇特旺·索拉哈</td>
+<td>套餐含住宿 150–400</td>
+<td>丛林小屋、吊桥河流景观</td>
+<td>设施简单，偶有停电</td>
+</tr>
+<tr>
+<td>纳加阔特</td>
+<td>观景房 200–600</td>
+<td>喜马拉雅日出最佳机位</td>
+<td>只适合过夜，餐饮选择少</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍜 必吃经典</h3>
+        <ul>
+          <li>momo 饺子（蒸/炸），¥6–15</li>
+          <li>Dal Bhat 豆汤饭（管饱+米饭咖喱无限续）</li>
+          <li>Thukpa 藏式汤面（加德满都博达哈区最地道）</li>
+          <li>尼泊尔咖喱（配恰巴提或米饭）</li>
+        </ul>
+        <h3>🥢 在地名物</h3>
+        <ul>
+          <li>博卡拉烤湖鱼（现杀现烤配咖喱）</li>
+          <li>纽瓦丽传统宴席（加德满都老城）</li>
+          <li>Juju Dhau 陶罐酸奶（巴克塔普尔）</li>
+          <li>喜马拉雅盐灯与姜茶（伴手礼+御寒）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>samosa 咖喱角、pani puri 脆球</li>
+          <li>Lassi 酸奶、街头奶茶 chai（¥2–4）</li>
+          <li>香蕉煎饼（徒步前的能量餐）</li>
+          <li>石榴/苹果等水果按个卖，季节价很便宜</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>加德满都泰米尔区 + 老城 Asan 集市</li>
+          <li>博卡拉费瓦湖畔餐厅（配雪山日落）</li>
+          <li>奇特旺索拉哈餐厅（塔鲁风味）</li>
+          <li>路边摊先看当地人排队再买</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 路边摊只选现做热食，肠胃敏感者别碰凉菜；② 只喝瓶装水（¥2/瓶），饮料不加冰；③ 高原菜品普遍偏辣偏油，点餐可要求少辣少油；④ momo 满大街都自称「正宗」，泰米尔区挑评分高的店即可，人均 20–30 元已是丰盛一餐。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上 + 2 页空白页）</li>
+        <li>往返机票 + 住宿预订证明（入境备查）</li>
+        <li>卢比现金（国内换美元，到尼再换更划算）</li>
+        <li>充电转接头（230V C/D 型插座）+ 充电宝</li>
+      </ul>
+      <ul>
+        <li>肠胃药/感冒药/高原反应药 + 防晒霜（高海拔紫外线强）</li>
+        <li>舒适徒步鞋 + 保暖外套（早晚温差大）</li>
+        <li>下载 Google 地图 + 离线地图 + Pathao 打车 App</li>
+        <li>查天气：博卡拉/纳加阔特能见度、雨季航班预警</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>落地签在机场自助机填表</strong>，填错可重填，盖章写 GRATIS 才是免费签证，入境务必确认入境章；② 加德满都粉尘大、交通混乱，戴口罩 + 穿防尘鞋；③ 寺庙/神像前先问再拍照，进印度教寺庙脱鞋、女士着装庄重；④ 换汇只去正规换汇点，路边高价换钱多是骗局，付款前数清卢比（大面额 1000 最容易出错）。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      尼泊尔是「<strong>离天空最近的国家</strong>」——加德满都的千年神庙、博卡拉的鱼尾峰与滑翔伞、奇特旺的犀牛与鳄鱼，12 天刚好把雪山、圣城与丛林串成一条不赶路的环线。落地签免费、物价亲民，唯一要准备的是对慢节奏的耐心与随时出发的心情。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c0392b",
+    "d": 3,
+    "n": "主线 · 加德满都→博卡拉→奇特旺",
+    "pts": [
+      [
+        27.7042,
+        85.3072
+      ],
+      [
+        27.6727,
+        85.325
+      ],
+      [
+        28.209,
+        83.985
+      ],
+      [
+        27.5777,
+        84.4923
+      ]
+    ]
+  },
+  {
+    "c": "#2c6e9e",
+    "d": 3,
+    "n": "返程 · 奇特旺→加德满都→纳加阔特",
+    "pts": [
+      [
+        27.5777,
+        84.4923
+      ],
+      [
+        27.7042,
+        85.3072
+      ],
+      [
+        27.713,
+        85.545
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 27.7042,
+    "lng": 85.3072,
+    "name": "加德满都·杜巴广场",
+    "t": "D2 全天 · 2–3h",
+    "fee": "1000 卢比",
+    "note": "活女神庙、哈努曼多卡宫"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 27.715,
+    "lng": 85.29,
+    "name": "猴庙·斯瓦扬布纳",
+    "t": "D2 上午 · 2h",
+    "fee": "200 卢比",
+    "note": "四眼佛塔、加都全景"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 27.7215,
+    "lng": 85.362,
+    "name": "博达哈大佛塔",
+    "t": "D3 上午 · 1.5h",
+    "fee": "400 卢比",
+    "note": "世界最大佛塔、转经三圈"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 27.6727,
+    "lng": 85.325,
+    "name": "帕坦·杜巴广场",
+    "t": "D3 下午 · 2h",
+    "fee": "1000 卢比",
+    "note": "金庙、帕坦博物馆"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 28.209,
+    "lng": 83.985,
+    "name": "博卡拉·费瓦湖",
+    "t": "D5 全天 · 1 天",
+    "fee": "免费（游船另计）",
+    "note": "鱼尾峰倒影、湖心庙"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 28.219,
+    "lng": 83.943,
+    "name": "萨朗科·滑翔伞",
+    "t": "D6 上午 · 30min",
+    "fee": "约 8500 卢比",
+    "note": "双人伞飞越费瓦湖"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 27.5777,
+    "lng": 84.4923,
+    "name": "奇特旺国家公园",
+    "t": "D8–D9 · 2 天",
+    "fee": "1500 卢比/天",
+    "note": "犀牛、鳄鱼、吉普车猎游"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 27.713,
+    "lng": 85.545,
+    "name": "纳加阔特观景台",
+    "t": "D12 清晨 · 1h",
+    "fee": "免费",
+    "note": "喜马拉雅群峰日出"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[26.5, 83.5], [29.3, 86.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c0392b\"></span>主线（加德满都→博卡拉→奇特旺）<br><span class=\"sw\" style=\"background:#2c6e9e\"></span>返程（奇特旺→加德满都→纳加阔特）<br><span class=\"sw dash\"></span>加都—博卡拉段可航班或大巴</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 帕劳 7 天全景攻略 · 水母湖与洛克群岛</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #1e9fd0;
+    --red-light: #45b8de;
+    --gold: #e0b870;
+    --ink: #2f3236;
+    --muted: #7a8a92;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e3e8e6;
+    --blue: #2e8b6e;
+    --cover1: #0e5f80;
+    --ov1: rgba(14,95,128,.88);
+    --ov2: rgba(30,159,208,.72);
+    --ov3: rgba(46,139,110,.38);
+    --ov4: rgba(224,184,112,.20);
+    --key-bg: #eef7fb;
+    --info-bg: #eef4f1;
+    --head-bg: rgba(30,159,208,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/palau/palau-cover.jpg" alt="帕劳旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 7 天 · 太平洋遗世海岛</div>
+      <h1>帕劳 7 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 首尔转机 · 科罗尔 · 洛克群岛 · 水母湖 · 大断层</div>
+      <div class="meta">
+        <span>🛫 行程链：科罗尔 → 洛克群岛水母湖 → 大断层 → 岩石群岛出海 → 返程</span>
+        <span>📅 时间窗口：7 天 6 晚</span>
+        <span>✈️ 北京✈首尔✈科罗尔 全程约 9–12h（含转机，无直飞）</span>
+        <span>🛂 签证：中国护照落地签 30 天（入境前 72h 填电子申报表）</span>
+        <span>🕐 时差 +1 小时 · 🔌 电压 120V A/B 型插座（两扁脚）</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 7 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 7 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node">首尔（转机）</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">科罗尔</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">水母湖</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">大断层</span>
+      <span class="arrow">→</span>
+      <span class="node">岩石群岛</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🌊 7 天怎么安排最合理</span>
+      帕劳是「<strong>一片海、数百座石山</strong>」的潜水天堂：科罗尔是唯一的落脚点，洛克群岛南方泻湖是世界自然与文化双遗产，水母湖与大断层是最不能错过的两张名片。7 天刚好把<strong>科罗尔 2 天 + 洛克群岛出海 4 天</strong>走完——每天出海一次，节奏不赶，第二天凌晨的返程航班也不浪费。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>落地签 30 天</strong>；登机须出示返程机票；2023 年起入境前 72 小时内要在 palautravel.pw 填电子申报表并打印 QR Code，入境时还需在「帕劳誓词」上签名</td>
+</tr>
+<tr>
+<td>机票航线</td>
+<td>北京✈首尔（仁川）✈科罗尔，韩亚/大韩航空，全程约 9–12 小时；无直飞，首尔是主要转机点</td>
+</tr>
+<tr>
+<td>出海必买</td>
+<td><strong>水母湖许可证 US$100（含洛克群岛，5 天有效）</strong>；只去洛克群岛则 US$50；出海需持证，可在当地旅行社代办</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>科罗尔 → 洛克群岛东线（水母湖/牛奶湖）→ 西线（大断层/软珊瑚）→ 岩石群岛 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 15000–22000 ／ 标准 28000–42000 ／ 舒适 55000–80000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 订韩亚/大韩转机机票 ② 预约水母湖+洛克群岛出海行程 ③ 酒店尽量选科罗尔市区（近码头）</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11–4 月旱季风浪小最适合出海；5–10 月雨季阵雨多但价格低；紫外线强度是日本 7 倍，防晒必备</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>全岛通用美元，几乎都要现金；科罗尔有 ATM 但建议备足小额美元（出海税、小费均现金）</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>水母湖不是「想进就进」</strong>：必须持水母湖许可证（US$100）且跟当地持牌旅行社出海，独立前往不被允许；且水母数量受气候影响波动大，出行前最好确认近期开放与密度。② 帕劳<strong>几乎全部依赖现金</strong>，出海税、导游小费、岛上餐费都要美元现金，出发前按预算备足，机场汇率一般。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 7 天版</h2>
+
+    <p>以下为 7 天 6 晚的推荐节奏：前两天倒时差、玩科罗尔市区，后四天每天出海一个方向，最后一天凌晨航班返程。每日出海 ≤1 次，浮潜项目为主，体力友好。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵科罗尔</td>
+<td>北京✈首尔✈科罗尔（约 9h 转机），凌晨 04:00 抵达，入住科罗尔市区酒店补觉</td>
+<td>科罗尔</td>
+<td>抵达+休整</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>科罗尔市区：安德梅尔观景台 → 男人屋(巴艾)与帕劳国家博物馆 → WCTC 超市补货 → 日落海边</td>
+<td>科罗尔</td>
+<td>市区漫步</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>洛克群岛东线：水母湖浮潜 → 牛奶湖天然SPA → 无人岛野餐</td>
+<td>科罗尔</td>
+<td>出海东线</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>洛克群岛西线：大断层浮潜 → 软珊瑚区 → 德国水道 → 干贝城</td>
+<td>科罗尔</td>
+<td>出海西线</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>洛克群岛精选：长滩(长沙滩岛) → 七彩鱼世界 → 玫瑰珊瑚 → 二战日舰沉船</td>
+<td>科罗尔</td>
+<td>出海精选</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>岩石群岛深度：鲨鱼城 → 海钓（钓税 US$20）或 北岛天使瀑布可选</td>
+<td>科罗尔</td>
+<td>深度出海</td>
+</tr>
+<tr>
+<td>D7 返程</td>
+<td>凌晨退房，乘 05:00 航班科罗尔✈首尔转北京，当晚抵达</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可把 D5 与 D6 合并成一天，砍掉北岛瀑布；带老人小孩建议把出海减为 3 天（水母湖+大断层+长滩即可），科罗尔留 3 天。体力好、想潜水考证的，可在 D6 换成 PADI 开放水域考证（约 US$450–600）。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 7 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达科罗尔</span>
+          <span class="d-desc">转机 9 小时，凌晨落地</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">17:30–20:25</td><td class="t-what">北京✈首尔仁川（OZ336 约 2h55m），仁川机场转机约 2–3h，注意行李直挂（北京托运直接到科罗尔取）</td></tr>
+          <tr><td class="t-time">23:10–04:00+1</td><td class="t-what">首尔✈科罗尔（OZ609 约 4h50m），机上休息</td></tr>
+          <tr><td class="t-time">04:00–05:30</td><td class="t-what">抵达帕劳国际机场，落地签+盖「帕劳誓词」章+电子申报表 QR 核验，中文导游/酒店接机</td></tr>
+          <tr><td class="t-time">06:00–12:00</td><td class="t-what">入住科罗尔市区酒店，补觉倒时差（时差仅 +1h，很快适应）</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">傍晚海边散步，WCTC 超市买水与防晒，晚餐：海鲜烧烤/当地鱼餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">帕劳航班到达都是凌晨，第一晚务必订可提前入住或保证中午入住的酒店；转机时在首尔机场可买到电话卡或提前开好国际漫游。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 科罗尔市区</span>
+          <span class="d-desc">观景台 + 博物馆 + 传统村落</span>
+          <span class="d-tag ">🏙 市区日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>安德梅尔山观景台</b>（免费）：俯瞰科罗尔水道与洛克群岛，天气好能看到整片泻湖</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><b>帕劳国家博物馆</b>（门票约 US$5）：帕劳故事板、独木舟、二战遗物</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：帕劳红树林蟹/椰子蟹（当地名菜，提前问价）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>男人屋（巴艾）</b>（免费）：帕劳传统酋长议事屋，房檐雕刻讲述神话</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">科罗尔主街散步 + 码头看日落，晚餐：当地海鲜市场自购代加工</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">帕劳椰子蟹价格高（一只常超 US$100），点单前务必确认按只还是按重量计价；男人屋按传统妇女不进，但游客参观无碍。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 洛克群岛东线</span>
+          <span class="d-desc">水母湖 + 牛奶湖</span>
+          <span class="d-tag alt">🪼 水母湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">科罗尔码头集合，持水母湖许可证（US$100，5 天有效）登快艇</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>水母湖</b>（Eil Malk 岛，船程约 45min）：穿水母衣浮潜，与黄金水母共游；<b>禁止涂防晒霜下水</b>，水母需防紫外线</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">登岛换装、简单休整</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what"><b>牛奶湖</b>（天然 SPA）：湖底白泥护肤，抹满全身拍照留念</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">无人岛野餐 + 浮潜点加游，返回科罗尔</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">水母衣/防寒衣租借约 US$11/天，有度数面镜 US$8.8、蛙鞋 US$6.6；水母湖内严禁使用防晒霜和触碰水母。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 洛克群岛西线</span>
+          <span class="d-desc">大断层 + 软珊瑚 + 德国水道</span>
+          <span class="d-tag ">🐠 大断层日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">码头集合出发（许可证已含洛克群岛，无需另购）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>大断层 Big Drop Off</b>：世界顶级浮潜/潜水点，珊瑚墙从水面直落深海，鱼群密度惊人</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what"><b>德国水道</b>（German Channel）：二战时期德国人炸开的水道，鱼群与鲨鱼出没</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">无人岛或长沙滩岛午餐</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>软珊瑚区</b>（七彩软珊瑚）+ <b>干贝城</b>（巨型砗磲贝）</td></tr>
+          <tr><td class="t-time">16:00</td><td class="t-what">返航科罗尔，晚餐自由安排</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大断层流较大，浮潜跟紧向导；干贝城水深较浅但也要留意珊瑚礁，穿好水母鞋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 洛克群岛精选</span>
+          <span class="d-desc">长滩 + 七彩鱼 + 沉船</span>
+          <span class="d-tag alt">🏝 长沙滩日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">码头集合出发</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>长滩（长沙滩岛）</b>：退潮时露出新月形白沙洲，站在浅滩上宛如「海上行走」，最出片的机位</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what"><b>七彩鱼世界</b>：巨型七彩珊瑚礁，喂鱼时成群彩鱼环绕</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">无人岛野餐，岛上吊床小憩</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>玫瑰珊瑚区 + 二战日舰沉船</b>：历史与珊瑚共存的经典潜点</td></tr>
+          <tr><td class="t-time">16:00</td><td class="t-what">返航，晚餐可选海鲜火锅/日式料理</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">长滩是否能看到白沙洲取决于潮汐，行程确认时问旅行社当天退潮时间；沉船水域鱼多但注意安全，别游进舱体。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 岩石群岛深度</span>
+          <span class="d-desc">鲨鱼城 + 海钓/北岛</span>
+          <span class="d-tag ">🦈 深度出海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">码头集合，可加购钓鱼税（US$20/人，30 天有效）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>鲨鱼城</b>：珊瑚礁中成群的礁鲨与灰礁鲨巡游，浮潜即可观赏</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">海钓体验（可选）：钓获可让船家代加工午餐</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">无人岛海鲜午餐（烤鱼、烤鸡、椰子）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what">北岛（巴伯尔图阿普岛）<b>天使瀑布</b>（含门票约 US$10，可选）或 自由浮潜</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返航，晚上海边 BBQ 收官</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">鲨鱼城是浮潜点不是潜水点，跟紧向导即可安全观赏；北岛瀑布往返含山路，穿防滑鞋。若全天出海疲惫，可改市区按摩休息。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 返程</span>
+          <span class="d-desc">凌晨航班回京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">00:00–02:30</td><td class="t-what">退房，乘车前往帕劳国际机场（约 15–20min）</td></tr>
+          <tr><td class="t-time">03:00</td><td class="t-what">办理登机，帕劳机场很小但航班集中，提前 2h 到</td></tr>
+          <tr><td class="t-time">05:00–09:55</td><td class="t-what">科罗尔✈首尔仁川（OZ610）</td></tr>
+          <tr><td class="t-time">13:00–14:10</td><td class="t-what">首尔✈北京（OZ333），下午抵京，入境回家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程是凌晨航班，前一晚把行李提前收拾好；帕劳机场离境税已含在机票里，无需另付。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-cover.jpg" alt="洛克群岛·水母湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">洛克群岛·水母湖 <small>许可证 US$100（5 天）</small></div>
+          <div class="sc-feat">帕劳名片。<b>黄金水母无毒共游</b>，Eil Malk 岛内陆咸水湖。</div>
+          <div class="sc-meta">📅 需跟船出海 · ⏱ 1.5–2h · 🚤 科罗尔船程约 45min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-1.jpg" alt="大断层 Big Drop Off" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">大断层 Big Drop Off <small>含在洛克群岛许可</small></div>
+          <div class="sc-feat">世界顶级浮潜点。<b>珊瑚墙直落深海</b>，鱼群密度惊人。</div>
+          <div class="sc-meta">📅 出海西线 · ⏱ 1–1.5h · 🚤 快艇 40min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-2.jpg" alt="牛奶湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">牛奶湖 <small>含在洛克群岛许可</small></div>
+          <div class="sc-feat">天然白泥 SPA。<b>火山泥美容</b>，洛克群岛经典一站。</div>
+          <div class="sc-meta">📅 出海东线 · ⏱ 1h · 🚤 与东线同船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-3.jpg" alt="长滩（长沙滩岛）" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">长滩（长沙滩岛） <small>含在洛克群岛许可</small></div>
+          <div class="sc-feat">退潮白沙洲。<b>海上行走机位</b>，帕劳最出片海滩。</div>
+          <div class="sc-meta">📅 看潮汐 · ⏱ 1h · 🚤 与出海同船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-4.jpg" alt="干贝城" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">干贝城 <small>含在洛克群岛许可</small></div>
+          <div class="sc-feat">百年巨型砗磲贝。<b>彩色巨贝群</b>，浅水浮潜可达。</div>
+          <div class="sc-meta">📅 出海西线 · ⏱ 40min · 🚤 同船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-5.jpg" alt="软珊瑚区" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">软珊瑚区 <small>含在洛克群岛许可</small></div>
+          <div class="sc-feat"><b>七彩软珊瑚</b>随流摇曳，色彩饱和度拉满。</div>
+          <div class="sc-meta">📅 出海西线 · ⏱ 40min · 🚤 同船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-6.jpg" alt="鲨鱼城" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">鲨鱼城 <small>含在洛克群岛许可</small></div>
+          <div class="sc-feat"><b>礁鲨群巡游</b>，浮潜即可观赏，刺激又安全。</div>
+          <div class="sc-meta">📅 出海深度线 · ⏱ 1h · 🚤 同船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/palau/palau-7.jpg" alt="科罗尔市区" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">科罗尔市区 <small>博物馆约 US$5</small></div>
+          <div class="sc-feat">安德梅尔观景台 + <b>男人屋与博物馆</b>，帕劳人文初体验。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3–4h · 🚶 步行/短途打车</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（水母湖、珊瑚礁、白沙洲、海岛航拍等均与帕劳海域相近的实景），用于页面配图。更多免费玩法：科罗尔海滨步道、WCTC 超市采购、帕劳夜市烧烤。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。帕劳使用美元，按 1 美元 ≈ 7.2 元估算。往返机票按经首尔转机淡季 6000–11000 元计，出海税/许可证为硬性支出。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（15000–22000）</th>
+<th>标准（28000–42000）</th>
+<th>舒适（55000–80000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京✈首尔✈科罗尔 6000–8000</td>
+<td>含旺季/直连段 9000–13000</td>
+<td>商务舱/灵活 16000–25000</td>
+</tr>
+<tr>
+<td>住宿（6 晚）</td>
+<td>市区旅馆/民宿 350–700/晚</td>
+<td>中档度假村 1200–2200/晚</td>
+<td>豪华度假村 3500–8000/晚</td>
+</tr>
+<tr>
+<td>出海与许可证</td>
+<td>洛克群岛许可 US$50×2 类 约 800</td>
+<td>水母湖许可 US$100 + 3 天出海 约 2600–3500</td>
+<td>含私人包船+海钓 约 6000–9000</td>
+</tr>
+<tr>
+<td>餐饮（7 天）</td>
+<td>简餐+市场海鲜 1500–2500</td>
+<td>海鲜餐厅+BBQ 3500–5000</td>
+<td>度假村正餐+椰子蟹 8000–12000</td>
+</tr>
+<tr>
+<td>市内交通与杂费</td>
+<td>打车+超市 400–700</td>
+<td>接送机+租车少量 800–1500</td>
+<td>全程接送+按摩 2500–4500</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 30000 元）</span>
+      往返机票 9500 + 住宿 6 晚 9000（平均 1500/晚）+ 水母湖许可 720 + 出海 3 天 3000 + 餐饮 4200 + 接送/杂费 1200 ≈ <strong>28000–32000 元</strong>。大头是机票与住宿；出海天数合并成 3 个全天能省不少船费。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 潜水考证版（+2 天）</h3>
+
+
+    <p>把行程拉长到 9–10 天，在 D5–D6 报名 PADI 开放水域考证（约 US$450–600，含 4 次潜水），可下蓝洞、德国水道深潜；不考证就保持浮潜为主。帕劳是世界顶级潜水地，考了证才算玩到精髓。</p>
+
+    <h3>7.2 亲子版调整</h3>
+
+
+    <ul>
+
+      <li>出海减为 3 天：水母湖、大断层、长滩</li>
+
+      <li>加一天北岛瀑布与红树林皮划艇（水流平缓）</li>
+
+      <li>科罗尔留 3 天，节奏更慢</li>
+
+      <li>水母湖 6 岁以下儿童免许可证</li>
+
+    </ul>
+
+    <h3>7.3 雨季省钱版（5–10 月）</h3>
+
+
+    <p>雨季阵雨多为午后短时雨，出海照常但浪稍大；机票与酒店便宜 20–30%，7 天可压到经济档下限。注意雨天快艇颠簸，晕船药备好。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 帕劳 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>首尔转机（主选）</td>
+<td>北京→首尔 2.5–3h + 首尔→科罗尔 4.5–5h，全程约 9–12h</td>
+<td>往返 6000–11000 元</td>
+<td>韩亚/大韩航空，每周 2 班，到达为凌晨</td>
+</tr>
+<tr>
+<td>香港/马尼拉转机</td>
+<td>13–20h</td>
+<td>5000–9000 元</td>
+<td>中华航空/菲律宾航空，航班少</td>
+</tr>
+<tr>
+<td>直飞</td>
+<td>—</td>
+<td>—</td>
+<td>中国大陆无直飞，只能转机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 帕劳境内交通核心提醒</span>
+      帕劳<strong>没有公共交通</strong>，出行基本靠酒店接送、包车和出海快艇。科罗尔市区很小，主街步行可逛；去码头、机场一般由旅行社/酒店接送。所有出海必须走当地持牌旅行社（政府规定），费用通常含船、向导、装备，不含许可证与税费。
+    </div>
+
+    <h3>8.2 帕劳境内交通</h3>
+    <ul>
+      <li><strong>出海快艇</strong>：科罗尔→水母湖约 45min、→大断层约 40min，一日游含接送</li>
+      <li><strong>包船/私人船</strong>：约 US$150/船/天（含船长+助手，不含许可证），人少可以拼</li>
+      <li><strong>科罗尔市区</strong>：主街步行可逛；打车短途约 US$2–5</li>
+      <li><strong>北岛（巴伯尔图阿普岛）</strong>：陆路约 30–40min，包车或跟一日游</li>
+      <li><strong>接送机</strong>：酒店/旅行社提供，单程约 US$10–15</li>
+      <li><strong>租车</strong>：科罗尔有少量租车（需国际驾照），日租约 US$45–70，自驾以市区代步为主</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>科罗尔市区</td>
+<td>经济 350–700 / 标准 1200–2200</td>
+<td>离码头近，出海方便，餐厅超市集中</td>
+<td>海景一般</td>
+</tr>
+<tr>
+<td>洛克群岛海上度假村</td>
+<td>标准 2500–4500</td>
+<td>独享私人海滩与浮潜</td>
+<td>进出靠船，价格高</td>
+</tr>
+<tr>
+<td>科罗尔主街海景酒店</td>
+<td>标准 1500–2800</td>
+<td>日落海景+步行到主街</td>
+<td>旺季紧张，需提前 1 个月</td>
+</tr>
+<tr>
+<td>帕劳爱来度假村等大型度假村</td>
+<td>舒适 3500–8000</td>
+<td>设施全，含泳池/SPA/餐饮</td>
+<td>离市区远，出海需接送</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🦀 必吃名菜</h3>
+        <ul>
+          <li>椰子蟹：帕劳招牌，清蒸最鲜，一只常超 US$100</li>
+          <li>红树林蟹：比脸还大的蟹，配蒜蓉/奶油</li>
+          <li>烤海鱼：金枪鱼、石斑，市场代加工最划算</li>
+          <li>帕劳海鲜 BBQ：烤龙虾、烤扇贝、烤鸡</li>
+        </ul>
+        <h3>🥥 在地风味</h3>
+        <ul>
+          <li>帕劳传统椰子炖菜</li>
+          <li>蝙蝠汤（当地传统食材，可选择性尝试）</li>
+          <li>香蕉叶烤鱼</li>
+          <li>椰子饭（糯米饭配椰浆）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>帕劳市场烤肉串</li>
+          <li>水果冰沙：芒果、木瓜、百香果</li>
+          <li>椰汁饭与面包果</li>
+          <li>超市里的本地零食与冰激凌</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>科罗尔主街海鲜餐厅（人均 US$25–50）</li>
+          <li>帕劳夜市/码头烧烤摊</li>
+          <li>出海无人岛 BBQ（含在行程）</li>
+          <li>WCTC 超市自购水果与零食</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 椰子蟹、龙虾等按只/按重量计价，点单前一定问清总价，避免结账惊吓；② 帕劳食材多依赖进口，进口牛排/红酒贵且不新鲜，优先吃当地海鲜与水果；③ 无人岛 BBQ 普遍含在出海费里，别重复付费；④ 淡水紧张，餐厅饮品偏贵，酒店房间都备有直饮水机。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上有效期）</li>
+        <li>返程机票行程单（登机检查）</li>
+        <li>72 小时内填写 palautravel.pw 电子申报表并打印 QR Code</li>
+        <li>美元现金（出海税、小费、市场均现金）</li>
+      </ul>
+      <ul>
+        <li>防晒（帕劳紫外线是日本 7 倍）+ 水母衣</li>
+        <li>浮潜面镜（近视可租有度数款）</li>
+        <li>防滑水母鞋/潜水袜（防珊瑚划伤）</li>
+        <li>晕船药（出海快艇颠簸）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>水母湖与水母数量受气候影响波动</strong>，行前 1 周与旅行社确认开放状态，数量少时调整预期；② 帕劳政府严查海洋保护，<b>浮潜禁用防晒霜、禁用鱼枪</b>，抓海龟/贝壳会被重罚；③ 航班均凌晨到达/出发，返程前一晚别熬夜，预留机场时间；④ 帕劳网络慢且贵，买当地 SIM 卡或酒店 Wi-Fi 为主，离线地图提前下好。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      帕劳是「<strong>一片海、一座湖</strong>」就能让人惦记一生的目的地——水母湖的黄金水母、大断层的珊瑚墙、退潮的长滩白沙洲，7 天刚好把洛克群岛的精华出海走完。签证落地即可，最难的是订票与订船，剩下的就交给阳光和海水。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "洛克群岛出海环线 · 科罗尔→水母湖→牛奶湖→大断层→长滩→鲨鱼城",
+    "pts": [
+      [
+        7.342,
+        134.477
+      ],
+      [
+        7.206,
+        134.461
+      ],
+      [
+        7.175,
+        134.412
+      ],
+      [
+        7.153,
+        134.369
+      ],
+      [
+        7.129,
+        134.365
+      ],
+      [
+        7.199,
+        134.381
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 7.342,
+    "lng": 134.477,
+    "name": "科罗尔市区",
+    "t": "D1–D2 · 市区 2 天",
+    "fee": "免费",
+    "note": "安德梅尔观景台、男人屋、国家博物馆"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 7.206,
+    "lng": 134.461,
+    "name": "水母湖",
+    "t": "D3 上午 · 2h",
+    "fee": "许可证 US$100",
+    "note": "黄金水母共游，禁防晒霜"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 7.175,
+    "lng": 134.412,
+    "name": "牛奶湖",
+    "t": "D3 下午 · 1h",
+    "fee": "含在许可内",
+    "note": "火山白泥天然 SPA"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 7.153,
+    "lng": 134.369,
+    "name": "大断层",
+    "t": "D4 上午 · 1.5h",
+    "fee": "含在许可内",
+    "note": "珊瑚墙直落深海，顶级浮潜"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 7.129,
+    "lng": 134.365,
+    "name": "长滩",
+    "t": "D5 上午 · 1h",
+    "fee": "含在许可内",
+    "note": "退潮白沙洲海上行走"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 7.146,
+    "lng": 134.35,
+    "name": "德国水道",
+    "t": "D4 途经 · 20min",
+    "fee": "含在许可内",
+    "note": "二战炸开的水道，鱼群与鲨鱼"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 7.199,
+    "lng": 134.381,
+    "name": "干贝城",
+    "t": "D4 下午 · 40min",
+    "fee": "含在许可内",
+    "note": "巨型砗磲贝群"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 7.185,
+    "lng": 134.44,
+    "name": "鲨鱼城",
+    "t": "D6 上午 · 1h",
+    "fee": "含在许可内",
+    "note": "礁鲨群浮潜观赏"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[6.95, 133.95], [7.6, 134.85]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fd9\"></span>洛克群岛出海环线（科罗尔→水母湖→大断层）<br><span class=\"sw dash\"></span>首尔/北京段为国际航班，地图聚焦帕劳本岛</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

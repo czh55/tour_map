@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 英国 15 天全景攻略 · 英格兰苏格兰</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #c0392b;
+    --red-light: #d14d3c;
+    --gold: #d4a017;
+    --ink: #242a33;
+    --muted: #7a8496;
+    --bg: #f8f5ef;
+    --card: #ffffff;
+    --line: #e6e0d4;
+    --blue: #1f3a5f;
+    --cover1: #0f2540;
+    --ov1: rgba(15,37,64,.90);
+    --ov2: rgba(31,58,95,.75);
+    --ov3: rgba(192,57,43,.42);
+    --ov4: rgba(212,160,23,.22);
+    --key-bg: #fdf6e3;
+    --info-bg: #eef2f8;
+    --head-bg: rgba(192,57,43,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/uk/uk-cover.jpg" alt="英国旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 15 天环线 · 英格兰 + 苏格兰</div>
+      <h1>英国 15 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 伦敦 · 剑桥牛津 · 约克 · 湖区 · 爱丁堡</div>
+      <div class="meta">
+        <span>🛫 行程链：北京→伦敦（5 天）→剑桥→牛津→约克→曼城/利物浦→湖区→爱丁堡→返程</span>
+        <span>📅 时间窗口：15 天 14 晚</span>
+        <span>✈️ 北京⇄伦敦直飞约 11 小时（国航 CA）</span>
+        <span>🛂 签证：英国标准访客签需办理，约 15 个工作日出签，费用约 115–135 英镑</span>
+        <span>🕐 时差 -8h（冬）/-7h（夏）· 🔌 230V G 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 15 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 15 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">伦敦</span>
+      <span class="arrow">→</span>
+      <span class="node">剑桥</span>
+      <span class="arrow">→</span>
+      <span class="node">牛津</span>
+      <span class="arrow">→</span>
+      <span class="node">约克</span>
+      <span class="arrow">→</span>
+      <span class="node">曼城/利物浦</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">湖区</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">爱丁堡</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 15 天怎么安排最合理</span>
+      英国是「<strong>一国之境、双城风格</strong>」的目的地：英格兰的伦敦都市、剑桥牛津学府、约克中世纪古城与湖区的湖光山色，苏格兰的爱丁堡城堡与高地风情，15 天刚好把「伦敦深度 5 天 + 北上精华」走完。节奏上<strong>先南后北</strong>：前 7 天在英格兰，后 4 天湖区+苏格兰，最后爱丁堡收尾返程，全程靠 LNER 高铁无缝衔接。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办<strong>标准访客签证</strong>：在线申请 + 签证中心指纹采集，常规约 15 个工作日出签，6 个月签费用约 115–135 英镑（中英互惠政策下中国申请人自动升级为 2 年多次）</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>英国比北京慢 <strong>8 小时（冬令时）</strong>/ <strong>7 小时（夏令时）</strong>，建议前两天安排轻松行程倒时差</td>
+</tr>
+<tr>
+<td>电源</td>
+<td><strong>230V · G 型三脚插座</strong>（英标），国内插头必须带转接头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>英镑 £，<strong>1 英镑 ≈ 9.2 元人民币</strong>；伦敦基本刷卡（Contactless/Apple Pay），小额现金备 100–200 英镑即可</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京→伦敦（5 天）→剑桥→牛津→约克→曼城/利物浦→湖区（2 天）→爱丁堡（3 天）→返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 12000–18000 ／ 标准 22000–32000 ／ 舒适 50000–70000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办签证（提前 1 个月以上）② 订北京⇄伦敦往返机票（提前 60–90 天）③ LNER 火车票提前 2–4 周订（省约 47%）</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>Contactless 信用卡/Apple Pay 全城通用，地铁公交刷 Oyster 或手机绑卡，每日有扣款封顶</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证与住宿是两大成本</strong>：英国住宿普遍偏贵，8 月爱丁堡艺穗节期间房费翻 2–3 倍，且 2026 年 7 月 24 日起爱丁堡对住宿加收 5% 旅客税（前 5 晚），务必提前 3–6 个月锁定酒店。② 英国铁路票价是<strong>动态定价</strong>：伦敦⇄爱丁堡的 LNER 高铁当天买约 £80+，提前 2–4 周订 Advance 票低至 £35–41，先订票再排行程最省钱。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 15 天版</h2>
+
+    <p>以下为 15 天 14 晚的推荐节奏：前 5 天深度玩伦敦，随后沿东海岸北上（剑桥→牛津→约克→曼城/利物浦→湖区），最后 3 天爱丁堡收尾。每日主景点 ≤2 个，城际以 LNER 高铁为主，市内靠 Oyster/Contactless。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵伦敦</td>
+<td>北京✈伦敦（国航直飞约 11h），希思罗→市区入住，傍晚泰晤士河畔看伦敦眼夜景</td>
+<td>伦敦</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>大本钟+国会大厦 → 威斯敏斯特大教堂 → 白金汉宫卫兵换岗 → 圣詹姆斯公园</td>
+<td>伦敦</td>
+<td>威斯敏斯特</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>大英博物馆（免费）→ 考文特花园 → 莱斯特广场/苏活</td>
+<td>伦敦</td>
+<td>博物馆日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>伦敦塔 → 伦敦塔桥 → 泰晤士河游船 → 圣保罗大教堂</td>
+<td>伦敦</td>
+<td>泰晤士河日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>国家美术馆+特拉法加广场 → 海德公园 → 牛津街/摄政街购物</td>
+<td>伦敦</td>
+<td>艺术购物日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>剑桥一日：国王学院 → 康河撑船 → 数学桥/叹息桥</td>
+<td>伦敦</td>
+<td>剑桥日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>牛津一日：大学城漫步 → 博德利图书馆 → 基督教堂学院</td>
+<td>伦敦</td>
+<td>牛津日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>火车北上约克：约克大教堂 → 肉铺街 → 城墙徒步</td>
+<td>约克</td>
+<td>中世纪日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>曼彻斯特（足球博物馆/科学工业博物馆）或 利物浦（披头士/阿尔伯特码头）</td>
+<td>曼城/利物浦</td>
+<td>工业城日</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>湖区：温德米尔湖游船 → 彼得兔世界 → 湖畔小镇</td>
+<td>湖区</td>
+<td>湖区第一日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>湖区：格拉斯米尔/安布塞德徒步或游湖 → 午后火车赴爱丁堡</td>
+<td>爱丁堡</td>
+<td>湖区第二日</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>爱丁堡城堡 → 皇家一英里 → 卡尔顿山日落</td>
+<td>爱丁堡</td>
+<td>城堡日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>亚瑟王座徒步 → 苏格兰国家博物馆</td>
+<td>爱丁堡</td>
+<td>苏格兰日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>荷里路德宫 或 罗西林教堂 或 购物伴手礼自由行</td>
+<td>爱丁堡</td>
+<td>自由日</td>
+</tr>
+<tr>
+<td>D15 返程</td>
+<td>爱丁堡✈北京（经伦敦/迪拜转机）或 爱丁堡→伦敦→北京，到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍牛津（D7）或曼城/利物浦（D9）其中一天；湖区可缩为 1 天（只玩温德米尔+彼得兔）。带娃家庭建议加长湖区彼得兔、伦敦自然历史博物馆；想看苏格兰高地可把爱丁堡 3 天扩到 5 天（高地天空岛需另加 2–3 天）。8 月避开爱丁堡艺穗节住宿高峰。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 15 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达伦敦</span>
+          <span class="d-desc">北京✈伦敦，入住市区</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–13:30</td><td class="t-what">北京✈伦敦希思罗（国航直飞约 11h，提前选左侧靠窗看英吉利海峡与泰晤士河口）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">入境后进城：伊丽莎白线（Oyster/Contactless £15.50，约 35min）或希思罗快线（15min，提前 30 天订低至 £10）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">入住伦敦酒店（推荐 Zone1 考文特花园/威斯敏斯特，或 Zone2 国王十字交通枢纽）</td></tr>
+          <tr><td class="t-time">19:00–21:30</td><td class="t-what">泰晤士河畔夜游：伦敦眼夜景（£25 起）+ 大本钟亮灯，晚餐尝炸鱼薯条</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">第一天尽量不排景点，倒时差（慢 7–8 小时）为主；机场地铁 24h 运行，深夜抵达也有皮卡迪利线。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 威斯敏斯特一日</span>
+          <span class="d-desc">大本钟 + 白金汉宫换岗</span>
+          <span class="d-tag ">🏛 威斯敏斯特日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>威斯敏斯特大教堂</b>（成人约 £27，网上订 £23）：加冕教堂与牛顿墓、无名战士墓</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what"><b>大本钟 + 国会大厦</b>（外观免费）：伊丽莎白塔与威斯敏斯特宫，泰晤士河岸经典机位</td></tr>
+          <tr><td class="t-time">11:45–13:00</td><td class="t-what"><b>白金汉宫卫兵换岗</b>（免费）：约 11:00 开始，提前 40 分钟到维多利亚纪念碑前占位</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>圣詹姆斯公园 + 海德公园</b>（免费）：皇家公园连廊，喂天鹅看松鼠，白金汉宫后门好拍照</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：威斯敏斯特或考文特花园附近 pub 晚餐，尝英式烤肉 Sunday Roast</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卫兵换岗不是每天都有（一般周一/三/五/日，夏季每天），出发前查 householddivision.org.uk 确认；白金汉宫国事厅仅夏季开放（2026 年 7 月 9 日–9 月 27 日，£33）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 大英博物馆</span>
+          <span class="d-desc">免费世界级馆藏</span>
+          <span class="d-tag alt">🏺 博物馆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–13:30</td><td class="t-what"><b>大英博物馆</b>（免费，需官网预约时段）：罗塞塔石碑、埃及馆木乃伊、埃尔金大理石雕、中国馆</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">午餐：大英博物馆附近街区 或 罗素广场旁的英式三明治/意面</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>考文特花园</b>（免费）：街头艺人广场、苹果市场、皇室歌剧院</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>莱斯特广场/苏活</b>（免费）：中国城晚餐或音乐剧（《悲惨世界》《妈妈咪呀》约 £30–60）</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">伦敦夜生活可选：酒吧、爵士吧或继续逛商场</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大英博物馆周五晚开放至 20:30 人更少；中文讲解器取消后下载官方 App 免费导览；特展需单独购票（约 £20）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 泰晤士河一日</span>
+          <span class="d-desc">伦敦塔 + 塔桥 + 游船</span>
+          <span class="d-tag ">🌉 泰晤士河日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>伦敦塔</b>（成人 £37）：白塔、皇家珠宝室、叛徒门，英国千年皇家要塞</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what"><b>伦敦塔桥</b>（桥面免费）：玻璃栈道（展览约 £13）+ 塔桥升桥时段</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what"><b>博罗市场</b>（免费）：伦敦最老食品市场，街头美食午餐</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what"><b>泰晤士河游船</b>（威斯敏斯特⇄塔桥往返约 £18）：水上视角看塔桥、圣保罗、伦敦眼</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><b>圣保罗大教堂</b>（成人约 £23，登顶穹顶）：欣赏千禧桥与金融城天际线</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伦敦塔旺季提前官网订票并选 9:30 首时段避开人流；游船票与伦敦眼组合买更划算（London Pass 可考虑）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 艺术与购物</span>
+          <span class="d-desc">国家美术馆 + 海德公园 + 购物</span>
+          <span class="d-tag ">🛍 艺术购物日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>国家美术馆 + 特拉法加广场</b>（免费）：梵高向日葵、莫奈睡莲、达芬奇手稿</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：特拉法加广场附近或皮卡迪利街边</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>海德公园</b>（免费）：蛇形湖泛舟、演讲者之角，或转战<b>肯辛顿花园</b></td></tr>
+          <tr><td class="t-time">15:30–18:30</td><td class="t-what"><b>牛津街/摄政街/邦德街</b>（免费）：Selfridges、哈罗德百货、利宝百货旗舰店购物</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：苏活或中国城，或预订一场英式下午茶收尾</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">自然历史博物馆（免费，恐龙馆）与科学博物馆也在南肯辛顿，时间充裕可替换海德公园；奢侈品退税政策已调整，购物前先确认是否符合退税条件。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 剑桥一日</span>
+          <span class="d-desc">国王学院 + 康河撑船</span>
+          <span class="d-tag alt">🎓 剑桥日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">伦敦国王十字乘火车到剑桥（约 1h，票提前订 £10–20）</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>国王学院</b>（参观约 £12）：哥特式礼拜堂、剑河草坪，剑桥名片</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：剑桥市场（市集广场）或三一学院旁咖啡馆</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>康河撑船</b>（拼船约 £28–45/人）：数学桥、叹息桥、皇后学院后花园（College Backs）</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what"><b>三一学院 + 圣约翰学院</b>（外观免费，内部部分收费）：牛顿苹果树、叹息桥</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返程火车回伦敦（或宿剑桥次日直接北上去约克）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">康河撑船人很多，旺季提前官网订位；下午 3 点后学院后花园常常停止划船，建议上午订船。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 牛津一日</span>
+          <span class="d-desc">大学城漫步 + 博德利图书馆</span>
+          <span class="d-tag ">📚 牛津日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">伦敦帕丁顿乘火车到牛津（约 1h，提前订 £10–20）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>博德利图书馆</b>（约 £15，需预约）：拉德克利夫圆顶、中世纪汉弗莱公爵图书馆</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：牛津高街或市场街</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>基督教堂学院</b>（成人约 £15）：哈利波特大礼堂取景地 + 大汤姆塔</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>大学城自由漫步</b>（免费）：叹息桥（牛津版）、圣玛丽教堂登顶俯瞰全城、莫德林学院</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返程火车回伦敦</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">基督教堂学院只在特定时段开放、门票常售罄，务必官网提前买；牛津比剑桥更像「学院即城市」，跟 1.5h 免费徒步讲解更出彩。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 约克一日</span>
+          <span class="d-desc">约克大教堂 + 肉铺街</span>
+          <span class="d-tag alt">🏰 中世纪日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:30</td><td class="t-what">伦敦国王十字乘 LNER 到约克（约 2h，提前订 £25–60）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>约克大教堂</b>（成人 £20）：欧洲最大中世纪哥特式教堂，世界最大中世纪彩绘玻璃「大东窗」</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what"><b>肉铺街</b>（免费）：哈利波特对角巷灵感地，黄油啤酒+鬼魂漫步</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>约克城墙徒步</b>（免费）：英格兰最完整中世纪城墙，登墙远眺大教堂</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>大英铁路博物馆</b>（免费）或 克利福德塔（£7）：火车迷必去，日本子弹头+苏格兰飞人</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">火车继续北上去曼彻斯特/利物浦（约 1.5h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">约克大教堂周日只开 12:45 后且主要是礼拜；登中央塔 275 级台阶旺季需预约。约克也是前往湖区的换乘点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 曼城或利物浦</span>
+          <span class="d-desc">工业城二选一</span>
+          <span class="d-tag ">⚽ 工业城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:00</td><td class="t-what">从约克或曼城酒店出发</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>曼彻斯特线</b>：老特拉福德球场参观（曼联，£20+）或 <b>利物浦线</b>：安菲尔德球场（利物浦，£25+）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：曼城北角街区 或 利物浦阿尔伯特码头海鲜</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">曼城：<b>科学工业博物馆</b>（免费）+ 曼彻斯特美术馆；利物浦：<b>披头士故事馆</b>（£20）+ 阿尔伯特码头</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">利物浦可选：皇家利物大厦/洞穴俱乐部（披头士首演地）；曼城可选：国家足球博物馆（免费）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐后入住曼城或利物浦酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">球场参观都必须提前官网订时段票，曼联老特拉福德旺季一票难求；两队球迷选其一，别在同一天安排两场（距离约 50km）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 湖区第一日</span>
+          <span class="d-desc">温德米尔湖 + 彼得兔世界</span>
+          <span class="d-tag alt">🏞 湖区第一日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">曼城/利物浦乘火车到温德米尔站（约 1.5–2h，湖区铁路线风景绝佳）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>温德米尔湖游船</b>（船票约 £15）：湖区最大湖泊，湖光山色与群山倒影</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：鲍内斯（Bowness）湖边小镇午餐，湖畔鳟鱼或坎伯兰香肠</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>彼得兔世界</b>（成人 £12.60）：比阿特丽克斯·波特童话馆，中文解说互动展</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what"><b>温德米尔镇</b>（免费）：湖区国家公园游客中心、Orrest Head 观景台看日落</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住湖区 B&B 或湖景酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">湖区 599/555 观光巴士串联温德米尔—鲍内斯—安布塞德等小镇，单日票约 £10 很划算；湖区天气多变，防水外套必备。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 湖区第二日</span>
+          <span class="d-desc">格拉斯米尔 + 安布塞德</span>
+          <span class="d-tag ">🥾 湖区第二日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>安布塞德（Ambleside）</b>（免费）：湖畔小镇，桥屋与乌斯怀特湖</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>格拉斯米尔（Grasmere）</b>（免费）：华兹华斯故居鸽舍、格拉斯米尔姜饼店</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：湖区 pub 午餐，尝尝英国湖区名产坎伯兰香肠与猪肉派</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what"><b>温德米尔湖西岸或徒步</b>（免费）：挑一段轻松步道或再乘船横渡湖面</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">湖区→Oxenholme→爱丁堡火车（转 LNER 约 3h）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">抵达爱丁堡入住，皇家一英里夜游</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">湖区两天建议「船 + 巴士 + 徒步」结合；若只有一天，选温德米尔游船+彼得兔世界即可。爱丁堡住宿 2026 年 7 月 24 日起加收 5% 旅客税（前 5 晚）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 爱丁堡城堡</span>
+          <span class="d-desc">城堡 + 皇家一英里</span>
+          <span class="d-tag ">🏰 城堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>爱丁堡城堡</b>（成人 online £23.50）：皇家苏格兰军团博物馆、皇冠珠宝、一门「一点钟炮」</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：城堡脚下旧城区的苏格兰餐厅，尝尝哈吉斯</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>皇家一英里</b>（免费）：从城堡一路下坡到荷里路德宫，圣吉尔斯大教堂、威士忌体验馆</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>卡尔顿山</b>（免费）：国家纪念碑+纳尔逊纪念碑，俯瞰全城与福斯湾日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：旧城区 pub 晚餐或苏格兰海鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">爱丁堡城堡旺季必须提前订时段票（夏季常提前售罄，且现场不卖票）；一点钟炮每天 13:00 鸣响，想看的提前找好观景位。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 亚瑟王座</span>
+          <span class="d-desc">火山岩徒步 + 博物馆</span>
+          <span class="d-tag alt">⛰ 苏格兰日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>亚瑟王座</b>（免费）：荷里路德公园内的远古火山岩，登顶约 45min，俯瞰全城与海</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：荷里路德宫附近或苏格兰国家美术馆旁</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what"><b>苏格兰国家博物馆</b>（免费）：达利十字、克隆羊多莉标本、苏格兰历史长廊</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><b>苏格兰威士忌体验馆</b>（£25 起，可选）或 皇家植物园/新城乔治街</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：爱丁堡新城餐厅，试试苏格兰三文鱼或鹿肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">亚瑟王座天气好时视野绝佳，但大风天气慎行（山顶风大）；爬完腿酸，安排在城堡日的次日正合适。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 爱丁堡自由行</span>
+          <span class="d-desc">荷里路德宫 或 周边</span>
+          <span class="d-tag ">🎁 自由日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>荷里路德宫</b>（成人约 £20）：英国王室苏格兰官邸，玛丽女王行宫</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：荷里路德宫附近或皇家一英里</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what">选项 A：<b>罗西林教堂</b>（约 £11，《达芬奇密码》取景地，半小时车程）；选项 B：爱丁堡购物伴手礼（黄油曲奇、围巾、威士忌）</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>迪恩村 + 新城</b>（免费）：维多利亚街彩色建筑、乔治街，打卡苏格兰下午茶</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">回酒店收拾行李，次日返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">荷里路德宫与白金汉宫同为皇家宫殿，可官网买联票；罗西林教堂交通靠巴士或打车，注意班次。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 返程</span>
+          <span class="d-desc">爱丁堡✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">早餐后自由活动：皇家一英里最后扫货（苏格兰羊毛围巾、黄油曲奇、威士忌）</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what">退房，乘机场电车/巴士到爱丁堡机场（约 30min）</td></tr>
+          <tr><td class="t-time">11:00–14:00</td><td class="t-what">爱丁堡✈北京（经伦敦/迪拜等转机，全程约 15–18h；直飞需经伦敦希思罗衔接）</td></tr>
+          <tr><td class="t-time">14:00–19:00</td><td class="t-what">转机候机，机场免税店补货</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">抵达北京，入境回家，结束 15 天英伦之旅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">爱丁堡无北京直飞，回程多为「爱丁堡→伦敦→北京」转机；提前 60–90 天订返程票可省一大笔，建议 D14 确认好转机时间。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-cover.jpg" alt="伦敦·大本钟与泰晤士河" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伦敦·大本钟与泰晤士河 <small>外观免费</small></div>
+          <div class="sc-feat">伦敦名片。<b>伊丽莎白塔 + 国会大厦 + 泰晤士河</b>，傍晚亮灯最出片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 威斯敏斯特站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-1.jpg" alt="伦敦·大英博物馆" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伦敦·大英博物馆 <small>免费（特展另计）</small></div>
+          <div class="sc-feat">世界四大博物馆之一。<b>罗塞塔石碑 + 埃及馆木乃伊</b>，需官网预约免费票。</div>
+          <div class="sc-meta">📅 10:00–17:00（周五至 20:30）· ⏱ 3–4h · 🚇 罗素广场站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-2.jpg" alt="爱丁堡·爱丁堡城堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">爱丁堡·爱丁堡城堡 <small>£23.50（online）</small></div>
+          <div class="sc-feat">苏格兰王权象征。<b>悬崖上的城堡 + 皇冠珠宝 + 一点钟炮</b>，皇家一英里起点。</div>
+          <div class="sc-meta">📅 9:30–18:00 · ⏱ 2–3h · 🚶 皇家一英里顶端</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-3.jpg" alt="湖区·温德米尔湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">湖区·温德米尔湖 <small>湖区免费（游船 £15 起）</small></div>
+          <div class="sc-feat">英格兰最大湖。<b>湖光山色 + 蒸汽船 + 湖畔小镇</b>，华兹华斯笔下的湖区。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚂 温德米尔站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-4.jpg" alt="剑桥·国王学院" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">剑桥·国王学院 <small>约 £12</small></div>
+          <div class="sc-feat">剑桥名片。<b>哥特式礼拜堂 + 康河撑船</b>，徐志摩《再别康桥》之地。</div>
+          <div class="sc-meta">📅 学院 9:30–16:30 · ⏱ 2–3h · 🚂 伦敦国王十字 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-5.jpg" alt="约克·肉铺街" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">约克·肉铺街 <small>免费</small></div>
+          <div class="sc-feat">哈利波特对角巷原型。<b>中世纪木质悬挑屋 + 约克大教堂</b>，全英最完整古城。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚂 LNER 约克站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-6.jpg" alt="伦敦·红色双层巴士" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伦敦·红色双层巴士 <small>观光巴士 £30 起</small></div>
+          <div class="sc-feat">英伦出行符号。<b>红色 Routemaster + 街景</b>，可坐普通公交环线看街景。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 🚌 公交单程 £1.75</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uk/uk-7.jpg" alt="英式下午茶" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">英式下午茶 <small>£25–60/人</small></div>
+          <div class="sc-feat">英国国粹。<b>三层塔：司康+凝脂奶油+草莓果酱</b>，Fortnum & Mason 或约克 Bettys。</div>
+          <div class="sc-meta">📅 15:00 后 · ⏱ 1.5h · 🏨 需提前预订</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（伦敦天际线、大英博物馆、爱丁堡城堡、湖区、剑桥、约克、红色巴士、下午茶均为英国实景），用于页面配图。更多免费景点：国家美术馆、特拉法加广场、海德公园、考文特花园、圣詹姆斯公园、苏格兰国家博物馆。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 <strong>1 英镑 ≈ 9.2 元人民币</strong>估算。往返机票按国航直飞淡季 5000–9000 元计（旺季 8–9 月可能翻倍）；住宿按 14 晚计，爱丁堡 8 月旺季与 5% 旅客税需另加。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（12000–18000）</th>
+<th>标准（22000–32000）</th>
+<th>舒适（50000–70000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄伦敦转机 4000–5500</td>
+<td>直飞 6000–9000</td>
+<td>直飞商务/灵活 12000–20000</td>
+</tr>
+<tr>
+<td>住宿（14 晚）</td>
+<td>青旅/B&B 300–500/晚</td>
+<td>中档酒店 700–1200/晚</td>
+<td>精品/星级 1500–3000/晚</td>
+</tr>
+<tr>
+<td>交通（火车+市内）</td>
+<td>单程 Advance + Oyster 1800–2800</td>
+<td>LNER 往返 + 市内 3200–5000</td>
+<td>火车 + 包车/打车 8000–13000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>免费景点为主 600–1000</td>
+<td>含伦敦眼/城堡等 1800–2800</td>
+<td>全含 + 演出 + 下午茶 5000–9000</td>
+</tr>
+<tr>
+<td>餐饮（15 天）</td>
+<td>超市 Meal Deal + 快餐 2800–3800</td>
+<td>正常下馆子 4500–6500</td>
+<td>米其林/下午茶 9000–15000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 28000 元）</span>
+      往返直飞机票 7500 + 住宿 14 晚约 9800（平均 700/晚，青旅/中档混住）+ LNER 与市内交通 4000 + 门票 2200 + 餐饮 5500 ≈ <strong>29000 元</strong>。大头是机票与住宿；火车票提前 2–4 周订、伦敦市内靠 Oyster 日封顶，能再省 1500–2500 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>15.1 八天精华版（伦敦+爱丁堡）</h3>
+
+
+    <ul>
+
+      <li>D1 抵伦敦，D2 威斯敏斯特，D3 大英博物馆，D4 泰晤士河游船+塔桥</li>
+
+      <li>D5 剑桥一日（国王学院+康河）</li>
+
+      <li>D6 火车北上爱丁堡（LNER 4h08m）</li>
+
+      <li>D7 爱丁堡城堡+皇家一英里+卡尔顿山</li>
+
+      <li>D8 亚瑟王座后返程</li>
+
+    </ul>
+
+    <h3>15.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：伦敦自然历史博物馆（免费恐龙馆）+ 大英博物馆少年向导 + 伦敦动物园；湖区加长彼得兔世界与温德米尔蒸汽船；砍掉牛津与曼城/利物浦。剑桥撑船对小孩很友好，约克肉铺街有官方哈利波特主题店。英国 11 岁以下地铁公交免费（随成人）。</p>
+
+    <h3>15.3 苏格兰深度版（高地+天空岛）</h3>
+
+
+    <p>把爱丁堡扩为 5–6 天：爱丁堡 3 天 + 高地 2 天（格伦科峡谷、威廉堡、尼斯湖）+ 天空岛 1–2 天（波特里、老人峰），或坐「苏格兰高地铁路」（Jacobite 蒸汽火车）穿越格伦芬南高架桥。该版本建议自驾或参团，行程至少 18 天。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>14.1 北京 ⇄ 英国 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→伦敦约 11h</td>
+<td>往返 5000–9000 元</td>
+<td>国航 CA 直飞希思罗，每天 1–2 班，提前 60–90 天订</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>15–20h</td>
+<td>3500–5500 元</td>
+<td>经上海/香港/迪拜/多哈，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>中英无陆路直连，只能飞机（或西伯利亚铁路+欧洲段，耗时数日不现实）</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 英国境内交通核心提醒</span>
+      伦敦⇄爱丁堡的<strong>LNER 高铁（国王十字出发，4h08m）</strong>是主力，Advance 票提前 2–4 周订低至 £35–41，当天买贵近一倍；所有火车票可在 Trainline / 各运营官网提前订且无手续费。伦敦市内用<strong>Oyster 卡或 Contactless</strong>（Zone1-2 日封顶 £8.90），比单买票省一大截。
+    </div>
+
+    <h3>14.2 英国境内交通</h3>
+    <ul>
+      <li><strong>LNER 高铁</strong>：伦敦国王十字⇄约克 2h / ⇄爱丁堡 4h08m，每小时一班，Advance £35–60</li>
+      <li><strong>伦敦地铁/公交</strong>：Oyster/Contactless 一卡通，Zone1-2 单程 £3.60 起、日封顶 £8.90；公交单程 £1.75、日封顶 £5.60</li>
+      <li><strong>希思罗进城</strong>：伊丽莎白线 £15.50（35min）／希思罗快线 £26（15min，提前 30 天订 £10）／皮卡迪利地铁线 £5.90（60min）</li>
+      <li><strong>剑桥/牛津</strong>：国王十字→剑桥约 1h、帕丁顿→牛津约 1h，当天往返，票价提前订 £10–20</li>
+      <li><strong>湖区铁路</strong>：Oxenholme 中转进入温德米尔支线（约 1.5–2h 从曼城出发）；当地 599/555 观光巴士约 £10/日</li>
+      <li><strong>出租车/Uber</strong>：伦敦 Black Cab 起步约 £3.20，Uber 略便宜；只在应急或深夜使用</li>
+    </ul>
+
+    <h3>14.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>伦敦·Zone1 考文特花园/威斯敏斯特</td>
+<td>经济 500–800 / 标准 900–1600</td>
+<td>景点步行可达，夜生活丰富</td>
+<td>全英最贵</td>
+</tr>
+<tr>
+<td>伦敦·Zone2 国王十字/帕丁顿</td>
+<td>经济 400–650 / 标准 700–1300</td>
+<td>机场+北上火车枢纽</td>
+<td>略偏市中心</td>
+</tr>
+<tr>
+<td>剑桥·市中心</td>
+<td>经济 450–700 / 标准 800–1400</td>
+<td>学院步行可达</td>
+<td>房量少旺季紧张</td>
+</tr>
+<tr>
+<td>约克·城墙内</td>
+<td>经济 400–650 / 标准 700–1200</td>
+<td>中世纪古城氛围</td>
+<td>老建筑隔音一般</td>
+</tr>
+<tr>
+<td>湖区·温德米尔/鲍内斯</td>
+<td>B&B 500–900 / 湖景 1000–2500</td>
+<td>湖景房、童话氛围</td>
+<td>旺季紧俏需提前 3 个月</td>
+</tr>
+<tr>
+<td>爱丁堡·老城/新城</td>
+<td>经济 450–700 / 标准 800–1500</td>
+<td>城堡与皇家一英里步行</td>
+<td>8 月艺穗节翻 2–3 倍+5% 旅客税</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>英式全早餐 Full English Breakfast（煎蛋+培根+黑布丁+焗豆）</li>
+          <li>炸鱼薯条 Fish & Chips（伦敦老店 Poppies/Rock & Sole）</li>
+          <li>周日烤肉 Sunday Roast（烤牛肉+约克布丁+肉汁）</li>
+          <li>苏格兰哈吉斯 Haggis（爱丁堡 pub 招牌）</li>
+        </ul>
+        <h3>🥧 街头与市场</h3>
+        <ul>
+          <li>伦敦博罗市场：现做生蚝、汉堡、西班牙海鲜饭</li>
+          <li>考文特花园街头小吃</li>
+          <li>约克肉铺街黄油啤酒与烟花三明治</li>
+          <li>湖区坎伯兰香肠与猪肉派</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍵 下午茶文化</h3>
+        <ul>
+          <li>英式下午茶三层塔：司康+凝脂奶油+草莓酱</li>
+          <li>Fortnum & Mason 皇家下午茶（伦敦）</li>
+          <li>约克百年茶室 Bettys（下午茶鼻祖）</li>
+          <li>苏格兰下午茶（爱丁堡 The Balmoral 酒店）</li>
+        </ul>
+        <h3>🍺 在地特色</h3>
+        <ul>
+          <li>英国精酿啤酒与苹果酒</li>
+          <li>苏格兰威士忌（爱丁堡威士忌体验馆品鉴）</li>
+          <li>曼城咖喱（被称为全英最佳咖喱之城）</li>
+          <li>利物浦洞穴俱乐部旁的老派酒吧</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 网红下午茶（Fortnum & Mason/Bettys）必须提前 1–2 周预订；② 餐厅账单常含 12.5% 服务费，看清楚再给小费；③ 伦敦正餐人均 £25+，超市 Meal Deal（三明治+饮料+零食约 £4–5）是赶路效率神器；④ 大部分餐厅只刷卡不收现金，随身现金主要用于街边小摊。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 英国标准访客签证（eVisa 电子签，2026 年起无贴纸）</li>
+        <li>Contactless 信用卡/Apple Pay（可绑 Oyster 当交通卡）</li>
+        <li>英标转换插头（G 型三脚，230V）</li>
+        <li>英镑小额现金 100–200 备用</li>
+      </ul>
+      <ul>
+        <li>提前订：往返机票 + LNER 火车票 + 爱丁堡城堡/伦敦眼门票</li>
+        <li>大英博物馆免费时段预约</li>
+        <li>下载 Trainline + Google 地图 + TfL 出行 App</li>
+        <li>查天气：英国常年多雨，防风外套+雨具必备</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>8 月爱丁堡艺穗节住宿翻 2–3 倍</strong>，且 2026-07-24 起加收 5% 旅客税（前 5 晚），尽量避开 8 月或提前半年订房；② 英国公交地铁<strong>只刷卡不现金</strong>，Oyster/Contactless 是刚需；③ 火车票动态定价，<strong>当天买贵近一倍</strong>，LNER Advance 提前 2–4 周订；④ 天气多变，雨衣比伞实用；时差 7–8 小时，前两天安排轻松行程。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      英国是「<strong>历史纵深与自然湖山并行</strong>」的目的地——伦敦的博物馆与王室、剑桥牛津的百年学府、约克的中世纪街巷、湖区的湖光山色、爱丁堡的城堡与火山岩，15 天刚好串成一条「先南后北」的英伦精华线。签证提前 1 个月办、机票火车提前订，剩下就是沿着泰晤士河和 LNER 慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c0392b",
+    "d": 3,
+    "n": "英伦主轴线 · 伦敦→剑桥→牛津→约克→曼城→湖区→爱丁堡",
+    "pts": [
+      [
+        51.5074,
+        -0.1278
+      ],
+      [
+        52.2053,
+        0.1218
+      ],
+      [
+        51.752,
+        -1.2577
+      ],
+      [
+        53.959,
+        -1.0815
+      ],
+      [
+        53.4808,
+        -2.2426
+      ],
+      [
+        54.3809,
+        -2.9068
+      ],
+      [
+        55.9533,
+        -3.1883
+      ]
+    ]
+  },
+  {
+    "c": "#1f3a5f",
+    "d": 3,
+    "n": "利物浦备选支线 · 曼城⇄利物浦（D9 二选一）",
+    "pts": [
+      [
+        53.4808,
+        -2.2426
+      ],
+      [
+        53.4084,
+        -2.9916
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 51.5007,
+    "lng": -0.1246,
+    "name": "伦敦·大本钟与国会大厦",
+    "t": "D1–D2 · 1.5h",
+    "fee": "外观免费",
+    "note": "伊丽莎白塔、威斯敏斯特宫"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 51.5194,
+    "lng": -0.127,
+    "name": "伦敦·大英博物馆",
+    "t": "D3 全天 · 3–4h",
+    "fee": "免费（特展另计）",
+    "note": "罗塞塔石碑、埃及馆"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 51.5055,
+    "lng": -0.0754,
+    "name": "伦敦·伦敦塔桥",
+    "t": "D4 上午 · 1.5h",
+    "fee": "桥面免费",
+    "note": "塔桥展览、泰晤士河游船码头"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 52.2045,
+    "lng": 0.1166,
+    "name": "剑桥·国王学院",
+    "t": "D6 全天 · 3h",
+    "fee": "约 £12",
+    "note": "康河撑船、数学桥"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 51.754,
+    "lng": -1.2545,
+    "name": "牛津·博德利图书馆",
+    "t": "D7 上午 · 2h",
+    "fee": "约 £15",
+    "note": "拉德克利夫圆顶、哈利波特取景地"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 53.9623,
+    "lng": -1.0819,
+    "name": "约克·约克大教堂",
+    "t": "D8 上午 · 1.5h",
+    "fee": "£20",
+    "note": "大东窗、肉铺街、城墙"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 54.3772,
+    "lng": -2.909,
+    "name": "湖区·温德米尔湖",
+    "t": "D10–D11 · 2 天",
+    "fee": "湖区免费（游船 £15）",
+    "note": "游船、彼得兔世界"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 55.9486,
+    "lng": -3.2009,
+    "name": "爱丁堡·爱丁堡城堡",
+    "t": "D12 上午 · 2–3h",
+    "fee": "£23.50（online）",
+    "note": "皇冠珠宝、一点钟炮、皇家一英里"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[50.0, -6.0], [56.0, 1.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c0392b\"></span>英伦主轴线（伦敦→爱丁堡）<br><span class=\"sw\" style=\"background:#1f3a5f\"></span>利物浦备选支线（D9 二选一）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

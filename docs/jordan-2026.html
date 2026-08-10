@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 约旦 9 天全景攻略 · 玫瑰古城</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #b5492a;
+    --red-light: #c96b3d;
+    --gold: #c9a227;
+    --ink: #33281f;
+    --muted: #8a7765;
+    --bg: #f7f4ec;
+    --card: #ffffff;
+    --line: #e7ddc8;
+    --blue: #2e5a88;
+    --cover1: #6f2f1b;
+    --ov1: rgba(111,47,27,.88);
+    --ov2: rgba(181,73,42,.72);
+    --ov3: rgba(201,162,39,.38);
+    --ov4: rgba(226,178,90,.20);
+    --key-bg: #fdf6e3;
+    --info-bg: #f3eee2;
+    --head-bg: rgba(181,73,42,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/jordan/jordan-cover.jpg" alt="约旦旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 9 天环线 · 安曼 + 佩特拉 + 瓦迪拉姆 + 死海</div>
+      <h1>约旦 9 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 安曼 · 杰拉什罗马城 · 玫瑰古城佩特拉 · 火星沙漠瓦迪拉姆 · 死海漂浮</div>
+      <div class="meta">
+        <span>🛫 行程链：安曼 → 杰拉什 → 佩特拉 → 瓦迪拉姆 → 死海 → 返程</span>
+        <span>📅 时间窗口：9 天 8 晚</span>
+        <span>✈️ 北京⇄安曼 无直飞，中转约 14–20 小时（多哈/迪拜/阿布扎比）</span>
+        <span>🛂 签证：中国护照落地签 40 JOD；约旦通 Jordan Pass 住满 3 晚可免签费</span>
+        <span>🕐 时差 −5 小时 · 🔌 电压 230V C/D/F/G 型插座（需转换插头）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 9 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 9 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">安曼</span>
+      <span class="arrow">→</span>
+      <span class="node">杰拉什</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">佩特拉</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">瓦迪拉姆</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">死海</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 9 天怎么安排最合理</span>
+      约旦是<strong>「沙漠中的文明十字路口」</strong>：安曼的千年老城、杰拉什中东最完整的罗马古城、佩特拉凿进玫瑰色岩石的纳巴泰王都、瓦迪拉姆的火星地表，以及低于海平面 400 多米的死海。9 天刚好把「<strong>古罗马 + 佩特拉 + 沙漠 + 死海</strong>」四张王牌一次打满，节奏上<strong>南部重头戏留给佩特拉 3 天</strong>，瓦迪拉姆 2 晚深入沙漠腹地。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>落地签 40 JOD（约 400 元）</strong>；提前在 jordanpass.jo 购买约旦通并住满 3 晚（4 天）可<strong>免签费</strong>，机票+酒店订单随身备查</td>
+</tr>
+<tr>
+<td>约旦通 Jordan Pass</td>
+<td>分三档：Wanderer 70 / Explorer 75 / Expert 80 JOD（对应佩特拉 1/2/3 天），含 40+ 景点。本次佩特拉 3 天买 <strong>Expert 80 JOD</strong> 最划算，景点首扫激活，佩特拉之夜不包含</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>安曼（2 天）→ 杰拉什（1 天）→ 佩特拉（3 天）→ 瓦迪拉姆（2 天）→ 死海（1 天）→ 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 9000–13000 ／ 标准 16000–24000 ／ 舒适 35000–50000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 官网买约旦通（免签费+含佩特拉）② 订瓦迪拉姆露营营地 ③ 提前 2 个月盯北京⇄安曼中转机票</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>3–5 月、9–11 月最舒适（20–30℃）；6–9 月佩特拉正午 40℃+，建议 6:00 入园；12–2 月凉爽干燥，瓦迪拉姆夜里可近 0℃</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>1 JOD ≈ 10 元人民币；落地签只收现金（JOD/USD），机场汇率差，市区换更划算，银联/刷卡部分商家可用</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>约旦通必须在入境前买好</strong>：机场/口岸不卖约旦通，没买就落地签 40 JOD + 佩特拉门票另算（1 日 50 JOD）。② <strong>佩特拉比想象中大得多</strong>：卡兹尼只是入口，修道院要爬约 800 级台阶，全程轻松走出 2 万步，1 天票根本不够，这也是本攻略给佩特拉留 3 天的原因。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 9 天版</h2>
+
+    <p>以下为 9 天 8 晚的推荐节奏：前半程安曼+杰拉什看罗马与老城，中段 3 天深玩佩特拉，后半程瓦迪拉姆沙漠 2 晚 + 死海 1 天收尾。城市之间以 JETT 巴士与包车衔接。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵安曼</td>
+<td>北京✈安曼（中转约 14–20h），落地签/约旦通入境，入住市区</td>
+<td>安曼</td>
+<td>抵达+休整</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>城堡山 → 罗马剧场 → 老城市集 → 彩虹街</td>
+<td>安曼</td>
+<td>古城一日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>杰拉什罗马遗址：哈德良门 → 椭圆广场 → 列柱大街 → 剧场</td>
+<td>安曼</td>
+<td>罗马古城</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>JETT 巴士到瓦迪穆萨，下午入园：蛇道 → 卡兹尼 → 皇家陵墓</td>
+<td>瓦迪穆萨</td>
+<td>初见佩特拉</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>清晨入园 → 修道院（800 级台阶）→ 高祭坛；晚上佩特拉之夜（可选）</td>
+<td>瓦迪穆萨</td>
+<td>佩特拉深线</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>晨光补拍 → 转场瓦迪拉姆，吉普车日落 + 星空露营</td>
+<td>瓦迪拉姆营地</td>
+<td>火星沙漠</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>沙漠吉普全览：劳伦斯之泉 → 天然拱门 → 沙丘 → 骆驼/徒步</td>
+<td>瓦迪拉姆营地</td>
+<td>沙漠全体验</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>离开瓦迪拉姆 → 死海：漂浮 + 泥浴 + 泳池日落</td>
+<td>死海度假村</td>
+<td>死海打卡</td>
+</tr>
+<tr>
+<td>D9 返程</td>
+<td>晨光休整 → 返安曼购物 → 安曼✈北京（中转）</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍掉杰拉什（D3）并入安曼半日，把佩特拉从 3 天压缩到 2 天但保留修道院；时间充裕可在瓦迪拉姆加一天热气球（约 120 JOD，季节限定）。带老人孩子建议瓦迪拉姆只住 1 晚、佩特拉全程坐电瓶车/骑驴上修道院。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 9 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达安曼</span>
+          <span class="d-desc">北京✈安曼，入境休整</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">全天</td><td class="t-what">北京✈安曼（无直飞，经多哈/迪拜/阿布扎比/伊斯坦布尔中转，全程约 14–20h）。推荐卡塔尔/阿联酋航空，行李尽量直挂</td></tr>
+          <tr><td class="t-time">到达后</td><td class="t-what">安曼阿丽亚王后机场（AMM）入境：持约旦通走免签通道出示二维码；无约旦通则现金付 40 JOD 落地签（备美元），办完换少量第纳尔</td></tr>
+          <tr><td class="t-time">20:00–21:30</td><td class="t-what">机场→市区约 35–45min（出租约 20 JOD，提前订接送机更省心），入住酒店</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">时差 −5h 无感，附近觅食后早睡，为明天蓄力</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">北京没有直飞安曼的航班，务必买「同一票号联程」避免中转国签证问题；落地签窗口只收现金，美元/第纳尔都行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 安曼古城</span>
+          <span class="d-desc">城堡山 + 罗马剧场 + 老城</span>
+          <span class="d-tag ">🏛 古城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what">酒店早餐（约旦早餐标配：皮塔饼+胡姆斯+煎蛋+薄荷茶）→ <b>城堡山 Jabal al-Qal'a</b>（约旦通含，单买约 3 JOD）：赫拉克勒斯神庙残柱、考古博物馆、俯瞰白色老城</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">老城午餐：曼萨夫 Mansaf（约旦国菜羊肉酸奶饭）或沙威玛+法拉费</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what"><b>罗马剧场</b>（约旦通含）：建于公元 2 世纪的 6000 座露天剧场，登顶看全城</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">老城市集：哈希姆广场、蓝顶清真寺（外观）→ <b>彩虹街 Rainbow Street</b> 咖啡馆+甜品，晚霞时最美</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐后回酒店休息，明天早起去杰拉什</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">安曼城区坡道多且车多，穿舒服的鞋；周五上午清真寺礼聚、部分店铺关门，尽量把老城日排在周中。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 杰拉什一日</span>
+          <span class="d-desc">中东最完整罗马古城</span>
+          <span class="d-tag alt">🏺 罗马日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:45</td><td class="t-what">安曼北站（Tabarbour）小巴/服务出租车到杰拉什（约 1 JOD，45min–1h）；或包车往返 25–35 JOD</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>杰拉什古城</b>（10 JOD，约旦通含）：<b>哈德良门</b> → <b>椭圆广场</b>（56 根科林斯柱围合）→ <b>列柱大街</b>（1km 古罗马主干道）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">景区口午餐：约旦烤肉+皮塔</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what"><b>阿尔忒弥斯神庙</b> + 南北剧场（可体验现场演出音效）+ 拜占庭教堂马赛克地面</td></tr>
+          <tr><td class="t-time">16:00–17:00</td><td class="t-what">返安曼；时间富余可顺路加阿杰隆城堡（山顶十字军城堡，另需 20–30min）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">杰拉什 8:00 开门即去人最少、光线最好；遗址无遮阴，夏天一定带水+防晒，参观约 4h。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 初见佩特拉</span>
+          <span class="d-desc">安曼→瓦迪穆萨，蛇道与卡兹尼</span>
+          <span class="d-tag ">🏜 佩特拉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:15–10:00</td><td class="t-what">JETT 巴士：安曼 Abdali 站 6:30 / 第七环站 7:00 发车，约 10 JOD，3.5h 直达瓦迪穆萨；到站寄存行李或先办入住，游客中心出示约旦通扫码（首扫激活）</td></tr>
+          <tr><td class="t-time">11:00–13:30</td><td class="t-what">入园：沿<b>蛇道 Siq</b>（1.2km 峡谷裂隙）走到尽头——<b>卡兹尼神殿 Al-Khazneh</b>，玫瑰色岩壁第一眼震撼</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">卡兹尼广场午餐（自带干粮最划算，景区内餐饮贵）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">深入古城：<b>柱廊街</b> → <b>大神庙</b> → <b>皇家陵墓</b>（立面群最佳拍照位）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">出园回镇，瓦迪穆萨镇上晚餐（烤鸡/曼萨夫），早休息备战明天修道院</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">佩特拉 6:00 开门、18:00 关门（夏季），正午暴晒建议安排在有遮阴的蛇道时段；园区水贵，随身带 2L 水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 修道院深线</span>
+          <span class="d-desc">修道院 800 级台阶 + 高祭坛</span>
+          <span class="d-tag ">🧗 佩特拉深线</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–10:00</td><td class="t-what">第一波入园，清晨空无一人的蛇道+卡兹尼，光线最佳 → 爬<b>修道院 Ad-Deir</b>：约 800 级凿岩台阶（往返 2–3h），山顶歇脚喝薄荷茶，俯瞰整片佩特拉谷地</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">修道院观景台拍照；体力好可加 1 JOD 登顶另两处观景</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">下山，顺路打卡 <b>高祭坛 High Place of Sacrifice</b>（绕道 1h，360° 山景值得）→ 午餐：瓦迪穆萨镇上烤鱼/汉堡</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">午休或补拍皇家陵墓晚光</td></tr>
+          <tr><td class="t-time">20:30–22:00</td><td class="t-what"><b>佩特拉之夜</b>（周一/三/四 20:30，17 JOD 另购）：烛光点亮卡兹尼前广场，贝都因音乐+星空，氛围绝佳 ※可选</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">修道院台阶陡峭无遮阴，务必清晨爬；佩特拉之夜需当日有效的白天票+单独购票，只开周一周三周四，旺季票提前在 PDTRA 官网买。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 转场瓦迪拉姆</span>
+          <span class="d-desc">晨光补拍 → 火星沙漠 → 星空露营</span>
+          <span class="d-tag alt">🏜 瓦迪拉姆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–10:00</td><td class="t-what">早起再入园（约旦通 Expert 含 3 天），补拍蛇道晨光与彩色沙石谷；或睡懒觉整理行李，退房、镇上早餐</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">包车/拼车前往瓦迪拉姆（约 1.5–2h），可顺路逛<b>小佩特拉 Little Petra</b>（约旦通含）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">瓦迪拉姆游客中心：保护区门票 7 JOD（约旦通含），联系营地吉普来接</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">营地吉普接入沙漠，入住贝都因帐篷，下午沙丘漫步/岩画看日落</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what">营地篝火晚餐（坑烤鸡+米饭+沙拉），围炉喝甜茶，<b>星空银河肉眼可见</b></td></tr>
+          </tbody></table></div>
+        <div class="hl-note">瓦迪拉姆营地价格约 25–60 JOD/人含早晚餐，越深入沙漠越贵；12–2 月夜里可近 0℃，抓绒+睡袋内胆必备。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 沙漠全体验</span>
+          <span class="d-desc">吉普巡游 + 骆驼 + 沙丘日落</span>
+          <span class="d-tag ">🚙 沙漠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–09:00</td><td class="t-what">（可选）吉普看日出，沙漠晨光把砂岩染成金红 → 营地早餐</td></tr>
+          <tr><td class="t-time">09:00–13:00</td><td class="t-what"><b>沙漠吉普 4x4 半日游</b>（约 30–50 JOD/人）：<b>劳伦斯之泉</b> → <b>卡扎里峡谷</b>（岩刻+一线天）→ <b>天然拱门</b> → 红色沙丘</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">贝都因沙漠午餐（沙坑烤鸡+面饼）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">自由选项：骑骆驼（约 15 JOD/人）／徒步 <b>布达岩拱门</b> ／营地躺平喝红茶</td></tr>
+          <tr><td class="t-time">17:30–22:00</td><td class="t-what">吉普车登沙丘看日落，火星地表+夕阳大片 → 返回营地，篝火+贝都因音乐+观星（无光害，银河清晰）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">热气球约 120 JOD/人、季节和风况双限，想坐务必提前 1–2 天跟营地约；吉普车报价按「每人」谈，砍价空间在 10–20%。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 死海漂浮</span>
+          <span class="d-desc">瓦迪拉姆 → 死海 → 漂浮泥浴</span>
+          <span class="d-tag alt">🌊 死海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">营地早餐，最后看眼沙漠晨景</td></tr>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what">包车前往死海（约 3–3.5h 沙漠公路，途经费南/卡拉克方向），入住死海度假村（Sweimeh 一带）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">度假村自助午餐（日票通常含）</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>死海漂浮</b>（含死海泥浴）：仰躺即浮、看报纸拍照是保留项目，黑泥涂满全身等干再冲</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what">淡水冲淋（必须！）→ 泳池放松 → 死海日落（盐晶滩+远山极美）→ 度假村晚餐，早休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">死海日票 35–45 JOD 含度假村私人沙滩+淡水淋浴+泳池+自助餐，比公共海滩（20 JOD）体验好很多；漂浮每次 ≤20 分钟，水进眼睛立刻用淡水冲！</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 返程</span>
+          <span class="d-desc">晨光休整 → 返安曼 → 北京</span>
+          <span class="d-tag return">🛫 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">死海晨光，最后海边散个步</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">退房，驱车回安曼（约 1–1.5h）</td></tr>
+          <tr><td class="t-time">11:00–14:30</td><td class="t-what">安曼市区：彩虹街咖啡馆补咖啡，老城买伴手礼——<b>死海泥护肤品、马赛克盘、阿拉伯甜点、贝都因头巾</b>，午餐沙威玛/烤鱼收官</td></tr>
+          <tr><td class="t-time">15:30</td><td class="t-what">提前 3h 到机场（安曼机场人多安检慢）</td></tr>
+          <tr><td class="t-time">17:00–次日</td><td class="t-what">安曼✈北京（中转，约 14–20h），入境回家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">离境税 10 JOD 一般已含在机票里；机场免税店有死海泥品牌（Ahava 等）补货，比市区贵一点但省时间。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-cover.jpg" alt="佩特拉·卡兹尼神殿" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">佩特拉·卡兹尼神殿 <small>含于约旦通/门票</small></div>
+          <div class="sc-feat">佩特拉名片。<b>蛇道尽头的玫瑰色神殿</b>，《变形金刚》取景地，晨光与烛光各美一次。</div>
+          <div class="sc-meta">📅 6:00–18:00 · ⏱ 1–2h · 🚌 瓦迪穆萨步行入园</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-1.jpg" alt="佩特拉·蛇道" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">佩特拉·蛇道 <small>含于约旦通/门票</small></div>
+          <div class="sc-feat">1.2km 峡谷裂隙。<b>天然水道+岩壁色带</b>，清晨无人时最出片。</div>
+          <div class="sc-meta">📅 6:00–18:00 · ⏱ 1h · 🚶 入口直达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-2.jpg" alt="瓦迪拉姆沙漠" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦迪拉姆沙漠 <small>保护区 7 JOD（约旦通含）</small></div>
+          <div class="sc-feat">「月亮谷」火星地表。<b>吉普巡游+骆驼+沙丘日落</b>，贝都因人世代家园。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚙 营地吉普</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-3.jpg" alt="死海" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">死海 <small>度假村日票 35–45 JOD</small></div>
+          <div class="sc-feat">地球陆地最低点（−430m）。<b>仰躺即浮+黑泥浴</b>，人生必打卡之一。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚗 安曼 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-4.jpg" alt="杰拉什罗马遗址" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">杰拉什罗马遗址 <small>10 JOD（约旦通含）</small></div>
+          <div class="sc-feat">中东保存最完整的罗马古城。<b>哈德良门+列柱大街+椭圆广场</b>。</div>
+          <div class="sc-meta">📅 8:00–18:00（夏）· ⏱ 3–4h · 🚌 安曼北站小巴 1 JOD</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-5.jpg" alt="安曼·城堡山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">安曼·城堡山 <small>约旦通含（单买 3 JOD）</small></div>
+          <div class="sc-feat">赫拉克勒斯神庙残柱。<b>罗马+拜占庭+阿拉伯层层叠叠</b>，俯瞰白色老城。</div>
+          <div class="sc-meta">📅 8:00–18:30（夏）· ⏱ 1.5–2h · 🚌 打车约 2 JOD</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-6.jpg" alt="瓦迪拉姆·星空" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦迪拉姆·星空 <small>含营地住宿</small></div>
+          <div class="sc-feat">世界顶级暗空区。<b>无光害银河+篝火</b>，冬春空气最通透。</div>
+          <div class="sc-meta">📅 21:00 后 · ⏱ 整夜 · 🏕 营地观星</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/jordan/jordan-7.jpg" alt="瓦迪拉姆·布达岩拱门" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦迪拉姆·布达岩拱门 <small>含保护区门票</small></div>
+          <div class="sc-feat">天然巨岩拱门。<b>徒步登顶 1.5h</b>，俯瞰月亮谷全景，体力彩蛋。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🥾 向导徒步</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（卡兹尼、蛇道、瓦迪拉姆、死海、杰拉什、安曼、沙漠星空等均为约旦实景），用于页面配图。更多免费/含通票景点：小佩特拉、阿杰隆城堡、马达巴马赛克地图、卡拉克城堡。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 JOD ≈ 10 元人民币估算。往返机票按北京⇄安曼<strong>中转航班</strong>（无直飞）淡季 4000–6000 元计，旺季或临期会更高。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（9000–13000）</th>
+<th>标准（16000–24000）</th>
+<th>舒适（35000–50000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄安曼中转 4000–5000</td>
+<td>含行李额/好时段 5000–7000</td>
+<td>商务舱/灵活票 15000–25000</td>
+</tr>
+<tr>
+<td>住宿（8 晚）</td>
+<td>民宿/青旅 150–300/晚</td>
+<td>三星/四星 400–700/晚</td>
+<td>度假村/精品 1500–4000/晚</td>
+</tr>
+<tr>
+<td>交通（境内）</td>
+<td>JETT 巴士+小巴+拼车 800–1200</td>
+<td>巴士+包车少量 1800–2800</td>
+<td>全程包车/司导 5000–9000</td>
+</tr>
+<tr>
+<td>门票+活动</td>
+<td>约旦通 Expert 800 + 保护区 350</td>
+<td>含吉普+营地含餐 1800–2500</td>
+<td>加热气球+骆驼+SPA 4500–7000</td>
+</tr>
+<tr>
+<td>餐饮（9 天）</td>
+<td>街头餐+超市 900–1200</td>
+<td>正常餐厅 2000–3000</td>
+<td>度假村正餐+特色 6000–9000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 18000–20000 元）</span>
+      往返机票 6000 + 住宿 8 晚 4200（均 525/晚）+ 境内交通 2200 + 约旦通与活动 2200 + 餐饮 2500 + 落地签杂费 600 ≈ <strong>18000–20000 元</strong>。大头是机票与住宿；瓦迪拉姆营地含餐省下一顿饭钱，佩特拉与杰拉什门票被约旦通覆盖。提前 2 个月刷机票能省 1000–2000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 压缩版 7 天（砍杰拉什/瓦迪拉姆 1 晚）</h3>
+
+
+    <ul>
+
+      <li>D1 抵安曼（同主行程）</li>
+
+      <li>D2 安曼古城半日 + 杰拉什半日，当晚飞/宿安曼</li>
+
+      <li>D3–D5 佩特拉 3 天（主行程核心不动）</li>
+
+      <li>D6 瓦迪拉姆 1 天 1 晚（吉普日落+星空）</li>
+
+      <li>D7 死海半日 → 安曼返程</li>
+
+    </ul>
+
+    <h3>7.2 亲子/轻体力版调整</h3>
+
+
+    <p>佩特拉改 2 天：D4 下午入园走蛇道+卡兹尼，D5 坐电瓶车到修道院脚下再爬最后一段；瓦迪拉姆 1 晚足够。杰拉什保留（平路多、互动性强）。孩子 12 岁以下多数景点免票。死海漂浮必须大人全程看护，水进眼剧痛，备足淡水。</p>
+
+    <h3>7.3 南部加长版（10–12 天）</h3>
+
+
+    <p>在死海后加亚喀巴（红海潜水 2–3 天）或南向经卡拉克城堡+达纳自然保护区走「国王公路」到佩特拉（比沙漠公路美得多但多 1 天）；也可回安曼后往北走阿杰隆+乌姆盖斯，凑一条北部古迹线。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 约旦 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>中转航班（唯一方式）</td>
+<td>北京⇄安曼 全程约 14–20h</td>
+<td>往返 4000–6000 元（淡季）</td>
+<td>经多哈/迪拜/阿布扎比/伊斯坦布尔，卡塔尔/阿联酋/约旦皇家航空</td>
+</tr>
+<tr>
+<td>联程票</td>
+<td>同中转时长</td>
+<td>5500–8000 元</td>
+<td>务必同一票号联程，避免中转国签证问题</td>
+</tr>
+<tr>
+<td>商务舱</td>
+<td>同中转时长</td>
+<td>15000–25000 元</td>
+<td>长途 15h+，预算允许建议升级</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 约旦境内交通核心提醒</span>
+      南北主线靠 <strong>JETT 巴士</strong>（安曼 Abdali 站 6:30 / 第七环 7:00 → 佩特拉 3.5h、10 JOD；佩特拉 17:00 → 瓦迪拉姆、15 JOD；瓦迪拉姆 9:00 返）与 <strong>包车</strong>衔接（安曼⇄杰拉什往返 25–35 JOD、瓦迪拉姆⇄死海包车约 60–80 美元）。<strong>没有火车</strong>，沙漠段只适合吉普或包车。旺季（3–5/9–11 月）JETT 班车票提前 1–2 天订。
+    </div>
+
+    <h3>8.2 约旦境内交通</h3>
+    <ul>
+      <li><strong>JETT 巴士</strong>：安曼—佩特拉 3.5h（10 JOD，6:30/7:00 发车、17:00 返回）；佩特拉—瓦迪拉姆 15 JOD；安曼—亚喀巴 11 JOD</li>
+      <li><strong>小巴/服务出租车</strong>：安曼北站—杰拉什约 1 JOD（45min–1h），凑满即走，最接地气</li>
+      <li><strong>包车/司导</strong>：全境包车约 60–90 美元/天（含油费司机），佩特拉—瓦迪拉姆—死海段最值得包</li>
+      <li><strong>瓦迪拉姆内</strong>：私家车禁入保护区，营地吉普/骆驼是唯一方式，游客中心 7 JOD 门票</li>
+      <li><strong>安曼市内</strong>：Careem/Uber 打车便宜，白底/黄底出租车打表，夜间出行坐正规车</li>
+      <li><strong>死海往返</strong>：安曼发车约 1–1.5h，JETT 班车 10 JOD 或包车；度假村日票常含接送</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>安曼·彩虹街/市中心</td>
+<td>经济 150–300 / 标准 400–700</td>
+<td>老城餐厅集中，夜生活丰富</td>
+<td>坡多、停车难</td>
+</tr>
+<tr>
+<td>瓦迪穆萨（佩特拉）</td>
+<td>经济 100–250 / 标准 300–600</td>
+<td>距景区步行可达，性价比高</td>
+<td>晚上选择少</td>
+</tr>
+<tr>
+<td>瓦迪拉姆营地</td>
+<td>含餐 250–600/人</td>
+<td>星空+贝都因体验，此生难忘</td>
+<td>设施简单、保暖靠装备</td>
+</tr>
+<tr>
+<td>死海度假村</td>
+<td>标准 700–1200 / 舒适 1500–4000</td>
+<td>私人沙滩+泳池+泥浴全含</td>
+<td>贵、位置孤立</td>
+</tr>
+<tr>
+<td>亚喀巴（南部延伸）</td>
+<td>经济 200–400 / 标准 500–900</td>
+<td>红海潜水、海鲜便宜</td>
+<td>离主线远，需额外时间</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍛 必吃经典</h3>
+        <ul>
+          <li>曼萨夫 Mansaf：约旦国菜，酸奶羊肉配米饭，正式场合必备</li>
+          <li>沙威玛 Shawarma：烤肉卷饼，街头性价比之王</li>
+          <li>烤羊排/烤肉串：炭火+洋葱香料，配皮塔蘸胡姆斯</li>
+          <li>烤鱼：亚喀巴/死海区域的海鲜，铁板整鱼</li>
+        </ul>
+        <h3>🥩 在地名物</h3>
+        <ul>
+          <li>瓦迪拉姆营地坑烤：沙坑埋锅烤鸡/羊肉，沙漠版叫化鸡</li>
+          <li>佩特拉山货：游客中心外烤玉米、甜枣</li>
+          <li>死海特产：矿盐/黑泥周边（送人佳品）</li>
+          <li>阿拉伯咖啡：豆蔻味，苦且提神，小杯续命</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥙 街头小吃</h3>
+        <ul>
+          <li>法拉费 Falafel + 胡姆斯 Hummus：素食友好，早餐标配</li>
+          <li>皮塔饼现烤：路边炉子热乎乎的最香</li>
+          <li>阿拉伯甜点：库纳法 Knafeh（芝士+糖丝）、芝麻酥</li>
+          <li>薄荷茶/甜红茶：贝都因人待客第一杯</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>安曼彩虹街 & 老城哈希姆广场周边</li>
+          <li>瓦迪穆萨镇中心 Tourist Street</li>
+          <li>瓦迪拉姆营地（含餐，省心）</li>
+          <li>死海度假村自助/烤肉（日票含午餐更划算）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 斋月白天餐厅大多不营业，穆斯林节日出行提前确认；② 水龙头水不可直饮，全程买瓶装水（约 0.5 JOD）；③ 沙拉生菜确认洗净再吃，肠胃弱的人避开路边冰饮；④ 景区内餐饮贵一倍，赶路日提前备干粮；⑤ 小费非强制，但服务好时给 1–2 JOD 或整数抹零更受欢迎。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上）+ 返程机票行程单</li>
+        <li>约旦通 Jordan Pass（入境前官网 jordanpass.jo 购，打印+手机双备份）</li>
+        <li>美元现金（落地签备用）+ 少量人民币/银联卡</li>
+        <li>转换插头（230V C/D/F/G 型，中国两脚插头需转接）</li>
+      </ul>
+      <ul>
+        <li>防晒霜+遮阳帽+墨镜（沙漠紫外线极强）</li>
+        <li>徒步鞋+魔术头巾（佩特拉石阶+沙漠沙尘）</li>
+        <li>抓绒衣/薄羽绒（瓦迪拉姆冬夜近 0℃）</li>
+        <li>下载离线地图 + WhatsApp（订营地和司导全靠它）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>约旦通是省钱核心</strong>：机票订好后立刻买，激活后不能改档，佩特拉 3 天必须对应 Expert 档；② <strong>佩特拉夏天极热</strong>：正午 40℃+，坚持「6 点入园、午后休息、傍晚补拍」节奏；③ <strong>死海水入眼</strong>是剧痛体验，漂浮全程侧脸朝上、备足淡水，泡澡别超过 20 分钟；④ 中东地区旅游是安全的，但去南部边境（伊拉克/叙利亚方向）一律不去，晚上安曼老城保持基本警惕即可。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      约旦把<strong>古罗马、纳巴泰王朝、沙漠与死海</strong>浓缩进一国之境——杰拉什的石柱大道、佩特拉从蛇道尽头显现的玫瑰色神殿、瓦迪拉姆星空下的篝火，再到死海上的轻松漂浮，9 天像翻开一本「活着的文明史」。一张约旦通解决签证与门票，JETT 巴士+包车串起全程，预算在阿拉伯国家中属中等，是中东旅行的最佳入门。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#b5492a",
+    "d": 3,
+    "n": "北段 · 安曼→杰拉什（一日往返）",
+    "pts": [
+      [
+        31.954,
+        35.934
+      ],
+      [
+        32.272,
+        35.891
+      ]
+    ]
+  },
+  {
+    "c": "#2e5a88",
+    "d": 3,
+    "n": "南段主线 · 安曼→佩特拉→瓦迪拉姆→死海",
+    "pts": [
+      [
+        31.954,
+        35.934
+      ],
+      [
+        30.328,
+        35.444
+      ],
+      [
+        29.583,
+        35.42
+      ],
+      [
+        31.48,
+        35.48
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 31.954,
+    "lng": 35.934,
+    "name": "安曼·城堡山",
+    "t": "D2 上午 · 2h",
+    "fee": "约旦通含",
+    "note": "赫拉克勒斯神庙、俯瞰全城"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 32.272,
+    "lng": 35.891,
+    "name": "杰拉什罗马遗址",
+    "t": "D3 全天 · 4h",
+    "fee": "10 JOD（约旦通含）",
+    "note": "哈德良门、列柱大街"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 30.328,
+    "lng": 35.444,
+    "name": "佩特拉·卡兹尼",
+    "t": "D4 下午 · 1.5h",
+    "fee": "约旦通含",
+    "note": "蛇道尽头神殿"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 30.337,
+    "lng": 35.431,
+    "name": "佩特拉·修道院",
+    "t": "D5 上午 · 3h",
+    "fee": "约旦通含",
+    "note": "800 级台阶登顶"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 29.583,
+    "lng": 35.42,
+    "name": "瓦迪拉姆·月亮谷",
+    "t": "D6–D7 · 2 天",
+    "fee": "保护区 7 JOD",
+    "note": "吉普巡游、星空露营"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 31.48,
+    "lng": 35.48,
+    "name": "死海",
+    "t": "D8 下午 · 半天",
+    "fee": "度假村日票 35–45 JOD",
+    "note": "漂浮、泥浴、日落"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 30.329,
+    "lng": 35.442,
+    "name": "佩特拉·高祭坛",
+    "t": "D5 中午 · 1.5h",
+    "fee": "约旦通含",
+    "note": "360° 山景、祭祀平台"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 29.567,
+    "lng": 35.447,
+    "name": "瓦迪拉姆·布达岩拱门",
+    "t": "D7 下午 · 2.5h",
+    "fee": "含保护区门票",
+    "note": "天然巨拱、徒步登顶"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[29.0, 34.8], [32.6, 37.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#b5492a\"></span>北段：安曼—杰拉什（一日往返）<br><span class=\"sw\" style=\"background:#2e5a88\"></span>南段主线：安曼—佩特拉—瓦迪拉姆—死海</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

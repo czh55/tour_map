@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 斐济 10 天全景攻略 · 亚萨瓦跳岛与珊瑚海岸</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #e07a3f;
+    --red-light: #f0925f;
+    --gold: #f2b052;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e6dfd4;
+    --blue: #1e9fd0;
+    --cover1: #0e5f7d;
+    --ov1: rgba(14,95,125,.88);
+    --ov2: rgba(30,159,208,.72);
+    --ov3: rgba(224,122,63,.38);
+    --ov4: rgba(58,125,92,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #eef4f0;
+    --head-bg: rgba(224,122,63,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/fiji/fiji-cover.jpg" alt="斐济旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天海岛 · 楠迪 + 亚萨瓦跳岛 + 珊瑚海岸</div>
+      <h1>斐济 10 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 楠迪 · 丹娜努岛 · 亚萨瓦跳岛 · 珊瑚海岸 · 苏瓦</div>
+      <div class="meta">
+        <span>🛫 行程链：楠迪 → 丹娜努岛 → 亚萨瓦群岛跳岛 → 珊瑚海岸 → 苏瓦 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>✈️ 北京⇄楠迪 经香港/新加坡中转约 16–20 小时（香港直飞段约 10h）</span>
+        <span>🛂 签证：中国护照<strong>免签 30 天</strong>，仅需填入境卡</span>
+        <span>🕐 时差 +4 小时 · 🔌 电压 240V I 型插座</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">楠迪</span>
+      <span class="arrow">→</span>
+      <span class="node">丹娜努岛</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">亚萨瓦跳岛</span>
+      <span class="arrow">→</span>
+      <span class="node">珊瑚海岸</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">苏瓦</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      斐济是「<strong>一岛一度假、333 座岛屿任选</strong>」的南太平洋天堂：主岛维提岛串起城市与沙滩，亚萨瓦群岛的跳岛才是灵魂——Bula Pass 船票让你在原始岛屿间随上随下，浮潜看软珊瑚与鲨鱼。10 天刚好把主岛海岸和亚萨瓦跳岛一次走完，节奏上<strong>前 6 天玩透外岛，后 3 天回归主岛人文</strong>。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>免签 30 天</strong>，无需提前办签；入境只需填写入境卡（飞机上发），出关时核查返程机票与住宿</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>前 6 天：楠迪→丹娜努→亚萨瓦跳岛；后 4 天：珊瑚海岸→苏瓦→返程</td>
+</tr>
+<tr>
+<td>时差与季节</td>
+<td>斐济比北京快 4 小时（无夏令时）；5–10 月旱季最佳（少雨清凉），11–4 月雨季潮湿、2–3 月气旋风险高</td>
+</tr>
+<tr>
+<td>电源</td>
+<td>电压 240V，<strong>I 型三脚插座</strong>（同澳标，国内三角插头通用）</td>
+</tr>
+<tr>
+<td>货币与汇率</td>
+<td>斐济元 FJD；1 元人民币 ≈ 0.3 斐济元，FJD 100 ≈ 330 元；外岛基本刷卡，楠迪市场备现金</td>
+</tr>
+<tr>
+<td>跳岛交通</td>
+<td>亚萨瓦跳岛用<strong>Bula Pass 船票</strong>（5 天约 FJD 603）+ Yasawa Flyer 双体船，2026 年 4 月起另收 FJD 20/人/班燃油附加费</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 18000–26000 ／ 标准 30000–45000 ／ 舒适 65000–95000（人民币）</td>
+</tr>
+<tr>
+<td>着装提示</td>
+<td>海滩泳装为主；进村庄与寺庙务必穿过膝衣物，斐济人重礼仪</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>免签不等于免一切</strong>：中国护照免签 30 天，但入境需出示回程机票与住宿订单，且 30 天超期滞留会进黑名单——行程别超 29 天。② 斐济的雨与气旋是唯一「大敌」：11 月–4 月雨季潮湿，气旋季航班/跳岛船易取消；<strong>跳岛行程务必留 1 天缓冲</strong>，Bula Pass 提前订、船班时刻以码头公示为准。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏：前 6 天主玩海岛（楠迪→丹娜努→亚萨瓦跳岛），后 3 天回归主岛（珊瑚海岸→苏瓦），最后 1 天返程。每日主景点 ≤2 个，跳岛日以「住哪跳哪」为原则。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵楠迪</td>
+<td>北京出发经香港/新加坡中转抵达楠迪（全程约 16–20h），入住楠迪，海边晚餐</td>
+<td>楠迪</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>楠迪市区：睡巨人花园 → 印度庙 → 楠迪市场，午后转丹娜努岛度假村</td>
+<td>丹娜努岛</td>
+<td>主岛初探</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>丹娜努港 → 南海岛一日游（双体船 30min，浮潜+烧烤午餐）</td>
+<td>丹娜努岛</td>
+<td>首座海岛</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>跳岛开始：丹娜努港乘 Yasawa Flyer 北上，登陆玛玛努卡群岛近端岛</td>
+<td>玛玛努卡</td>
+<td>跳岛启程</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>北上亚萨瓦群岛：瓦亚莱莱岛徒步观景台 + 海湾浮潜</td>
+<td>亚萨瓦</td>
+<td>原始海岛</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>亚萨瓦北部：蓝湖泻湖浮潜、鲨鱼湾看礁鲨、村庄卡瓦仪式</td>
+<td>亚萨瓦</td>
+<td>浮潜+人文</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>南下返程：跳岛船回丹娜努，转珊瑚海岸（约 2h 车程）</td>
+<td>珊瑚海岸</td>
+<td>回归主岛</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>珊瑚海岸：希拉迪海滩 + 辛加托卡沙丘 + 库拉生态公园看斐济狐蝠</td>
+<td>珊瑚海岸</td>
+<td>沙丘+生态</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>沿皇后公路东行至首都苏瓦：斐济博物馆 + 市政厅 + 市场</td>
+<td>苏瓦</td>
+<td>首都人文</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>苏瓦或楠迪✈北京（经香港/新加坡中转约 16–20h），到家休整</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍苏瓦（D9 改为海边度假村躺平）或珊瑚海岸缩为 1 天；喜欢刺激的把 D6 换成鲨鱼潜水或高空跳伞（约 FJD 400）。带娃家庭建议跳岛改为南海岛+玛娜岛双岛（船程短、设施全），砍掉亚萨瓦远岛。蜜月党必加里库里库水屋（斐济唯一水上屋度假村，10 间房要提前 3 个月抢）。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达楠迪</span>
+          <span class="d-desc">南太平洋第一缕阳光</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what">北京出发，经香港（约 3.5h）转斐济航空直飞楠迪（约 10h），或经新加坡（酷航）中转，全程 16–20h</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">抵达楠迪国际机场：过海关+行李约 40 分钟，出关时出示返程机票与酒店订单</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">入住楠迪市区酒店（推荐 Wailoaloa 海滩区），换上夏装，海边酒吧晚餐</td></tr>
+          <tr><td class="t-time">20:00–21:30</td><td class="t-what">楠迪日落码头散步，机场取现金 + 买电话卡（Vodafone/Digicel 游客卡）</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">早点休息（明天白天开始玩），时差仅 +4h 基本无感</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">入境申报如实填写：肉类、种子、水果严禁；斐济入境安检比新西兰宽松，但别带任何生鲜。机场换汇汇率一般，市区 ATM 更方便。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 楠迪 + 丹娜努</span>
+          <span class="d-desc">睡巨人 + 印度庙</span>
+          <span class="d-tag ">🌺 主岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>睡巨人花园 Garden of the Sleeping Giant</b>（成人约 FJD 40）：斐济最大兰花园区，原为影星雷蒙德·伯尔的庄园</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>斯里·苏布拉马尼亚庙</b>（免费/捐款）：南半球最大印度教庙宇，彩色塔楼</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：楠迪市场附近印度咖喱/椰香海鲜</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what"><b>楠迪市场</b>（免费）：热带水果、手工艺品、卡瓦粉，砍价从 6 折起</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">转移至<b>丹娜努岛</b>（车程 25min）入住度假村，泳池放松</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">晚餐：丹娜努码头海鲜餐厅（龙虾季便宜）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">睡巨人花园步行 1h 足够，园内热带雨林步道有野生兰花；印度庙需脱鞋、女性戴头巾（门口提供）。丹娜努岛是斐济唯一有度假村群的区域（喜来登/希尔顿/索菲特）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 南海岛一日</span>
+          <span class="d-desc">第一座珊瑚岛</span>
+          <span class="d-tag alt">🏝 海岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:45</td><td class="t-what">度假村接驳车到<b>丹娜努港 Port Denarau</b>，South Sea Cruises 码头登船</td></tr>
+          <tr><td class="t-time">09:00–09:45</td><td class="t-what">高速双体船前往<b>南海岛 South Sea Island</b>（约 30–45min），玛玛努卡群岛近端</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">岛上自由：浮潜看软珊瑚与热带鱼、独木舟、透明玻璃底船（费用多含）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">岛上 BBQ 自助午餐（含酒水畅饮，一日游 FJD 179 起）</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">下午继续浮潜/沙滩躺平，参加海星湾寻宝（可选）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">返程丹娜努港，码头看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">南海岛是一日游性价比之王，沙滩细白、珊瑚近岸；防晒霜要选「珊瑚安全」（reef-safe）款，斐济大部分保护区禁用普通防晒霜。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 跳岛启程</span>
+          <span class="d-desc">Yasawa Flyer 北上</span>
+          <span class="d-tag ">🚤 跳岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:45</td><td class="t-what">丹娜努港登<b>Yasawa Flyer</b>（Awesome Adventures 双体船，08:45 开船），行李随身</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">沿途停靠玛玛努卡群岛各度假村码头，海景无敌</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">抵达<b>瓦亚莱莱岛</b>（约 1.5h 船程）或<b>玛娜岛</b>（近端），入住岛上海滩小屋（Beach Bure）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">岛上午餐（多为套餐 FJD 30–45）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">下午浮潜+皮划艇，参加村庄游览（卡瓦仪式约 FJD 46 起）</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">岛上晚餐 + 篝火晚会（斐济歌手弹唱）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Bula Pass 5 天约 FJD 603、7 天约 FJD 667，2026 年 4 月 7 日起每班船另收 FJD 20 燃油附加费；跳岛前必须订好每站住宿（船票不含住）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 亚萨瓦瓦亚莱莱</span>
+          <span class="d-desc">观景台 + 海湾浮潜</span>
+          <span class="d-tag ">⛰ 远岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">早餐后乘船上行至<b>瓦亚莱莱岛 Wayalailai</b> 或<b>纳维提岛 Naviti</b></td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>瓦亚莱莱观景台徒步</b>（免费，往返约 2h）：俯瞰群岛碧绿泻湖，景色媲美明信片</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">岛上午餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">海湾浮潜：软珊瑚花园 + 小丑鱼，向导带看海龟（浮潜装备多数免费租）</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐 + 星空下海滩散步（亚萨瓦是南太平洋少光害区）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">亚萨瓦群岛住宿从茅草屋（每晚 FJD 70–140）到度假村（FJD 300+）都有；远岛补给少，上岛前在丹娜努超市囤零食与饮用水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 蓝湖与鲨鱼湾</span>
+          <span class="d-desc">浮潜天堂日</span>
+          <span class="d-tag alt">🦈 浮潜日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">船上行至<b>蓝湖泻湖 Blue Lagoon</b> 区域（电影《蓝色珊瑚礁》取景地）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>鲨鱼湾浮潜</b>（约 FJD 40–60）：礁鲨与鳐鱼环绕（向导带领，安全）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">蓝湖沙滩野餐午餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">蓝湖浮潜 + 珊瑚礁漫步（退潮时），或参加<b>村庄卡瓦仪式</b>（脱帽、盘腿、拍手礼节）</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">岛上晚餐：洛沃地炉晚宴 Lovo（地下烧石烹制）可选</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">鲨鱼湾浮潜刺激但极安全——礁鲨不咬人；卡瓦仪式是斐济文化灵魂：进村前买一捆卡瓦根（约 FJD 20）作见面礼最得体。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 返航珊瑚海岸</span>
+          <span class="d-desc">回归主岛</span>
+          <span class="d-tag ">🚌 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">跳岛船南下返航，经玛玛努卡群岛回<b>丹娜努港</b>（约 2–3h）</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">丹娜努港码头午餐</td></tr>
+          <tr><td class="t-time">12:30–14:30</td><td class="t-what">包车/出租车前往<b>珊瑚海岸</b>（车程约 2h，约 FJD 150–200），途经辛加托卡</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">入住珊瑚海岸度假村（推荐希拉迪海滩/库拉地区），泳池放松</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">海边餐厅晚餐：椰子鱼 Kokoda（生鱼椰奶腌渍）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">珊瑚海岸是斐济最长的海滩带（辛加托卡—苏瓦沿海），比丹娜努安静、比亚萨瓦便利，适合回程缓冲；租车自驾也可以（主岛公路好开）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 沙丘与生态</span>
+          <span class="d-desc">辛加托卡 + 库拉公园</span>
+          <span class="d-tag ">🌾 生态日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>辛加托卡沙丘国家公园</b>（成人约 FJD 20）：斐济唯一沙漠，30 米沙丘徒步+观海</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：珊瑚海岸海鲜餐厅</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>库拉生态公园 Kula Eco Park</b>（成人约 FJD 45）：斐济狐蝠、吉里吉里蜥蜴、丛林漫步</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">希拉迪海滩游泳/浮潜（珊瑚海岸海水浅，适合新手）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：沙滩 BBQ 或度假村自助</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">辛加托卡沙丘避开正午（暴晒），穿运动鞋爬沙丘；库拉公园 1h 足够，狐蝠喂食 15:30 场次最精彩。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 首都苏瓦</span>
+          <span class="d-desc">南太最大城市</span>
+          <span class="d-tag ">🏛 人文日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what">珊瑚海岸 → <b>苏瓦 Suva</b>（皇后公路约 2.5h），沿途椰子园与印度裔村庄</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what"><b>斐济博物馆</b>（成人约 FJD 20）：独木舟、卡瓦器具、斐济历史；午餐博物馆附近</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>苏瓦市政厅</b> + <b>阿尔伯特公园</b> + <b>苏瓦市场</b>（周末集市热闹）</td></tr>
+          <tr><td class="t-time">17:00–18:00</td><td class="t-what">苏瓦海堤日落散步（本地人聚集地）</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">晚餐：苏瓦港口中餐厅/印度餐厅，饭后住苏瓦或返回珊瑚海岸</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">苏瓦是南太平洋最大都市，治安白天没问题，夜间建议打车（FJD 10–15 城内）；想省钱可从苏瓦机场直接中转回国。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">楠迪✈北京</span>
+          <span class="d-tag return">✈️ 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">苏瓦/珊瑚海岸退房，包车回<b>楠迪机场</b>（苏瓦约 3h，珊瑚海岸约 2.5h）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">机场免税店补货（斐济水、椰子油、卡瓦粉纪念品），办理登机</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">楠迪✈香港（直飞约 10h），香港转机</td></tr>
+          <tr><td class="t-time">16:30–22:00</td><td class="t-what">香港✈北京（约 3.5h），跨日到家休整</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国际段建议留 2.5h 以上转机时间（香港/新加坡中转）；带回家的黑珍珠/珊瑚制品注意海关申报，活珊瑚禁止出境。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-cover.jpg" alt="亚萨瓦群岛·蓝湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">亚萨瓦群岛·蓝湖 <small>Bula Pass 船票 FJD 603/5 天</small></div>
+          <div class="sc-feat">斐济跳岛灵魂。<b>碧绿泻湖 + 沙滩小屋</b>，鲨鱼湾浮潜。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3–5 天 · 🚤 Yasawa Flyer 上岛</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-1.jpg" alt="丹娜努岛度假区" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">丹娜努岛度假区 <small>度假村 1000–4000 元/晚</small></div>
+          <div class="sc-feat">斐济度假村群。<b>希尔顿/喜来登 + 高尔夫 + 游艇码头</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚗 楠迪车程 25min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-2.jpg" alt="南海岛·浮潜" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">南海岛·浮潜 <small>一日游 FJD 179 含餐</small></div>
+          <div class="sc-feat">离丹娜努最近的珊瑚岛。<b>软珊瑚 + 小丑鱼</b>，30 分钟船程。</div>
+          <div class="sc-meta">📅 09:00–18:00 · ⏱ 1 天 · 🚤 South Sea Cruises</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-3.jpg" alt="里库里库水屋" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">里库里库水屋 <small>FJD 2000+/晚</small></div>
+          <div class="sc-feat">斐济唯一<b>水上屋度假村</b>（仅 10 间），蜜月圣地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 晚 · 🚤 丹娜努港上船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-4.jpg" alt="玛玛努卡群岛" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">玛玛努卡群岛 <small>跳岛船票</small></div>
+          <div class="sc-feat">斐济跳岛第一站。<b>20 座岛屿任选</b>，船程 30–90min。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚤 丹娜努港出发</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-5.jpg" alt="Yasawa Flyer 跳岛船" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">Yasawa Flyer 跳岛船 <small>Bula Pass FJD 603 起</small></div>
+          <div class="sc-feat">亚萨瓦唯一渡轮。<b>随上随下 15 天有效</b>，海景巡航。</div>
+          <div class="sc-meta">📅 每天 08:45 发船 · ⏱ 各岛 1–4h 船程 · 🚤 丹娜努港</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-6.jpg" alt="珊瑚海岸·希拉迪" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">珊瑚海岸·希拉迪 <small>免费</small></div>
+          <div class="sc-feat">斐济最长海滩。<b>浅水浮潜 + 日落</b>，适合度假收尾。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚗 楠迪—苏瓦公路旁</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/fiji/fiji-7.jpg" alt="首都苏瓦" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">首都苏瓦 <small>博物馆 FJD 20</small></div>
+          <div class="sc-feat">南太平洋最大都市。<b>斐济博物馆 + 印度裔市集</b>，人文之旅。</div>
+          <div class="sc-meta">📅 博物馆 9:30–16:30 · ⏱ 1 天 · 🚗 珊瑚海岸东 2.5h</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（亚萨瓦海滩、丹娜努度假村、珊瑚礁浮潜、水上屋、玛玛努卡群岛、跳岛船、珊瑚海岸、苏瓦等均为斐济实景或同主题示意图），用于页面配图。更多免费景点：睡巨人花园、楠迪市场、苏瓦市场、辛加托卡沙丘、希拉迪海滩。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 0.3 斐济元（FJD 100 ≈ 330 元）。往返机票按经香港/新加坡中转 7000–10000 元计，旺季（12–2 月）上浮。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（18000–26000）</th>
+<th>标准（30000–45000）</th>
+<th>舒适（65000–95000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>经香港/新加坡中转 7000–8500</td>
+<td>直飞段+好时段 9000–12000</td>
+<td>商务舱/直飞 18000–25000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>楠迪旅馆+茅草屋 400–700/晚</td>
+<td>度假村 1200–2500/晚</td>
+<td>水屋/五星度假村 4000–8000/晚</td>
+</tr>
+<tr>
+<td>交通（跳岛+包车）</td>
+<td>Bula Pass 5 天 2000–2500</td>
+<td>Bula Pass 7 天 + 包车 3500–4500</td>
+<td>含水上飞机/直升机接驳 9000–15000</td>
+</tr>
+<tr>
+<td>门票与活动</td>
+<td>浮潜+博物馆约 800–1200</td>
+<td>鲨鱼湾+沙丘+生态园 2000–3000</td>
+<td>潜水证/跳伞/水屋体验 6000–10000</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>市场+快餐 1500–2000</td>
+<td>正常下馆子 3000–4500</td>
+<td>度假村全包餐+龙虾 8000–12000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 36000 元）</span>
+      往返机票 9500 + 住宿 9 晚 18000（平均 2000/晚，含丹娜努度假村与亚萨瓦小屋）+ 跳岛船票与包车 3500 + 门票活动 2500 + 餐饮 3500 ≈ <strong>35000–37000 元</strong>。跳岛住宿选沙滩小屋（FJD 140 左右）能省一大截；里库里库水屋 1 晚 ≈ 7000 元，蜜月党单独预算。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>9.1 只跳岛不进城 7 天版</h3>
+
+
+    <ul>
+
+      <li>D1 抵楠迪，直接上丹娜努岛</li>
+
+      <li>D2 南海岛一日游</li>
+
+      <li>D3–D6 亚萨瓦跳岛（瓦亚莱莱+蓝湖）</li>
+
+      <li>D7 返程（丹娜努直送机场）</li>
+
+    </ul>
+
+    <h3>9.2 蜜月水屋版</h3>
+
+
+    <p>斐济唯一水上屋里库里库（Likuliku，仅 10 间，FJD 2000+/晚含全餐）：丹娜努港上船约 40min，水屋阳台直下海浮潜，含管家与双人按摩。预算 6 万+；至少提前 3 个月预订。跳岛可砍，节奏换成 2 个度假村切换。</p>
+
+    <h3>9.3 亲子家庭版</h3>
+
+
+    <p>带娃推荐丹娜努岛度假村连住（希尔顿有儿童俱乐部）+ 南海岛/玛娜岛短船程一日游 + 库拉生态公园看狐蝠。亚萨瓦远岛船程 3h+ 且住宿简单，不适合低龄儿童；斐济酒店儿童加床普遍免费，部分度假村 12 岁以下儿童免费。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>10.1 北京 ⇄ 斐济 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>经香港中转（推荐）</td>
+<td>北京✈香港 3.5h + 香港✈楠迪 10h，全程约 16–18h</td>
+<td>往返 8000–12000 元</td>
+<td>国泰/斐济航空 FJ392，香港直飞楠迪为唯一较省时的走法</td>
+</tr>
+<tr>
+<td>经新加坡中转</td>
+<td>北京✈新加坡 6h + 新加坡✈楠迪 10h，全程约 18–20h</td>
+<td>往返 7000–10000 元</td>
+<td>酷航/新航，转机停留可选新加坡一日</td>
+</tr>
+<tr>
+<td>境内接驳</td>
+<td>楠迪—苏瓦约 3h / 楠迪—珊瑚海岸约 2h</td>
+<td>包车 FJD 150–250</td>
+<td>出租车/包车为主，机场—丹娜努 FJD 30–40</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 斐济境内交通核心提醒</span>
+      跳岛唯一靠谱方式是<strong>Bula Pass + Yasawa Flyer 双体船</strong>：丹娜努港每天 08:45 发船北上亚萨瓦，5 天通票 FJD 603 起，15 天可自由选择上下船点；2026 年 4 月起每班船加收 FJD 20 燃油附加费。上船前务必订好每站住宿，船票不含岛内餐食。主岛推荐包车/自驾（路况好、左行），或乘 InterCity 巴士（楠迪—苏瓦约 6h，FJD 35）。
+    </div>
+
+    <h3>10.2 斐济境内交通</h3>
+    <ul>
+      <li><strong>Yasawa Flyer 跳岛船</strong>：丹娜努港 08:45 发船，逐岛停靠至亚萨瓦北部，Bula Pass 随上随下</li>
+      <li><strong>South Sea Cruises</strong>：丹娜努—南海岛/玛娜岛短程快船，一日游含餐最省心</li>
+      <li><strong>包车/出租车</strong>：楠迪—丹娜努 FJD 30–40、楠迪—珊瑚海岸 FJD 150–200、楠迪—苏瓦 FJD 250</li>
+      <li><strong>InterCity 巴士</strong>：主岛皇后公路沿线，楠迪—苏瓦约 6h、FJD 35，慢但便宜</li>
+      <li><strong>自驾</strong>：主岛公路好开、靠左行驶，中国驾照+翻译件可用；外岛无公路，全程船/水飞</li>
+      <li><strong>水上飞机</strong>：丹娜努—亚萨瓦远岛单程约 3000–5000 元，时间紧/蜜月的奢侈选项</li>
+    </ul>
+
+    <h3>10.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>楠迪·Wailoaloa 海滩</td>
+<td>经济 400–800</td>
+<td>机场近，海鲜餐厅多</td>
+<td>海滩一般</td>
+</tr>
+<tr>
+<td>丹娜努岛度假区</td>
+<td>标准 1200–2500 / 舒适 4000+</td>
+<td>设施全，跳岛码头近</td>
+<td>旺季一房难求</td>
+</tr>
+<tr>
+<td>亚萨瓦·沙滩小屋</td>
+<td>经济 400–800（含餐）</td>
+<td>原始海岛，性价比高</td>
+<td>设施简单，补给少</td>
+</tr>
+<tr>
+<td>亚萨瓦·度假村</td>
+<td>标准 1500–3000</td>
+<td>全包省心，浮潜免费</td>
+<td>位置偏远</td>
+</tr>
+<tr>
+<td>珊瑚海岸·希拉迪/库拉</td>
+<td>标准 800–1800</td>
+<td>安静海滩，回程缓冲</td>
+<td>餐馆选择少</td>
+</tr>
+<tr>
+<td>苏瓦市区</td>
+<td>标准 500–1000</td>
+<td>人文集中，市场热闹</td>
+<td>夜间治安一般</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🐟 必吃经典</h3>
+        <ul>
+          <li>Kokoda 椰子鱼：生鱼片椰奶腌渍，国民开胃菜</li>
+          <li>Lovo 地炉盛宴：地下烧石慢烤猪肉鸡肉</li>
+          <li>烤鱼/龙虾：珊瑚海岸海鲜餐厅现捕</li>
+          <li>印度咖喱+椰浆饭：楠迪印度裔社区</li>
+        </ul>
+        <h3>🍹 特色饮品</h3>
+        <ul>
+          <li>卡瓦酒 Kava：斐济国饮，木杯轮饮仪式感</li>
+          <li>Fiji Gold 啤酒：本地国民品牌</li>
+          <li>椰林飘香鸡尾酒（度假村标配）</li>
+          <li>热带鲜果汁：木瓜、芒果、菠萝</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥥 街头小吃</h3>
+        <ul>
+          <li>椰汁新鲜椰子（路边摊 FJD 5）</li>
+          <li>波伊 Poi（发酵芋头，特色尝试）</li>
+          <li>香蕉椰奶沙拉</li>
+          <li>Rourou 芋叶包椰奶（当地蔬菜）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>楠迪市场：水果+本地小吃</li>
+          <li>丹娜努码头：海鲜与日落酒吧</li>
+          <li>苏瓦港口：中餐+印度菜集中</li>
+          <li>亚萨瓦岛餐：度假村套餐（含全餐最省心）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 斐济饮用水不要直接喝自来水，只喝瓶装水（FJD 2–3）；② 卡瓦仪式首次喝会麻口，一次一小杯即可，量力而行；③ 度假村全餐（Half Board/Full Board）按人头算，含酒水版更划算，订房时确认；④ 市场买水果注意熟度，砍价从 6 折起；⑤ 生鱼料理选人气店，避免肠胃问题影响跳岛。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（免签 30 天，确保护照有效期 > 6 个月）</li>
+        <li>往返机票 + 全部酒店/民宿订单（入境抽查）</li>
+        <li>Visa/Master 信用卡 + 少量 FJD 现金（约 FJD 300）</li>
+        <li>I 型三脚转换插头（国内澳标三角可用）</li>
+      </ul>
+      <ul>
+        <li>Bula Pass 跳岛船票（提前 24h 预订）+ 每站住宿</li>
+        <li>reef-safe 珊瑚安全防晒霜 + 驱蚊液 + 晕船药</li>
+        <li>泳装×2、浮潜面镜（可选带）、速干衣</li>
+        <li>离线地图（Google Maps 下载维提岛）+ 电话卡（Vodafone）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>免签但别超 30 天</strong>：超期滞留罚款并进黑名单，行程按 29 天封顶排；② 气旋季（11–4 月）跳岛船常停航，行程留 1 天缓冲并买可退改票；③ 普通防晒霜会伤害珊瑚，斐济部分海域禁用，务必带 reef-safe 款；④ 进村庄/寺庙穿过膝衣物、脱帽脱鞋，卡瓦仪式是礼仪不是玩笑；外岛 ATM 稀少，现金提前换好。机场离境无离境税（已含机票）。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      斐济是「<strong>333 座岛屿里任选一座躺平</strong>」的目的地——亚萨瓦的碧绿泻湖与鲨鱼湾、丹娜努的度假村群、珊瑚海岸的细白沙滩、苏瓦的南太人文，10 天刚好串成一条「跳岛+主岛」的完整环线。免签 30 天零门槛，带上 Bula Pass 和一瓶 reef-safe 防晒霜，剩下的交给阳光。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#e07a3f",
+    "d": 3,
+    "n": "主岛线 · 楠迪→丹娜努→珊瑚海岸→苏瓦",
+    "pts": [
+      [
+        -17.776,
+        177.437
+      ],
+      [
+        -17.776,
+        177.361
+      ],
+      [
+        -18.15,
+        177.51
+      ],
+      [
+        -18.142,
+        178.442
+      ]
+    ]
+  },
+  {
+    "c": "#1e9fd0",
+    "d": 3,
+    "n": "跳岛线 · 丹娜努→玛玛努卡→亚萨瓦",
+    "pts": [
+      [
+        -17.776,
+        177.361
+      ],
+      [
+        -17.63,
+        177.22
+      ],
+      [
+        -16.889,
+        177.641
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -17.776,
+    "lng": 177.437,
+    "name": "楠迪·睡巨人花园",
+    "t": "D2 上午 · 2h",
+    "fee": "FJD 40",
+    "note": "兰花园区、印度庙"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -17.776,
+    "lng": 177.361,
+    "name": "丹娜努岛度假区",
+    "t": "D2–3 · 2 晚",
+    "fee": "度假村",
+    "note": "游艇码头、南海岛一日游"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -17.63,
+    "lng": 177.22,
+    "name": "玛玛努卡·南海岛",
+    "t": "D3 全天 · 1 天",
+    "fee": "一日游 FJD 179",
+    "note": "浮潜、BBQ 午餐"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -16.889,
+    "lng": 177.641,
+    "name": "亚萨瓦·瓦亚莱莱",
+    "t": "D4–5 · 2 晚",
+    "fee": "Bula Pass",
+    "note": "观景台、海湾浮潜"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -16.98,
+    "lng": 177.42,
+    "name": "亚萨瓦·蓝湖",
+    "t": "D6 · 1 晚",
+    "fee": "Bula Pass",
+    "note": "鲨鱼湾、村庄卡瓦仪式"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": -18.15,
+    "lng": 177.51,
+    "name": "珊瑚海岸·希拉迪",
+    "t": "D7–8 · 2 晚",
+    "fee": "免费",
+    "note": "辛加托卡沙丘、库拉公园"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": -18.142,
+    "lng": 178.442,
+    "name": "首都苏瓦",
+    "t": "D9 · 1 天",
+    "fee": "博物馆 FJD 20",
+    "note": "斐济博物馆、苏瓦市场"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": -17.746,
+    "lng": 177.1,
+    "name": "玛玛努卡·里库里库水屋",
+    "t": "可选 1 晚",
+    "fee": "FJD 2000+/晚",
+    "note": "斐济唯一水上屋、蜜月圣地"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-19.3, 176.9], [-16.4, 179.3]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#e07a3f\"></span>主岛线（楠迪→苏瓦）<br><span class=\"sw\" style=\"background:#1e9fd0\"></span>跳岛线（丹娜努→亚萨瓦）<br><span class=\"sw dash\"></span>往返中国为航班（香港/新加坡中转）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 奥地利 10 天全景攻略 · 音乐与湖区</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #a8322d;
+    --red-light: #c8452f;
+    --gold: #d4a017;
+    --ink: #332a22;
+    --muted: #8a7664;
+    --bg: #f8f5ef;
+    --card: #ffffff;
+    --line: #eae0d2;
+    --blue: #2e5a88;
+    --cover1: #7a1f1a;
+    --ov1: rgba(122,31,26,.88);
+    --ov2: rgba(168,50,45,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(46,90,136,.20);
+    --key-bg: #fbf0da;
+    --info-bg: #f3ede3;
+    --head-bg: rgba(168,50,45,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/austria/austria-cover.jpg" alt="奥地利旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天 9 晚 · 维也纳 + 萨尔茨堡 + 哈尔施塔特 + 因斯布鲁克</div>
+      <h1>奥地利 10 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 维也纳 · 音乐之都 · 阿尔卑斯湖光</div>
+      <div class="meta">
+        <span>🛫 行程链：维也纳 → 萨尔茨堡 → 哈尔施塔特 → 因斯布鲁克 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚（音乐节 7–8 月为旺季）</span>
+        <span>✈️ 北京⇄维也纳 直飞约 10 小时（国航 CA841/842 为主力）</span>
+        <span>🛂 签证：中国护照需申根签证，提前 1–2 个月办理</span>
+        <span>🕐 时差 -6（夏令）/ -7（冬令）小时 · 🔌 230V C/F 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">维也纳</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">萨尔茨堡</span>
+      <span class="arrow">→</span>
+      <span class="node">哈尔施塔特</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">因斯布鲁克</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      奥地利是「<strong>两座音乐之城 + 一片梦幻湖区</strong>」：维也纳承载哈布斯堡帝国与金色大厅，萨尔茨堡是莫扎特故乡与电影《音乐之声》取景地，中间的萨尔茨卡默古特湖区藏着哈尔施塔特这座「世界最美小镇」，最后翻过阿尔卑斯到因斯布鲁克看雪山下的黄金屋顶。<strong>10 天刚好不赶</strong>：维也纳 4 天、萨尔茨堡 3 天、湖区 1 天、因斯布鲁克 1 天 + 1 天返程，全程火车衔接，节奏舒适。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照必须办<strong>申根签证</strong>：成人 €90（约 700 元），提前 1–2 个月递交，审理约 15 个工作日</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>维也纳 4 天 → 萨尔茨堡 3 天 → 哈尔施塔特 1 天 → 因斯布鲁克 1 天 + 返程</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天从维也纳机场返京（国航 CA842 约 13:30 起飞）；从因斯布鲁克需早班火车回维也纳</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>维也纳 → 萨尔茨堡 → 哈尔施塔特 → 因斯布鲁克 → 维也纳返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 11000–16000 ／ 标准 20000–28000 ／ 舒适 45000–60000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办申根签 ② 订北京⇄维也纳机票 ③ 提前买金色大厅音乐会与早鸟火车票</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>7–8 月音乐节旺季、5–9 月湖区最美；11 月–3 月维也纳圣诞市集、因斯布鲁克滑雪</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>欧元现金少量 + 芯片信用卡（Visa/Master 通用），奥地利多数商户可刷卡</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 三个容易忽略的点</span>
+      ① <strong>申根签证要趁早</strong>：旺季（6–8 月）预约号紧张，材料含银行流水、在职证明、机票酒店预订单与 3 万欧保额医疗保险，递签后约 15 个工作日出签，建议出发前 1.5–2 个月递交。② <strong>金色大厅购票认准「Großer Musikvereinssaal」</strong>：同一栋楼里还有勃拉姆斯厅等小厅，想坐金色大厅务必核对演出场地；站票仅 €19 但需开演前提早进场。③ <strong>哈尔施塔特盐矿 2025 年 9 月起翻修关闭至 2026 年夏</strong>：缆车与天空步道同步停运，想看盐矿可乘官方接驳车去 Altaussee 盐矿（每日 14:00 发车需预约）。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚推荐节奏：以维也纳为进出点，先城市后湖区再阿尔卑斯。城际交通以 ÖBB/Westbahn 火车为主，哈尔施塔特段用 150/541 路巴士衔接，每日主景点 ≤2 个，给街头咖啡与音乐会留出时间。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵维也纳</td>
+<td>北京✈维也纳（直飞约 10h），入住老城区，下午纳许市场 + 城市公园</td>
+<td>维也纳</td>
+<td>抵达+倒时差</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>美泉宫（茜茜套票）→ 美泉宫花园 → 凯旋门山丘</td>
+<td>维也纳</td>
+<td>帝国宫殿</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>圣斯蒂芬大教堂 → 老城格拉本大街 → 霍夫堡宫 → 晚上金色大厅音乐会</td>
+<td>维也纳</td>
+<td>音乐之都</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>美景宫看《吻》 → 百水公寓 → 多瑙河畔 → 咖啡老店慢下午</td>
+<td>维也纳</td>
+<td>艺术+慢生活</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>火车 2.5h 到萨尔茨堡 → 米拉贝尔宫花园 → 老城粮食胡同</td>
+<td>萨尔茨堡</td>
+<td>音乐之声</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>萨尔茨堡要塞缆车 → 要塞博物馆 → 莫扎特出生地 + 故居</td>
+<td>萨尔茨堡</td>
+<td>要塞日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>海尔布伦宫戏水喷泉 → 下午温特山缆车或圣沃尔夫冈湖半日</td>
+<td>萨尔茨堡</td>
+<td>宫苑+湖光</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>巴士 2.5h 到哈尔施塔特 → 湖畔小镇漫步 → 明信片观景台</td>
+<td>哈尔施塔特</td>
+<td>世界最美小镇</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>早班火车 4h 到因斯布鲁克 → 黄金屋顶 → 北链山缆车看阿尔卑斯日落</td>
+<td>因斯布鲁克</td>
+<td>阿尔卑斯</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>早班火车回维也纳 → 机场快线 → 维也纳✈北京（约 13:30 起飞）</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍因斯布鲁克（D9–D10 合并为一天）或哈尔施塔特只作半日停留；冬季 12–2 月把因斯布鲁克延长为滑雪日。带娃家庭建议降低音乐会预算买站票/家庭场，萨尔茨堡海尔布伦宫戏水喷泉亲子必去。湖区段想更轻松可住上特劳恩（Obertraun）两晚，性价比高于哈尔施塔特村内。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达维也纳</span>
+          <span class="d-desc">夜航 + 纳许市场</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">02:50–06:50</td><td class="t-what">北京✈维也纳（国航 CA841 直飞约 10h，A350 执飞）。凌晨起飞、当地早晨到达，倒时差最优</td></tr>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">入境后乘机场快线 CAT（16min，单程 €12）或 S7 城铁（30min，€4.9）进市区，入住老城区酒店</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">倒时差小睡，酒店附近咖啡馆吃个可颂恢复体力</td></tr>
+          <tr><td class="t-time">12:30–15:00</td><td class="t-what"><b>纳许市场 Naschmarkt</b>（免费）：维也纳最老的露天市场，500 米长的摊位卖生蚝、香料、中东烤肉，午餐就这里解决</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><b>城市公园</b>（免费）：小约翰·施特劳斯金色雕像、花钟；逛到<b>卡尔教堂</b>（外观免费）前看巴洛克穹顶</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：维也纳炸猪排（Wiener Schnitzel），微醺啤酒，早点休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">凌晨航班前一晚别熬夜，飞行中尽量睡；纳许市场周日休息，若周日到改去多瑙河边散步。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 美泉宫</span>
+          <span class="d-desc">哈布斯堡夏宫 + 花园</span>
+          <span class="d-tag ">👑 帝国日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">地铁 U4 到 Schönbrunn 站，步行 5 分钟到美泉宫正门</td></tr>
+          <tr><td class="t-time">09:00–10:40</td><td class="t-what"><b>美泉宫</b>（Palace Ticket 成人 €38，含 40 间房 + 中文语音导览）：茜茜公主与弗兰茨·约瑟夫一世的夏日寝宫，镜厅、百万厅最出名</td></tr>
+          <tr><td class="t-time">10:40–12:00</td><td class="t-what"><b>美泉宫花园</b>（免费，06:30 开放）：修剪成几何图案的巴洛克园林，走到山坡<b>凯旋门 Gloriette</b>（登顶 €6）俯瞰全宫全景</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">花园旁茜茜咖啡/宫殿食堂午餐，或带野餐布坐草坪</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what">自由三选一：<b>美泉宫动物园</b>（€27，世界最古老动物园）／<b>迷宫花园</b>（€6）／回市区补觉</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：老城烤肋排 Ribs of Vienna，或换成茜茜套票第二站霍夫堡做预告</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">美泉宫按时段入场，务必官网提前购票选时；买茜茜套票（€57，含美泉宫+霍夫堡茜茜博物馆+家具馆）比单买省 €21，行程 D2/D3 都覆盖。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 老城 + 金色大厅</span>
+          <span class="d-desc">圣斯蒂芬 + 霍夫堡 + 音乐会</span>
+          <span class="d-tag ">🎼 音乐日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>圣斯蒂芬大教堂</b>（教堂免费；登南塔 343 级 €6）：维也纳地标，哥特式尖塔俯瞰全城，地下墓穴 €7</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>格拉本大街 + 科恩特纳大街</b>（免费）：老城购物主轴，黑死病纪念柱、安可钟（正午 12 点有木偶敲钟）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：维也纳炸牛排老店 Figlmüller 或中央咖啡馆简餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>霍夫堡宫</b>（茜茜博物馆+皇家寓所+银器馆，成人 €16–20）：茜茜公主的健身器材、礼服复制品与皇帝简朴的铁床，2–3h</td></tr>
+          <tr><td class="t-time">19:15</td><td class="t-what">提前 1 小时到<b>金色大厅 Musikverein</b> 售票处凭确认邮件换实体票，寄存大衣背包（€1–2）</td></tr>
+          <tr><td class="t-time">20:15–22:00</td><td class="t-what"><b>维也纳莫扎特乐团音乐会</b>（站票 €19 起，座位 €69–139）：复古服装乐团演奏《魔笛》《蓝色多瑙河》，末曲拉德斯基进行曲全场打拍</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">购票认准「Großer Musikvereinssaal」（金色大厅）场次，避免买到同楼勃拉姆斯厅；站票需开演前提早进场占位；着装 smart casual，禁止拍照摄像。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 艺术与咖啡</span>
+          <span class="d-desc">美景宫 + 百水公寓</span>
+          <span class="d-tag alt">🎨 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>美景宫 Schloss Belvedere</b>（成人 €17.5）：上宫藏克里姆特名画《吻》，金色装饰纹样与音乐之都气质绝配</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：上美景宫旁小馆，或回老城吃 Tafelspitz（炖牛肉，维也纳国菜）</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what"><b>百水公寓</b>（外观免费）：百水先生设计的彩色不规则住宅，童话感十足；对面街角可买纪念品</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>多瑙河畔</b>（免费）：U2 到 Kaisermühlen 站，河边慢跑带看河景；或改去多瑙塔登顶 €11</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">老城咖啡收官：<b>Café Central</b> 或 Demel，萨赫蛋糕 + 维也纳咖啡，看最后一杯 espresso 与教堂钟声</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">回酒店打包行李，明天一早去萨尔茨堡</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">美景宫也分上宫下宫，主展在上宫；克里姆特《吻》门口常年排队，建议开门就进。Café Central 排队 20 分钟起，想吃甜品可直接去 Demel 外带。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 到萨尔茨堡</span>
+          <span class="d-desc">火车 2.5h + 米拉贝尔</span>
+          <span class="d-tag ">🚆 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">维也纳 Hbf 或 Westbahnhof 乘火车前往萨尔茨堡：ÖBB Railjet 约 2h22min，Westbahn 双层车约 2h28min</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">抵达萨尔茨堡 Hbf，入住老城/火车站附近酒店，轻装出发</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：萨尔茨堡老城烤香肠 + 芝士面（Pinzgauer Kasnocken）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>米拉贝尔宫及花园</b>（免费）：《音乐之声》里孩子们唱《Do-Re-Mi》的阶梯与花园，大理石厅穹顶华丽</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>老城漫步</b>（免费）：穿过莫扎特雕像广场到<b>粮食胡同 Getreidegasse</b>，铁艺招牌一条街，找到 9 号莫扎特出生地黄楼</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：老城啤酒馆，餐后散步看要塞夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">火车票提前 1–2 个月在 ÖBB/Westbahn 官网买早鸟票，维也纳⇄萨尔茨堡低至 €13.99；当天买全价 €65 差距巨大。萨尔茨堡老城适合住至少 2 晚。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 萨尔茨堡要塞</span>
+          <span class="d-desc">缆车上山 + 莫扎特博物馆</span>
+          <span class="d-tag ">🏰 要塞日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:45</td><td class="t-what">老城乘 FestungsBahn 缆车上萨尔茨堡要塞（含缆车往返）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>萨尔茨堡要塞 Festung Hohensalzburg</b>（All-inclusive 成人 €19.20）：欧洲最大的完整保存中世纪城堡，全景导览 + 城堡博物馆 + 亲王国宴厅，露台俯瞰红顶老城与阿尔卑斯</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">下山午餐：要塞脚下萨尔茨堡香肠摊，或老城 K+K 餐厅</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>莫扎特出生地</b>（成人 €15）：粮食胡同 9 号，看莫扎特童年小提琴与《魔笛》手稿；步行 10 分钟到<b>莫扎特故居</b>（联票 €23 两馆都去）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">自由加餐：萨尔茨堡大教堂（免费）／圣彼得墓园（免费，《音乐之声》彩蛋）／莫扎特巧克力工厂店</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：要塞脚下烛光晚餐，或老城吃奥地利烤猪肘配酸菜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Basic 票 €15.50（不含亲王国宴厅），All-inclusive €19.20 更值；买萨尔茨堡卡（24h €30）可免要塞+缆车+公交+莫扎特博物馆，安排紧凑可回本。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 海尔布伦宫</span>
+          <span class="d-desc">戏水喷泉 + 湖区半日</span>
+          <span class="d-tag alt">⛲ 宫苑日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">市中心乘巴士 25 路到海尔布伦宫（车程约 25min，Salzburg Card 免费）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>海尔布伦宫 Schloss Hellbrunn</b>（成人 €16.50，含戏水喷泉讲解 50min）：大主教的水力恶作剧喷泉，人走上去会被突然袭击，夏天最欢乐</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">返程午餐：老城或海尔布伦宫草地上野餐</td></tr>
+          <tr><td class="t-time">14:00–18:00</td><td class="t-what">二选一：<b>温特山 Unterberg 缆车</b>（往返约 €36）登 1800m 看萨尔茨堡全景；或乘 150 路到<b>圣沃尔夫冈湖</b>（往返约 €15）湖边散步</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：老城网红猪肋排或湖边湖鱼晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海尔布伦宫戏水喷泉 3–11 月开放，穿防泼水衣物；下午两选一视体力，若累就在老城喝咖啡 + 逛莫扎特巧克力店。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 哈尔施塔特</span>
+          <span class="d-desc">世界最美小镇</span>
+          <span class="d-tag ">🏔 湖区日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">萨尔茨堡火车站前 Südtiroler Platz 乘 <b>150 路巴士</b>到巴德伊舍（Bad Ischl，90min），转 <b>541/543 路</b>到 Hallstatt Lahn（40min）</td></tr>
+          <tr><td class="t-time">11:00</td><td class="t-what">抵达哈尔施塔特，入住湖景民宿，放下行李</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">湖边午餐：烤鳟鱼（Salzkammergut 湖区招牌）+ 湖畔啤酒</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>湖畔小镇漫步</b>（免费）：市场广场、白骨教堂（€5，6000 具彩绘骷髅，欧洲奇观）、明信片观景台拍经典机位</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">盐矿说明：<b>Salzwelten 盐矿 2026 夏前翻修关闭</b>，替代方案① 乘官方接驳车去 Altaussee 盐矿（14:00 发车，需提前预约）；② 走湖边步道 Müllerstiege 到半山观景台</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：湖景餐厅看日落，小镇入夜后非常安静</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">早到游客少、光线好；村子很小半天够逛。若住哈尔施塔特村内旺季 150–250 欧/晚且需提前 2–3 个月，预算紧住隔壁上特劳恩（Obertraun）便宜一半。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 因斯布鲁克</span>
+          <span class="d-desc">黄金屋顶 + 北链山</span>
+          <span class="d-tag ">⛰ 阿尔卑斯日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">哈尔施塔特乘渡轮到对岸 Hallstatt Bahnhof（10min，€3.5），乘火车前往因斯布鲁克（约 4h10min，经萨尔茨堡/Attnang 转车 1–2 次）</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">抵达因斯布鲁克，入住老城酒店，午餐：蒂罗尔面包团 + 当地啤酒</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>黄金屋顶 Goldenes Dachl</b>（外观免费，博物馆 €5）：马克西米利安一世的镀金阳台；旁边的<b>安娜柱 + 老城步行街</b>（免费）</td></tr>
+          <tr><td class="t-time">16:00–18:30</td><td class="t-what"><b>北链山缆车 Nordkette</b>（往返山顶 Hafelekar 约 €56）：从市区直达 2269m 雪线之上，俯瞰因斯布鲁克全城与卡尔文德尔山脉</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：因斯布鲁克老城烤猪肘 + 苹果派，为返程蓄力</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">北链山缆车山顶风大温差大，带件外套；Innsbruck Card（24h €55）含缆车+20+ 景点+市内公交，玩 2 个以上景点就回本。D9 晚上若想轻松可改乘晚班火车回维也纳宿机场旁（二选一）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">火车回维也纳 + 飞北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:50</td><td class="t-what">因斯布鲁克 Hbf 乘早班 Railjet 回维也纳（约 4.5h，尽量选直达，转车至少留 20min）</td></tr>
+          <tr><td class="t-time">10:30</td><td class="t-what">抵达维也纳 Hbf，转机场快线 CAT（16min）或 S7 城铁（30min）去机场</td></tr>
+          <tr><td class="t-time">11:15</td><td class="t-what">抵达维也纳机场，办登机 + 退税（购物满 €75 可退约 13% 税）</td></tr>
+          <tr><td class="t-time">13:30–23:40</td><td class="t-what">维也纳✈北京（国航 CA842 约 10h，北京时间次日凌晨到），入境回家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">前一天晚上收拾好行李、备好清晨闹钟；早班车是唯一能赶上 13:30 航班的方式，或 D9 晚宿维也纳机场旁更从容。机上补觉，次日到北京正好调整回时差。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-1.jpg" alt="维也纳·美泉宫" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">维也纳·美泉宫 <small>€38（宫殿票）</small></div>
+          <div class="sc-feat">茜茜公主的夏宫。<b>40 间房 + 巴洛克花园 + 凯旋门</b>，维也纳第一站。</div>
+          <div class="sc-meta">📅 8:30–17:30 · ⏱ 半天 · 🚇 U4 Schönbrunn</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-2.jpg" alt="维也纳·圣斯蒂芬大教堂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">维也纳·圣斯蒂芬大教堂 <small>教堂免费 / 登塔 €6</small></div>
+          <div class="sc-feat">哥特尖塔地标。<b>343 级登塔俯瞰老城</b>，地下墓穴藏哈布斯堡骨瓮。</div>
+          <div class="sc-meta">📅 6:00–22:00 · ⏱ 1h · 🚇 老城中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-3.jpg" alt="维也纳·金色大厅" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">维也纳·金色大厅 <small>音乐会 €19–139</small></div>
+          <div class="sc-feat">世界顶级音响殿堂。<b>莫扎特复古音乐会</b> + 站票 €19 体验。</div>
+          <div class="sc-meta">📅 演出日 20:15 · ⏱ 2h · 🚇 Karlsplatz</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-4.jpg" alt="维也纳·霍夫堡宫" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">维也纳·霍夫堡宫 <small>茜茜博物馆 €16–20</small></div>
+          <div class="sc-feat">哈布斯堡冬宫。<b>茜茜公主博物馆</b>还原皇后一生，银器馆奢华。</div>
+          <div class="sc-meta">📅 9:00–17:30 · ⏱ 2–3h · 🚇 Herrengasse</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-5.jpg" alt="萨尔茨堡·要塞" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">萨尔茨堡·要塞 <small>€15.50–19.20</small></div>
+          <div class="sc-feat">欧洲最大完整中世纪城堡。<b>缆车 + 全景导览</b>俯瞰红顶老城。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 2–3h · 🚠 老城缆车站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-6.jpg" alt="萨尔茨堡·米拉贝尔宫" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">萨尔茨堡·米拉贝尔宫 <small>免费</small></div>
+          <div class="sc-feat">《音乐之声》阶梯。<b>大理石厅 + 巴洛克花园</b>，老城步行即到。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 🚶 老城北端</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-cover.jpg" alt="哈尔施塔特" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">哈尔施塔特 <small>小镇免费 / 白骨教堂 €5</small></div>
+          <div class="sc-feat">世界最美湖畔小镇。<b>明信片机位 + 盐矿</b>（2026 盐矿翻修中）。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天–1天 · 🚌 150/541 巴士</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/austria/austria-7.jpg" alt="因斯布鲁克·北链山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">因斯布鲁克·北链山 <small>缆车往返约 €56</small></div>
+          <div class="sc-feat">雪山之城。<b>黄金屋顶 + 2269m 北链山缆车</b>俯瞰阿尔卑斯。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 半天 · 🚋 老城缆车站</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（美泉宫、圣斯蒂芬、金色大厅、霍夫堡、要塞、米拉贝尔、哈尔施塔特、北链山均为奥地利实景），用于页面配图。更多免费景点：维也纳城市公园、百水公寓、萨尔茨堡大教堂、老城步行街、多瑙河畔。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 欧元 ≈ 7.8 元人民币估算。往返机票按国航直飞淡季 5500–7500 元计，旺季（7–8 月音乐节）上浮 30%–50%。火车票按早鸟价与常规价混计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（11000–16000）</th>
+<th>标准（20000–28000）</th>
+<th>舒适（45000–60000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>国航直飞 5500–7000</td>
+<td>直飞+选座 7000–9000</td>
+<td>商务舱/灵活 16000–22000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/民宿 350–500/晚</td>
+<td>三星/四星 750–1000/晚</td>
+<td>四五星+湖景 2200–3500/晚</td>
+</tr>
+<tr>
+<td>境内交通（火车）</td>
+<td>早鸟票+巴士 800–1300</td>
+<td>混合票价 1500–2200</td>
+<td>Railjet 一等+部分包车 4000–6000</td>
+</tr>
+<tr>
+<td>门票与演出</td>
+<td>基础景点 700–1100</td>
+<td>含音乐会站票/座位 2000–3000</td>
+<td>含音乐会好座+全景点 5000–8000</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>超市+简餐 1800–2600</td>
+<td>正常下馆子 3200–4500</td>
+<td>米其林/湖景正餐 8000–13000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 25000 元）</span>
+      往返机票 8000（旺季）+ 住宿 9 晚 8000（平均 890/晚）+ 境内交通 1800 + 门票与金色大厅座位票 2800 + 餐饮 3800 + 签证/保险/杂费 1200 ≈ <strong>24000–26000 元</strong>。大头是机票与住宿，火车早鸟票与机票提前 2–3 个月订能各省 1500–2500 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>10.1 只看精华的 7 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D3 维也纳（美泉宫/圣斯蒂芬/金色大厅音乐会）</li>
+
+      <li>D4 火车 2.5h 到萨尔茨堡，米拉贝尔+老城</li>
+
+      <li>D5 要塞 + 莫扎特出生地</li>
+
+      <li>D6 哈尔施塔特当日往返（150 路巴士）</li>
+
+      <li>D7 返程（萨尔茨堡可直接飞北京需转机，或火车回维也纳飞）</li>
+
+    </ul>
+
+    <h3>10.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：美泉宫动物园（世界最古老）+ 迷宫花园必去；金色大厅改买家庭场或站票降低成本；萨尔茨堡海尔布伦宫戏水喷泉是孩子最爱；哈尔施塔特白骨教堂 6 岁以下可能害怕，用湖边游船替代。奥地利 6 岁以下公共交通免费，铁路儿童票半价。</p>
+
+    <h3>10.3 冬季滑雪版（12–2 月）</h3>
+
+
+    <p>维也纳圣诞市集（11 月中–12 月底）+ 因斯布鲁克延长 2–3 天滑雪（北链山即雪场，缆车票当雪票用）；萨尔茨堡老城雪景同样出片。冬季机票与酒店比旺季便宜 20%–30%，但山区多雪注意火车晚点，滑雪装备可在当地租。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>9.1 北京 ⇄ 奥地利 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京✈维也纳约 10h</td>
+<td>往返 5500–9000 元</td>
+<td>国航 CA841/842 每日一班，凌晨去清晨到，倒时差友好</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>12–16h</td>
+<td>4000–6500 元</td>
+<td>经莫斯科/阿布扎比/多哈转机，便宜但费时</td>
+</tr>
+<tr>
+<td>城际火车</td>
+<td>维也纳⇄萨尔茨堡 2.5h</td>
+<td>早鸟 €14–20 / 全价 €65</td>
+<td>ÖBB Railjet 与 Westbahn 双层车并行运营</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 奥地利境内交通核心提醒</span>
+      全程用<strong>火车 + 巴士</strong>即可：ÖBB Railjet 与 Westbahn 覆盖维也纳⇄萨尔茨堡⇄因斯布鲁克，哈尔施塔特段用 150/541 路 Postbus。火车票越早买越便宜（提前 1–2 个月），ÖBB App 有中文界面；维也纳市内用 U-Bahn+电车（24h 天票 €8），萨尔茨堡老城靠步行。返程从因斯布鲁克回维也纳机场只有早班火车能接上 13:30 航班，务必前一夜规划好时刻。
+    </div>
+
+    <h3>9.2 奥地利境内交通</h3>
+    <ul>
+      <li><strong>ÖBB Railjet</strong>：维也纳—萨尔茨堡 2h22min、萨尔茨堡—因斯布鲁克约 2h，Wi-Fi+餐车，早鸟 Sparschiene €14 起</li>
+      <li><strong>Westbahn</strong>：私营双层车，维也纳 Westbahnhof—萨尔茨堡 2h28min，低至 €13.99，不强制订座</li>
+      <li><strong>市内 U-Bahn/电车</strong>：维也纳 24h 天票 €8，萨尔茨堡 24h 票 €4.5，上车需打票</li>
+      <li><strong>Postbus 150/541</strong>：萨尔茨堡—巴德伊舍 90min—哈尔施塔特 40min，全程约 2.5h、约 €15</li>
+      <li><strong>湖区渡轮</strong>：哈尔施塔特火车站—小镇渡口 10min、€3.5，班次与火车衔接</li>
+      <li><strong>出租车/共享</strong>：市内短途 €10–15，仅在深夜或赶火车应急用</li>
+    </ul>
+
+    <h3>9.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>维也纳·老城/内城</td>
+<td>经济 350–550 / 标准 800–1200</td>
+<td>景点步行可达，咖啡与夜生活丰富</td>
+<td>旺季贵，老楼无电梯</td>
+</tr>
+<tr>
+<td>维也纳·火车总站 Hbf</td>
+<td>经济 300–450 / 标准 650–950</td>
+<td>去萨尔茨堡/机场方便，价格更低</td>
+<td>距老城景点远，需地铁</td>
+</tr>
+<tr>
+<td>萨尔茨堡·老城/火车站</td>
+<td>经济 400–600 / 标准 800–1100</td>
+<td>要塞与米拉贝尔步行即到</td>
+<td>夏季音乐节一房难求</td>
+</tr>
+<tr>
+<td>哈尔施塔特/上特劳恩</td>
+<td>村内 1500–2500 / 上特劳恩 800–1400</td>
+<td>湖景与日出无价</td>
+<td>村内房少价高，需提前 2–3 个月</td>
+</tr>
+<tr>
+<td>因斯布鲁克·老城/火车站</td>
+<td>经济 400–600 / 标准 750–1100</td>
+<td>黄金屋顶与缆车站步行可达</td>
+<td>滑雪季（12–3 月）溢价明显</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍖 必吃经典</h3>
+        <ul>
+          <li>维也纳炸猪排 Wiener Schnitzel：Figlmüller 老店，配土豆沙拉</li>
+          <li>Tafelspitz 炖牛肉：奥地利国菜，先喝汤后吃肉</li>
+          <li>烤猪肘 + 酸菜 + 面包团：萨尔茨堡/因斯布鲁克啤酒馆招牌</li>
+          <li>萨赫蛋糕 Sachertorte：热巧克力淋面，配无糖奶油</li>
+        </ul>
+        <h3>🐟 在地名物</h3>
+        <ul>
+          <li>萨尔茨卡默古特烤鳟鱼：哈尔施塔特湖畔招牌</li>
+          <li>莫扎特巧克力 Mozartkugel：萨尔茨堡起源，蓝色包装</li>
+          <li>奶酪面 Pinzgauer Kasnocken：阿尔卑斯山区芝士面</li>
+          <li>蒂罗尔面包团 Knödel：火腿馅或李子馅</li>
+        </ul>
+      </div>
+      <div>
+        <h3>☕ 咖啡与甜点</h3>
+        <ul>
+          <li>维也纳咖啡 Melange：类似拿铁的国民咖啡</li>
+          <li>中央咖啡馆 Café Central：文人聚会的巴洛克大厅</li>
+          <li>Demel 皇家甜品：栗子蛋糕与糖果老字号</li>
+          <li>苹果卷 Apfelstrudel：热乎乎的肉桂香，湖区最佳</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>维也纳：纳许市场、老城格拉本大街周边、多瑙塔旋转餐厅</li>
+          <li>萨尔茨堡：老城粮食胡同周边、莫扎特广场啤酒馆</li>
+          <li>哈尔施塔特：湖畔露台餐厅、上特劳恩农场小馆</li>
+          <li>因斯布鲁克：老城步行街、北链山山顶餐厅</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 老牌炸猪排店（Figlmüller）常年排队 30–60min，先取号再去逛；② 奥地利餐厅小费默认 5%–10%，刷账单时自行勾选；③ 萨赫蛋糕认准 Café Sacher 与 Demel 两家正牌，路边山寨货要价不低；④ 矿泉水与啤酒同价（水并不比酒便宜），餐厅「tap water」可免费要；⑤ 超市 Billa/Spar 的面包、火腿、奶酪组合是性价比之王。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>申根签证（成人 €90，提前 1.5–2 个月递交）</li>
+        <li>护照（有效期 6 个月以上 + 2 页空白页）</li>
+        <li>旅行保险（保额 ≥3 万欧，覆盖申根区）</li>
+        <li>欧标转接头（230V，C/F 型两圆脚）</li>
+      </ul>
+      <ul>
+        <li>金色大厅音乐会票（认准 Großer Musikvereinssaal）</li>
+        <li>火车早鸟票（ÖBB/Westbahn 提前 1–2 个月）</li>
+        <li>欧元现金少量 + 芯片信用卡</li>
+        <li>哈尔施塔特盐矿翻修确认（2026 夏后开放）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>申根签审理约 15 个工作日</strong>，旺季预约难，递签后再订不可退的机票酒店；② 金色大厅/国家歌剧院门口常有兜售假票的黄牛，只认官网或官方售票处；③ 维也纳老城与霍夫堡周边扒手多，背包前背、钱包不放外兜，火车站尤其注意；④ 奥地利火车偶发罢工与晚点（山区冬季更常见），跨城当天别安排太紧的衔接，转车至少留 20 分钟。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      奥地利是把「<strong>古典音乐与雪山湖水</strong>」揉在一起的目的地——维也纳的金色大厅与茜茜公主、萨尔茨堡的莫扎特与《音乐之声》、哈尔施塔特的湖畔木屋、因斯布鲁克的雪山缆车，10 天刚好串成一条不赶的音乐与湖区环线。签证是唯一硬门槛，办好申根签、订好早鸟票与音乐会，剩下的就交给火车与咖啡。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c8452f",
+    "d": 3,
+    "n": "主线 · 维也纳→萨尔茨堡→哈尔施塔特→因斯布鲁克",
+    "pts": [
+      [
+        48.2082,
+        16.3738
+      ],
+      [
+        47.8095,
+        13.055
+      ],
+      [
+        47.5622,
+        13.6493
+      ],
+      [
+        47.2692,
+        11.4041
+      ]
+    ]
+  },
+  {
+    "c": "#2e5a88",
+    "d": 3,
+    "n": "返程线 · 因斯布鲁克→维也纳（早班火车）",
+    "pts": [
+      [
+        47.2692,
+        11.4041
+      ],
+      [
+        48.2082,
+        16.3738
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 48.1849,
+    "lng": 16.3123,
+    "name": "维也纳·美泉宫",
+    "t": "D2 上午 · 半天",
+    "fee": "€38 宫殿票",
+    "note": "40 间房、花园、凯旋门"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 48.2083,
+    "lng": 16.3731,
+    "name": "维也纳·圣斯蒂芬大教堂",
+    "t": "D3 上午 · 1h",
+    "fee": "登塔 €6",
+    "note": "哥特尖塔、地下墓穴"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 48.2006,
+    "lng": 16.3727,
+    "name": "维也纳·金色大厅",
+    "t": "D3 晚 · 2h",
+    "fee": "€19–139",
+    "note": "莫扎特复古音乐会"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 48.2065,
+    "lng": 16.3651,
+    "name": "维也纳·霍夫堡宫",
+    "t": "D3 下午 · 2–3h",
+    "fee": "茜茜博物馆 €16–20",
+    "note": "茜茜公主博物馆、银器馆"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 47.7956,
+    "lng": 13.0475,
+    "name": "萨尔茨堡·要塞",
+    "t": "D6 上午 · 2–3h",
+    "fee": "€15.50–19.20",
+    "note": "缆车、全景导览"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 47.8045,
+    "lng": 13.0421,
+    "name": "萨尔茨堡·米拉贝尔宫",
+    "t": "D5 下午 · 1h",
+    "fee": "免费",
+    "note": "《音乐之声》花园"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 47.5622,
+    "lng": 13.6493,
+    "name": "哈尔施塔特",
+    "t": "D8 全天 · 1 天",
+    "fee": "白骨教堂 €5",
+    "note": "明信片机位、盐矿翻修中"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 47.2692,
+    "lng": 11.4041,
+    "name": "因斯布鲁克·北链山",
+    "t": "D9 下午 · 半天",
+    "fee": "缆车约 €56",
+    "note": "黄金屋顶、2269m 山顶"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[46.4, 9.5], [49.0, 17.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c8452f\"></span>主线（维也纳→萨尔茨堡→哈尔施塔特→因斯布鲁克）<br><span class=\"sw\" style=\"background:#2e5a88\"></span>返程线（因斯布鲁克→维也纳，早班火车）<br><span class=\"sw dash\"></span>北京—维也纳段为往返航班（约 10h）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

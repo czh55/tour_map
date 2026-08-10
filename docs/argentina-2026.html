@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 阿根廷 16 天全景攻略 · 冰川冰川与探戈</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #c0392b;
+    --red-light: #d24f40;
+    --gold: #dfae4a;
+    --ink: #26323b;
+    --muted: #6f7d88;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e1e8ec;
+    --blue: #4aa3df;
+    --cover1: #1d5f8c;
+    --ov1: rgba(29,95,140,.88);
+    --ov2: rgba(74,163,223,.72);
+    --ov3: rgba(74,124,89,.40);
+    --ov4: rgba(192,57,43,.18);
+    --key-bg: #e8f3fb;
+    --info-bg: #eef4f8;
+    --head-bg: rgba(74,163,223,.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/argentina/argentina-cover.jpg" alt="阿根廷旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 16 天纵贯 · 探戈 + 冰川 + 世界尽头</div>
+      <h1>阿根廷 16 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 布宜诺斯艾利斯 · 伊瓜苏 · 莫雷诺冰川 · 乌斯怀亚 · 巴里洛切</div>
+      <div class="meta">
+        <span>🛫 行程链：北京✈布宜诺斯艾利斯 → 伊瓜苏 → 卡拉法特 → 乌斯怀亚 → 巴里洛切 → 返程</span>
+        <span>📅 时间窗口：16 天 15 晚</span>
+        <span>✈️ 北京⇄布宜诺斯艾利斯转机约 28–30h（无直飞，经迪拜/伊斯坦布尔/马德里）</span>
+        <span>🛂 签证：持美签/美绿卡免签（2025.7 新政，30 天）；否则办阿根廷签证</span>
+        <span>🕐 时差 -11h · 🔌 电压 220V C 型插座（两圆脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 16 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 16 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">布宜诺斯艾利斯</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">伊瓜苏</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">埃尔卡拉法特</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">乌斯怀亚</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">巴里洛切</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🗺 16 天怎么安排最合理</span>
+      阿根廷是「<strong>从热带到冰川</strong>」的纵贯线：布宜诺斯艾利斯用探戈、博卡区和牛排把城市气质讲透，伊瓜苏以世界最大瀑布群之一震撼开场，埃尔卡拉法特的莫雷诺冰川让你站上亿万年冰墙前，乌斯怀亚把「世界尽头的灯塔」和企鹅塞进南美最南端，巴里洛切再用瑞士风情的雪山湖泊收尾。16 天刚好串成<strong>布宜诺斯艾利斯 3 天 + 伊瓜苏 2 天 + 卡拉法特 3 天 + 乌斯怀亚 3 天 + 巴里洛切 2 天</strong>，全程靠阿根廷国内航班，是南美最经典的一条冰川—巴塔哥尼亚线。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照持<strong>有效美签（B1/B2 等）或美绿卡可免签入境</strong>（2025-07-22 起生效，无需 AVE，最长 30 天）；无美签则需通过阿根廷使领馆办旅游签证</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>布宜诺斯艾利斯 3 天 → 伊瓜苏 2 天 → 埃尔卡拉法特 3 天 → 乌斯怀亚 3 天 → 巴里洛切 2 天 + 返程</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 16 天从布宜诺斯艾利斯返京（转机约 28–30h）；巴里洛切回 BA 后衔接国际航班留 1 天缓冲</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 布宜诺斯艾利斯 → 伊瓜苏 → 卡拉法特 → 乌斯怀亚 → 巴里洛切 → 北京</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 20000–30000 ／ 标准 38000–55000 ／ 舒适 80000–120000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 确认美签/申根是否在有效期内（免签前提）② 订巴塔哥尼亚国内航班（卡拉法特—乌斯怀亚段少）③ 冰川徒步/游船提前 1 个月订</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11–3 月南半球夏季最适合：冰川阳光好、徒步可上冰；6–9 月冬季乌斯怀亚看雪、巴里洛切滑雪，但冰川徒步关闭</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>比索现金为主 + Visa/Master 卡；阿根廷通胀高，换钱选「Blue Dollar」市场汇率或持牌兑换点，刷卡按官方汇率吃亏</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>免签是有前提的</strong>：只有持「有效且与入境目的相符的美签」或美绿卡的中国护照才能免签进阿根廷（30 天）；申根签不在此列，无美签的仍需办阿根廷签证，且阿根廷没有官方加急通道。② <strong>巴塔哥尼亚国内段要抢</strong>：卡拉法特—乌斯怀亚、乌斯怀亚—巴里洛切航班少（有的航线每周仅 2–3 班），旺季 12–3 月提前 1–2 个月订，否则要么没票要么 3 倍价。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 16 天版</h2>
+
+    <p>以下为 16 天 15 晚的推荐节奏：从北部的亚热带伊瓜苏一路南下到世界尽头乌斯怀亚，再折回湖区巴里洛切，全程国内航班衔接。每日主景点 ≤2 个，冰川段留足 3 天给天气与徒步。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵布宜诺斯艾利斯</td>
+<td>北京✈布宜诺斯艾利斯（转机约 28h），入住市中心，五月广场初见</td>
+<td>布宜诺斯艾利斯</td>
+<td>抵达+倒时差</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>五月广场 → 方尖碑 → 女人桥 → 博卡区彩色街区</td>
+<td>布宜诺斯艾利斯</td>
+<td>城市名片</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>雷科莱塔墓地 → 圣特尔莫跳蚤市场 → 夜场探戈秀</td>
+<td>布宜诺斯艾利斯</td>
+<td>探戈与历史</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>布宜诺斯艾利斯✈伊瓜苏（约 2h），阿根廷侧公园</td>
+<td>伊瓜苏</td>
+<td>飞伊瓜苏</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>魔鬼咽喉栈道 + 上/下环线，傍晚✈卡拉法特（经 BA）</td>
+<td>埃尔卡拉法特</td>
+<td>魔鬼咽喉日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>莫雷诺冰川观景栈道：百万年冰墙 + 冰崩现场</td>
+<td>埃尔卡拉法特</td>
+<td>冰川全景</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>莫雷诺冰川迷你徒步/游船日（Minitrekking）</td>
+<td>埃尔卡拉法特</td>
+<td>冰川徒步</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>卡拉法特✈乌斯怀亚（约 1h40min），市区漫步</td>
+<td>乌斯怀亚</td>
+<td>飞世界尽头</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>火地岛国家公园：世界尽头火车 + 拉帕塔亚湾</td>
+<td>乌斯怀亚</td>
+<td>火地岛日</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>比格尔海峡游船：海狮岛 + 世界尽头灯塔 + 企鹅</td>
+<td>乌斯怀亚</td>
+<td>海峡游船</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>乌斯怀亚机动（世界尽头邮局/冰川快车）→ ✈巴里洛切</td>
+<td>巴里洛切</td>
+<td>转场湖区</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>小环线 Circuito Chico + 纳韦尔瓦皮湖游船</td>
+<td>巴里洛切</td>
+<td>湖区环线</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>七湖之路一日或卡特德拉尔山缆车</td>
+<td>巴里洛切</td>
+<td>七湖/雪山</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>巴里洛切✈布宜诺斯艾利斯，傍晚圣特尔莫再逛</td>
+<td>布宜诺斯艾利斯</td>
+<td>回首都</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>布宜诺斯艾利斯购物日：皮具、牛排、葡萄酒</td>
+<td>布宜诺斯艾利斯</td>
+<td>购物收尾</td>
+</tr>
+<tr>
+<td>D16 返程</td>
+<td>布宜诺斯艾利斯✈北京（转机约 28h）</td>
+<td>—</td>
+<td>返程日</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍乌斯怀亚（省 2–3 天），或巴里洛切改为 1 天小环线；想上冰（Minitrekking/Big Ice）需 18–65 岁且提前 1 个月订，体能要求高。12–3 月为旺季，机票住宿提前 2 个月；冬季（6–9 月）乌斯怀亚雪景 + 巴里洛切滑雪是另一套玩法
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 16 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达布宜诺斯艾利斯</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">13:00–次日18:00</td><td class="t-what">北京✈布宜诺斯艾利斯（无直飞，经迪拜/伊斯坦布尔/马德里转机，总程约 28–30h）</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">入住<b>圣特尔莫/雷科莱塔</b>一带酒店（老城氛围 + 安全），休整</td></tr>
+          <tr><td class="t-time">20:00–21:30</td><td class="t-what"><b>五月广场</b>（Plaza de Mayo，免费）：总统府「玫瑰宫」与五月金字塔，阿根廷政治心脏</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">晚餐：牛排馆 bife de chorizo + 马尔贝克红酒，早点休息倒时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">北京与布宜诺斯艾利斯时差 11h；转机建议选阿联酋/土航（行李直挂、经停城市好逛），落地后先在机场换少量比索（Blue 汇率）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 城市名片</span>
+          <span class="d-desc">博卡区 + 女人桥</span>
+          <span class="d-tag ">🏛 城市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>方尖碑 + 七月九日大道</b>（免费）：世界最宽大道（140m），科隆剧院外观</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>博卡区</b>（La Boca，免费）：彩色铁皮房 + 卡米尼托街，博卡青年队主场外观</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：博卡区 parrilla 烤肉或肉馅饼 empanada</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>女人桥 + 马德罗港</b>（免费）：当代艺术区 PUENTE DE LA MUJER，日落光影最佳</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">圣特尔莫主街（Defensa 街）：古董店、探戈街头艺人、café 老店</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：牛排馆 + 阿根廷红酒，晚上可以看一场小剧场探戈表演</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">博卡区白天热闹晚上乱，天黑前离开卡米尼托街；周日圣特尔莫跳蚤市场最盛大，把市区行程可适当对调。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 探戈与历史</span>
+          <span class="d-desc">雷科莱塔 + 夜场探戈</span>
+          <span class="d-tag alt">💃 探戈日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>雷科莱塔国家公墓</b>（免费）：大理石墓园迷宫，贝隆夫人墓必看</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>雷科莱塔文化中心</b>（免费外观/展览）：曾是修道院，玻璃穹顶网红拍照地</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：Parilla 烤肉套餐（阿根廷人均最实惠的吃法）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>圣特尔莫跳蚤市场</b>（周日下午最热闹）：古董银器、皮具、探戈唱片，砍价空间大</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">自由活动：Florería Atlántico 地下酒吧 / 拉美艺术博物馆 MALBA</td></tr>
+          <tr><td class="t-time">20:00–23:00</td><td class="t-what"><b>夜场探戈秀</b>（含晚餐约 USD 60–120）：La Ventana / Rojo Tango 等经典场，专业舞者表演</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">探戈秀分「含晚餐」与「含演出」档，非演出时段看秀约 USD 40–70；想省钱的可在圣特尔莫看街头即兴探戈。雷科莱塔公墓 18:00 关门。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 飞伊瓜苏</span>
+          <span class="d-desc">阿根廷侧公园首探</span>
+          <span class="d-tag alt">🛫 飞伊瓜苏</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">布宜诺斯艾利斯✈伊瓜苏（阿根廷国内机场 IGR，约 2h，阿根廷航空/Aerolíneas）</td></tr>
+          <tr><td class="t-time">10:30–11:00</td><td class="t-what">入住伊瓜苏港（Puerto Iguazú）酒店，就近午餐</td></tr>
+          <tr><td class="t-time">11:30–16:30</td><td class="t-what"><b>伊瓜苏国家公园阿根廷侧</b>（外国成人 AR$60,000，官网购票）：先走上/下环线热身，看瀑布群的侧面与底部</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返回酒店，晚餐 empanada + 阿根廷啤酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伊瓜苏两侧都值得：阿根廷侧看近距离与魔鬼咽喉，巴西侧看全景（需另办巴西签证）。阿根廷侧公园 8:00–18:00，下午 4 点半停止入园。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 魔鬼咽喉 + 飞卡拉法特</span>
+          <span class="d-desc">世界最大瀑布正面冲击</span>
+          <span class="d-tag ">🌊 魔鬼咽喉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">公园开门即入园（避开旅行团），乘<b>丛林小火车</b>到魔鬼咽喉站</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>魔鬼咽喉栈道</b>（Garganta del Diablo）：1.1km 栈道直通瀑布中央，水汽如暴雨，彩虹常伴</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">上环线补完 + 园内午餐（阿根廷烧烤三明治）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">下环线回程，顺路看 Coatí 长鼻浣熊</td></tr>
+          <tr><td class="t-time">16:00–22:30</td><td class="t-what">伊瓜苏✈布宜诺斯艾利斯（约 2h）→ 转机✈<b>埃尔卡拉法特</b>（约 3h20min）</td></tr>
+          <tr><td class="t-time">22:30</td><td class="t-what">入住卡拉法特酒店，巴塔哥尼亚夜风已冷</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伊瓜苏→卡拉法特需经布宜转机，总程约 6–7h，选最早班机留足衔接时间；卡拉法特夏季（12–3 月）白天 20°C 左右，夜里降到 5°C。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 莫雷诺冰川</span>
+          <span class="d-desc">万年冰墙全景</span>
+          <span class="d-tag ">🧊 冰川日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">旅行社大巴出发（约 1h20min 车程）到<b>洛斯格拉西亚雷斯国家公园</b>（门票 AR$45,000）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>莫雷诺冰川观景栈道</b>（免费步道）：数公里栈道正对 60m 高的冰墙，等一场冰崩（大块冰坠湖，巨响震撼）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">园区餐厅午餐（热汤 + 三明治）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">栈道另一侧近距离视角：看冰川前沿的蓝洞与裂隙</td></tr>
+          <tr><td class="t-time">16:30–17:30</td><td class="t-what">返程，晚上卡拉法特小镇吃羊肉（cordero）晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">莫雷诺冰川是少数「仍在前进」的冰川，冰崩概率全天都有，观景台等 30min 基本能看到；国家公园门票不含交通，自驾/跟团都要先到检票口。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 冰川徒步/游船</span>
+          <span class="d-desc">走上万年冰面</span>
+          <span class="d-tag alt">⛏ 徒步日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">Hielo & Aventura 集合出发（提前 1 个月官网订，18–65 岁）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>迷你徒步 Minitrekking</b>（约 AR$320,000 起）：穿冰爪走上冰川边缘 1.5h，导游讲解冰洞与裂隙</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">湖岸午餐（三明治 + 热茶）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">冰川前沿巡航（可选 Safari Náutico 游船 AR$64,000）：从湖面仰望 60m 冰墙</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what">返卡拉法特，晚餐冰川湖鳟鱼（trout）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Big Ice 大徒步（3h 上冰，AR$640,000）对体能要求更高，迷你徒步更适合多数人；所有徒步团都含冰爪与保险，穿防水徒步鞋。冬季（6–9 月）徒步关闭，改看冰川游船。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 飞乌斯怀亚</span>
+          <span class="d-desc">世界最南城市</span>
+          <span class="d-tag alt">🛫 飞乌斯怀亚</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:40</td><td class="t-what">卡拉法特✈乌斯怀亚（约 1h40min，Aerolíneas 每周 3–4 班，提前订）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">入住酒店，<b>乌斯怀亚市区漫步</b>（免费）：世界尽头的标志牌 + 海港看邮轮</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：帝王蟹（centolla，当地名物）</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>世界尽头博物馆群</b>（海洋博物馆/监狱博物馆，门票约 AR$10,000–15,000）：南极探险史 + 火地岛历史</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐 + 早睡，为次日火地岛公园养足体力</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌斯怀亚是南纬 54.8° 的世界最南城市，也是南极科考的门户港；夏季 12–3 月白天长达 17h，紫外线强，防风外套必备。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 火地岛国家公园</span>
+          <span class="d-desc">世界尽头列车</span>
+          <span class="d-tag ">🚂 火地岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">乘旅游大巴/租车前往<b>火地岛国家公园</b>（门票约 AR$45,000，现金可付）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>世界尽头小火车</b>（Ferrocarril Austral Fueguino，约 USD 60–70）：前罪犯运输线改的蒸汽列车，穿原始森林</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>拉帕塔亚湾</b>（Bahía Lapataia）：泛美公路 3 号路终点牌 + 湖湾徒步</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">公园内午餐（热狗 + 热咖啡）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what">恩塞纳达湾步道：远望安第斯山与麦哲伦海峡，偶遇狐狸与啄木鸟</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返乌斯怀亚，晚餐：火地岛特色烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">公园内有「世界尽头邮政局」（只收现金寄明信片）；冬季公园部分步道积雪关闭，夏季是最佳窗口。大巴班次有限，提前一天订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 比格尔海峡</span>
+          <span class="d-desc">海狮与灯塔</span>
+          <span class="d-tag alt">⛴ 海峡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">乌斯怀亚港登船（提前 1–2 天码头/网上订，船票约 USD 90–120）</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>比格尔海峡巡航</b>：海狮岛（Isla de los Lobos）、鸟岛、企鹅群近观</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：船上简餐或回港吃帝王蟹</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>世界尽头灯塔</b>（Les Eclaireurs Lighthouse）：红白灯塔地标，打卡南美最南灯塔</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">企鹅岛（Pinguinera，夏季可选）：麦哲伦企鹅栖息地近距离观察</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：乌斯怀亚海鲜 + 阿根廷白葡萄酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">比格尔海峡游船分「含企鹅登陆」（贵）与「海上观企鹅」（便宜）；夏天天气多变，出海前看预报，晕船药备上。海面风大，穿防水防风层。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 机动 + 飞巴里洛切</span>
+          <span class="d-desc">世界尽头邮局 + 湖区转场</span>
+          <span class="d-tag ">🛫 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">自由活动：<b>世界尽头邮局</b>寄明信片 / 冰川快车（Glaciar Martial）缆车或市区采购</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">退房 + 午餐</td></tr>
+          <tr><td class="t-time">12:00–16:30</td><td class="t-what">乌斯怀亚✈巴里洛切（约 2h30min，多数经布宜诺斯艾利斯转机，总程 5–6h）</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">入住巴里洛切市区（Mitre 街巧克力店云集），傍晚湖边看日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：湖区鳟鱼 + 精酿啤酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌斯怀亚→巴里洛切直飞每周仅几班，订票时留意是否经 BA 中转；巴里洛切是阿根廷「瑞士」，Mitre 街两侧全是手工巧克力店。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 小环线 + 湖游船</span>
+          <span class="d-desc">纳韦尔瓦皮湖</span>
+          <span class="d-tag ">🏞 湖区日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">租车/包车出发走<b>小环线</b>（Circuito Chico，24km 环线）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">坎帕纳里奥山（Campanario）缆车：山顶 360° 俯瞰群岛与雪山（缆车约 USD 20）</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>Llao Llao 酒店 + 圣爱德华教堂</b>（免费）：湖边地标机位</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：湖畔餐厅阿根廷烧烤</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>纳韦尔瓦皮湖游船</b>（Puerto Pañuelo 出发）：Victoria 岛 / 黑冰川线，湖水呈翡翠色</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：巴里洛切巧克力火锅 + 牛排</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">小环线可自驾（山路窄但好开）或租山地车（约 USD 15–25/天）；湖水是冰川融水，即使夏天也很冰，下水要勇气。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 七湖之路/雪山</span>
+          <span class="d-desc">阿根廷湖区别离</span>
+          <span class="d-tag alt">🏔 七湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">出发走<b>七湖之路</b>（Ruta de los Siete Lagos，110km，沿 40 号公路到圣马丁德洛斯安第斯）</td></tr>
+          <tr><td class="t-time">09:00–13:00</td><td class="t-what">沿路 7 个冰湖逐个停车：翡翠湖、马基林科湖、拉卡尔湖等，森林+雪山+湖泊三重景观</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">圣马丁德洛斯安第斯小镇午餐（湖区小镇氛围）</td></tr>
+          <tr><td class="t-time">14:30–18:00</td><td class="t-what">回程另一条观景路，或改去<b>卡特德拉尔山</b>（Cerro Catedral）缆车看雪山全景（夏季半价）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：巴里洛切羊肉 + 甜点巧克力</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">七湖之路往返需一整天，也可选择只走北段；冬季（6–9 月）该路部分封路，改滑雪卡特德拉尔山（南半球最大雪场）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 飞回布宜诺斯艾利斯</span>
+          <span class="d-desc">回首都再逛</span>
+          <span class="d-tag alt">🛫 回首都</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">巴里洛切✈布宜诺斯艾利斯（约 2h，多班直飞）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">入住酒店，<b>马德罗港 + 女人桥</b>白天版（港口区现代建筑 + 河边咖啡）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：港口区 parrilla</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>圣特尔莫再逛</b>：二手市场 + 古董街 + 探戈海报店</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：一顿正经的阿根廷牛排收官</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">布宜诺斯艾利斯住宿选雷科莱塔或圣特尔莫（安全 + 步行可达景点）；晚上可再看一场街头探戈，或去科隆剧院看演出（提前官网订）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 购物收尾</span>
+          <span class="d-desc">皮具与葡萄酒</span>
+          <span class="d-tag ">🛍 购物日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>雷科莱塔街区</b>购物：阿根廷皮具（皮质夹克/腰带）、羊驼毛围巾、马黛茶</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>葡萄酒商店</b>：马尔贝克/多伦特斯白葡（阿根廷红酒世界闻名，机场价约超市 1.5 倍）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：empanada + 番茄炖肉</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">自由安排：MALBA 美术馆 / 国家美术博物馆 / 书店咖啡（布宜诺斯艾利斯书店密度全球前列）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：最后一顿烤肉 + 探戈表演（可选）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿根廷葡萄酒带回国注意酒瓶托运；小费：餐厅账单多含 10% 服务费，给小费是礼貌；取现用 ATM（Blue 汇率优于换钱所柜台）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 返程</span>
+          <span class="d-desc">布宜诺斯艾利斯✈北京</span>
+          <span class="d-tag return">✈ 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">退房，打车到埃塞萨国际机场（EZE），提前 3h 值机</td></tr>
+          <tr><td class="t-time">12:00–次日20:00</td><td class="t-what">布宜诺斯艾利斯✈北京（转机 28–30h，经迪拜/伊斯坦布尔/马德里），机上跨日</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">抵达北京，结束 16 天阿根廷之旅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿根廷出境无购物退税（部分机场免税店有酒/巧克力）；回程转机建议选行李直挂航班，避免中转城市重新托运。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-cover.jpg" alt="埃尔卡拉法特·莫雷诺冰川" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">埃尔卡拉法特·莫雷诺冰川 <small>门票 AR$45,000</small></div>
+          <div class="sc-feat">仍在前进的万年冰川。<b>60m 冰墙 + 现场冰崩</b>，世界最壮观的冰川奇观之一。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 1 天 · 🚌 卡拉法特大巴 1h20min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-1.jpg" alt="布宜诺斯艾利斯·博卡区" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布宜诺斯艾利斯·博卡区 <small>免费</small></div>
+          <div class="sc-feat">彩色铁皮房。<b>卡米尼托街 + 探戈起源地</b>，阿根廷城市的明信片。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 2h · 🚇 博卡站步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-2.jpg" alt="布宜诺斯艾利斯·探戈之夜" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布宜诺斯艾利斯·探戈之夜 <small>演出 USD 40–120</small></div>
+          <div class="sc-feat">探戈发源地。<b>La Ventana 夜场表演</b>，专业舞者 + 现场乐队。</div>
+          <div class="sc-meta">📅 每晚 20:30 后 · ⏱ 2h · 📍 圣特尔莫/市中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-3.jpg" alt="伊瓜苏瀑布·阿根廷侧" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伊瓜苏瀑布·阿根廷侧 <small>AR$60,000</small></div>
+          <div class="sc-feat">世界最大瀑布群之一。<b>魔鬼咽喉栈道正面冲击</b>，水汽与彩虹齐飞。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 1 天 · ✈ 伊瓜苏 IGR 机场</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-4.jpg" alt="乌斯怀亚·火地岛公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乌斯怀亚·火地岛公园 <small>门票 AR$45,000</small></div>
+          <div class="sc-feat">世界尽头。<b>泛美公路终点 + 世界尽头小火车</b>，南美最南国家公园。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 1 天 · 🚌 乌斯怀亚西 12km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-5.jpg" alt="乌斯怀亚·比格尔海峡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乌斯怀亚·比格尔海峡 <small>游船 USD 90–120</small></div>
+          <div class="sc-feat">南极门户。<b>海狮岛 + 世界尽头灯塔 + 企鹅</b>，出海看野性海峡。</div>
+          <div class="sc-meta">📅 上午出航 · ⏱ 3–4h · ⛴ 乌斯怀亚港</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-6.jpg" alt="巴里洛切·纳韦尔瓦皮湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">巴里洛切·纳韦尔瓦皮湖 <small>免费（游船另计）</small></div>
+          <div class="sc-feat">阿根廷瑞士。<b>翡翠色冰湖 + 阿尔卑斯式小镇</b>，湖区度假胜地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚌 巴里洛切市区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/argentina/argentina-7.jpg" alt="巴里洛切·卡特德拉尔山" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">巴里洛切·卡特德拉尔山 <small>缆车约 USD 20</small></div>
+          <div class="sc-feat">南半球最大雪场。<b>夏季看雪山全景，冬季滑雪</b>（6–9 月旺季）。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚌 巴里洛切西 20km</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（莫雷诺冰川、博卡区、探戈、伊瓜苏、火地岛、比格尔海峡、巴里洛切湖区、雪山等均为阿根廷实景），用于页面配图。更多免费景点：五月广场、方尖碑、女人桥、雷科莱塔公墓、圣特尔莫跳蚤市场、七湖之路沿途。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 人民币 ≈ 135 阿根廷比索估算。往返国际机票按淡季转机 6000–10000 元计；巴塔哥尼亚国内段 5 程 + 冰川徒步是全行程最贵项。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（20000–30000）</th>
+<th>标准（38000–55000）</th>
+<th>舒适（80000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机 6000–9000</td>
+<td>好时段转机 10000–14000</td>
+<td>灵活舱/商务 18000–25000</td>
+</tr>
+<tr>
+<td>住宿（15 晚）</td>
+<td>民宿/青旅 250–400/晚</td>
+<td>三星+巴塔哥尼亚 500–800/晚</td>
+<td>湖区度假村 1800–2800/晚</td>
+</tr>
+<tr>
+<td>国内交通（5 程）</td>
+<td>提前 1 个月订 3500–5000</td>
+<td>正价 5500–7500</td>
+<td>灵活时段 10000–15000</td>
+</tr>
+<tr>
+<td>门票与活动</td>
+<td>公园门票 1200–2000</td>
+<td>含迷你徒步 4500–6000</td>
+<td>Big Ice+游船+直升机 9000–14000</td>
+</tr>
+<tr>
+<td>餐饮（16 天）</td>
+<td>街头小吃+烤肉 3000–4500</td>
+<td>正常下馆子 5500–8000</td>
+<td>牛排馆/米其林 12000–20000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 43000 元）</span>
+      往返机票 12000 + 住宿 15 晚 10000（平均 670/晚）+ 国内 5 程机票 6500 + 门票与迷你徒步 5200 + 餐饮 6500 + 签证/杂费 1000 ≈ <strong>38000–45000 元</strong>。大头是机票与活动，巴塔哥尼亚段提前 2 个月订能省 2000–3000 元；迷你徒步是单项最贵（约 2400 元）。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>16.1 砍乌斯怀亚的 13 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D3 布宜诺斯艾利斯</li>
+
+      <li>D4–D5 伊瓜苏</li>
+
+      <li>D6–D8 卡拉法特+莫雷诺冰川</li>
+
+      <li>D9–D11 巴里洛切+七湖</li>
+
+      <li>D12–D13 返程</li>
+
+    </ul>
+
+    <h3>16.2 冬季版（6–9 月）</h3>
+
+
+    <p>冬季乌斯怀亚降雪、巴里洛切进入南半球最佳滑雪季（卡特德拉尔山 6–9 月开板），冰川迷你徒步关闭但可乘船近距离看冰；乌斯怀亚雪中世界尽头 + 巴里洛切滑雪 + 布宜诺斯艾利斯看一场「阿根廷式冬天」。冬季机票酒店便宜 30–40%，但南部山区航班易受天气延误。</p>
+
+    <h3>16.3 南极入门延伸版</h3>
+
+
+    <p>乌斯怀亚是南极游轮第一大出发港（11–3 月），行程结束后可在乌斯怀亚加 6–8 天南极航程（USD 3000–9000，跨德雷克海峡，含冰川/企鹅/观鲸）；预算与天数都大幅上调，适合把阿根廷主线当「南极前菜」。乌斯怀亚—南极的船需提前 6 个月以上预订。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>15.1 北京 ⇄ 阿根廷 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>北京⇄布宜诺斯艾利斯（转机）</td>
+<td>约 28–30h（1–2 停）</td>
+<td>往返 6000–14000 元</td>
+<td>经迪拜/伊斯坦布尔/马德里，阿联酋/土航/国航等，无直飞</td>
+</tr>
+<tr>
+<td>布宜诺斯艾利斯✈伊瓜苏</td>
+<td>约 2h</td>
+<td>单程 700–1200 元</td>
+<td>阿根廷航空 Aerolíneas，每天多班</td>
+</tr>
+<tr>
+<td>布宜诺斯艾利斯✈埃尔卡拉法特</td>
+<td>约 3h20min</td>
+<td>单程 900–1500 元</td>
+<td>Aerolíneas/Flybondi，夏季航班多</td>
+</tr>
+<tr>
+<td>埃尔卡拉法特✈乌斯怀亚</td>
+<td>约 1h40min</td>
+<td>单程 1000–1600 元</td>
+<td>每周 3–4 班，至少提前 1 个月订</td>
+</tr>
+<tr>
+<td>乌斯怀亚✈巴里洛切</td>
+<td>约 2h30min（多经 BA）</td>
+<td>单程 1200–2000 元</td>
+<td>直飞每周几班，多数经布宜转机</td>
+</tr>
+<tr>
+<td>巴里洛切✈布宜诺斯艾利斯</td>
+<td>约 2h</td>
+<td>单程 700–1100 元</td>
+<td>多班直飞，提前订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 阿根廷境内交通核心提醒</span>
+      巴塔哥尼亚段<strong>国内航班是唯一高效选择</strong>（长途大巴动辄 20h+），Aerolíneas Argentinas 是主力；卡拉法特—乌斯怀亚、乌斯怀亚—巴里洛切班次少，旺季提前 1–2 个月订。航班受风影响大，行程留 1 天缓冲。阿根廷无正规铁路客运，南部全靠飞机 + 包车。长途巴士（如布宜到巴里洛切）可选，约 20h、比机票便宜一半，但别浪费假期。
+    </div>
+
+    <h3>15.2 阿根廷境内交通</h3>
+    <ul>
+      <li><strong>国内航班</strong>：Aerolíneas/Flybondi/JetSMART，巴塔哥尼亚线提前订，核对机场代码</li>
+      <li><strong>布宜诺斯艾利斯地铁</strong>（Subte）：5 条线，单程约 AR$650，覆盖市中心与博卡</li>
+      <li><strong>布宜诺斯艾利斯公交/出租</strong>：Uber/Cabify 可用但部分区域被禁，市内优先地铁+步行</li>
+      <li><strong>乌斯怀亚</strong>：市区步行可达，去火地岛公园靠大巴（一日往返约 USD 30–40）或租车</li>
+      <li><strong>巴里洛切</strong>：小环线/七湖推荐自驾（山路好开）或包车，湖区公交班次少</li>
+      <li><strong>卡拉法特</strong>：去冰川靠旅行社大巴（含酒店接送）或租车，镇内步行即可</li>
+    </ul>
+
+    <h3>15.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>布宜诺斯艾利斯·圣特尔莫</td>
+<td>经济 250–400 / 标准 500–900</td>
+<td>老城氛围，探戈与跳蚤市场</td>
+<td>夜生活吵，老楼隔音一般</td>
+</tr>
+<tr>
+<td>布宜诺斯艾利斯·雷科莱塔</td>
+<td>标准 600–1000</td>
+<td>安全高档，公墓与文化中心近</td>
+<td>价格偏高</td>
+</tr>
+<tr>
+<td>伊瓜苏港</td>
+<td>经济 250–400 / 标准 450–700</td>
+<td>离公园近，小镇物价低</td>
+<td>旺季房紧，无亮点</td>
+</tr>
+<tr>
+<td>埃尔卡拉法特</td>
+<td>经济 300–500 / 标准 600–1000</td>
+<td>冰川基地，羊肉美食</td>
+<td>夏季贵，需提前订</td>
+</tr>
+<tr>
+<td>乌斯怀亚</td>
+<td>经济 350–550 / 标准 700–1200</td>
+<td>海港风情，南极门户</td>
+<td>风大，房源旺季紧张</td>
+</tr>
+<tr>
+<td>巴里洛切市区</td>
+<td>经济 300–500 / 标准 600–1000</td>
+<td>湖区度假风，巧克力街</td>
+<td>滑雪季涨价翻倍</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🥩 必吃经典</h3>
+        <ul>
+          <li>阿根廷牛排 bife de chorizo：世界顶级牛肉</li>
+          <li>Asado 烤肉拼盘：周末家庭烤架传统</li>
+          <li>Empanada 肉馅饺：烤/炸两种</li>
+          <li>Lomito 三明治：牛排三明治国民快餐</li>
+        </ul>
+        <h3>🍷 在地名物</h3>
+        <ul>
+          <li>马尔贝克 Malbec 红酒：阿根廷名片，配牛排</li>
+          <li>多伦特斯 Torrontés 白葡萄酒</li>
+          <li>乌斯怀亚帝王蟹 centolla</li>
+          <li>巴里洛切手工巧克力（Mitre 街）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🧉 街头与小食</h3>
+        <ul>
+          <li>马黛茶 mate：阿根廷国饮，公共水壶轮饮</li>
+          <li>Alfajor 夹心饼干：牛奶焦糖夹心</li>
+          <li>Dulce de leche 焦糖酱：甜点灵魂</li>
+          <li>冰激凌：意式风格，布宜诺斯艾利斯满街</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>布宜诺斯艾利斯圣特尔莫/雷科莱塔牛排馆</li>
+          <li>伊瓜苏港 empanada 小店</li>
+          <li>卡拉法特烤羊肉与冰川鳟鱼</li>
+          <li>乌斯怀亚码头海鲜市场</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 阿根廷牛排分量巨大（500g 起），两人点一份再加热菜；② 账单常含 10% 服务费，小费可给可不给；③ 街头「Blue 汇率」换钱有假钞风险，选持牌兑换点（cambio）或 ATM，刷卡按官方汇率贵约 30%；④ 马黛茶不要拒绝陌生人递来的水壶（社交礼仪）；⑤ 阿根廷自来水部分地区可直饮，巴塔哥尼亚建议买瓶装水。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 有效美签/美绿卡（免签入境前提，出发前打印签证页）</li>
+        <li>比索现金（Blue 汇率兑换，2000–4000 ARS 备用）+ Visa/Master</li>
+        <li>充电转接头（220V C 型两圆脚）</li>
+        <li>防风防水外套 + 徒步鞋 + 防晒（巴塔哥尼亚紫外线强）</li>
+      </ul>
+      <ul>
+        <li>巴塔哥尼亚国内航班提前 1–2 个月订</li>
+        <li>冰川徒步/游船/比格尔海峡船提前 1 个月订</li>
+        <li>下载 Aerolíneas + Uber + Google 地图，离线缓存</li>
+        <li>查天气：莫雷诺冰川冰崩概率、乌斯怀亚风向、巴里洛切路况</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>免签前提是美签</strong>：只有持有效美签/美绿卡才能免签进阿根廷，出发前确认美签在有效期内并打印；② <strong>比索汇率复杂</strong>：官方汇率与市场汇率（Blue）差 30%+，大额换汇走持牌所，刷卡默认官方汇率；③ <strong>巴塔哥尼亚天气多变</strong>：莫雷诺冰川/乌斯怀亚风大温低，徒步要穿防水层，航班延误留缓冲；④ <strong>博卡区与首都夜游</strong>：卡米尼托天黑前离开，晚上避免走偏僻街区，打车用 App。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      阿根廷是「<strong>从热情到冰封</strong>」的纵贯线——布宜诺斯艾利斯的牛排、红酒与探戈，伊瓜苏的万钧瀑布，莫雷诺冰川的世纪冰崩，乌斯怀亚的世界尽头灯塔，巴里洛切的瑞士式湖区，16 天刚好把南美最经典的冰川—巴塔哥尼亚线走完。有一张有效美签，剩下的就是订好机票、备好防风衣，一路向南。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c0392b",
+    "d": 3,
+    "n": "阿根廷主线 · 布宜诺斯艾利斯→伊瓜苏→卡拉法特→乌斯怀亚→巴里洛切",
+    "pts": [
+      [
+        -34.603,
+        -58.382
+      ],
+      [
+        -25.695,
+        -54.437
+      ],
+      [
+        -50.338,
+        -72.267
+      ],
+      [
+        -54.802,
+        -68.303
+      ],
+      [
+        -41.133,
+        -71.31
+      ]
+    ]
+  },
+  {
+    "c": "#4aa3df",
+    "d": 2,
+    "n": "返程段 · 巴里洛切→布宜诺斯艾利斯",
+    "pts": [
+      [
+        -41.133,
+        -71.31
+      ],
+      [
+        -34.603,
+        -58.382
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -34.603,
+    "lng": -58.382,
+    "name": "布宜诺斯艾利斯·市中心",
+    "t": "D2–D3 · 2 天",
+    "fee": "免费",
+    "note": "五月广场、博卡区、探戈"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -34.634,
+    "lng": -58.363,
+    "name": "布宜诺斯艾利斯·博卡区",
+    "t": "D2 上午 · 2h",
+    "fee": "免费",
+    "note": "彩色街区、卡米尼托"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -25.695,
+    "lng": -54.437,
+    "name": "伊瓜苏·魔鬼咽喉",
+    "t": "D4–D5 · 2 天",
+    "fee": "AR$60,000",
+    "note": "上下环线、魔鬼咽喉栈道"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -50.498,
+    "lng": -73.137,
+    "name": "莫雷诺冰川",
+    "t": "D6–D7 · 2 天",
+    "fee": "AR$45,000 + 徒步费",
+    "note": "冰墙冰崩、迷你徒步"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -50.338,
+    "lng": -72.267,
+    "name": "埃尔卡拉法特小镇",
+    "t": "D6–D7 住宿 · 2 晚",
+    "fee": "—",
+    "note": "冰川基地、羊肉与鳟鱼"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": -54.802,
+    "lng": -68.303,
+    "name": "乌斯怀亚·火地岛",
+    "t": "D8–D10 · 3 天",
+    "fee": "AR$45,000",
+    "note": "世界尽头、小火车、海峡"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": -54.86,
+    "lng": -68.16,
+    "name": "乌斯怀亚·比格尔海峡",
+    "t": "D10 上午 · 3–4h",
+    "fee": "游船 USD 90–120",
+    "note": "海狮、灯塔、企鹅"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": -41.133,
+    "lng": -71.31,
+    "name": "巴里洛切·湖区",
+    "t": "D12–D13 · 2 天",
+    "fee": "免费",
+    "note": "小环线、七湖之路"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-56.0, -74.5], [-33.0, -53.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c0392b\"></span>阿根廷主线（布宜诺斯艾利斯→伊瓜苏→卡拉法特→乌斯怀亚→巴里洛切）<br><span class=\"sw\" style=\"background:#4aa3df\"></span>返程段（巴里洛切→布宜诺斯艾利斯）<br><span class=\"sw dash\"></span>伊瓜苏—卡拉法特、乌斯怀亚—巴里洛切为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

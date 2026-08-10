@@ -837,5 +837,984 @@
       "奇特旺",
       "徒步"
     ]
+  },
+  {
+    "slug": "cambodia-2026",
+    "title": "2026 柬埔寨 8 天全景攻略 · 吴哥王朝",
+    "cover": "images/cambodia/cambodia-cover.jpg",
+    "html": "cambodia-2026.html",
+    "date": "2026-08",
+    "destination": "柬埔寨",
+    "days": 8,
+    "difficulty": "东南亚",
+    "summary": "金边→暹粒吴哥窟，8 天高棉文明与千年寺庙",
+    "tags": [
+      "柬埔寨",
+      "吴哥窟",
+      "巴戎寺",
+      "塔普伦寺",
+      "洞里萨湖",
+      "高棉"
+    ]
+  },
+  {
+    "slug": "philippines-2026",
+    "title": "2026 菲律宾 15 天全景攻略 · 千岛之国",
+    "cover": "images/philippines/philippines-cover.jpg",
+    "html": "philippines-2026.html",
+    "date": "2026-08",
+    "destination": "菲律宾",
+    "days": 15,
+    "difficulty": "东南亚",
+    "summary": "马尼拉→长滩岛→宿务→巴拉望爱妮岛，15 天千岛海岛线",
+    "tags": [
+      "菲律宾",
+      "长滩岛",
+      "爱妮岛",
+      "薄荷岛",
+      "潜水",
+      "海岛"
+    ]
+  },
+  {
+    "slug": "srilanka-2026",
+    "title": "2026 斯里兰卡 12 天全景攻略 · 锡兰环线",
+    "cover": "images/srilanka/srilanka-cover.jpg",
+    "html": "srilanka-2026.html",
+    "date": "2026-08",
+    "destination": "斯里兰卡",
+    "days": 12,
+    "difficulty": "南亚",
+    "summary": "尼甘布→狮子岩→康提→努沃勒埃利耶→加勒，12 天红茶火车海滩环线",
+    "tags": [
+      "斯里兰卡",
+      "狮子岩",
+      "高山火车",
+      "佛牙寺",
+      "红茶",
+      "海滩"
+    ]
+  },
+  {
+    "slug": "mongolia-2026",
+    "title": "2026 蒙古 10 天全景攻略 · 草原戈壁",
+    "cover": "images/mongolia/mongolia-cover.jpg",
+    "html": "mongolia-2026.html",
+    "date": "2026-08",
+    "destination": "蒙古",
+    "days": 10,
+    "difficulty": "东亚",
+    "summary": "乌兰巴托→特勒吉→哈拉和林→戈壁，10 天草原游牧与荒漠",
+    "tags": [
+      "蒙古",
+      "草原",
+      "乌兰巴托",
+      "戈壁",
+      "骆驼",
+      "蒙古包"
+    ]
+  },
+  {
+    "slug": "netherlands-2026",
+    "title": "2026 荷兰 9 天全景攻略 · 运河与郁金香",
+    "cover": "images/netherlands/netherlands-cover.jpg",
+    "html": "netherlands-2026.html",
+    "date": "2026-08",
+    "destination": "荷兰",
+    "days": 9,
+    "difficulty": "欧洲",
+    "summary": "阿姆斯特丹→风车村→羊角村→鹿特丹，9 天运河花田慢游",
+    "tags": [
+      "荷兰",
+      "阿姆斯特丹",
+      "郁金香",
+      "风车",
+      "羊角村",
+      "博物馆"
+    ]
+  },
+  {
+    "slug": "uk-2026",
+    "title": "2026 英国 15 天全景攻略 · 英格兰苏格兰",
+    "cover": "images/uk/uk-cover.jpg",
+    "html": "uk-2026.html",
+    "date": "2026-08",
+    "destination": "英国",
+    "days": 15,
+    "difficulty": "欧洲",
+    "summary": "伦敦→剑桥→约克→湖区→爱丁堡，15 天英伦精华线",
+    "tags": [
+      "英国",
+      "伦敦",
+      "爱丁堡",
+      "大英博物馆",
+      "湖区",
+      "下午茶"
+    ]
+  },
+  {
+    "slug": "belgium-2026",
+    "title": "2026 比利时 7 天全景攻略 · 巧克力与古城",
+    "cover": "images/belgium/belgium-cover.jpg",
+    "html": "belgium-2026.html",
+    "date": "2026-08",
+    "destination": "比利时",
+    "days": 7,
+    "difficulty": "欧洲",
+    "summary": "布鲁塞尔→布鲁日→根特→安特卫普，7 天中世纪古城+啤酒巧克力",
+    "tags": [
+      "比利时",
+      "布鲁塞尔",
+      "布鲁日",
+      "根特",
+      "巧克力",
+      "啤酒"
+    ]
+  },
+  {
+    "slug": "switzerland-2026",
+    "title": "2026 瑞士 12 天全景攻略 · 阿尔卑斯之国",
+    "cover": "images/switzerland/switzerland-cover.jpg",
+    "html": "switzerland-2026.html",
+    "date": "2026-08",
+    "destination": "瑞士",
+    "days": 12,
+    "difficulty": "欧洲",
+    "summary": "苏黎世→卢塞恩→因特拉肯→采尔马特→日内瓦，12 天雪山湖光",
+    "tags": [
+      "瑞士",
+      "少女峰",
+      "马特洪峰",
+      "卢塞恩",
+      "因特拉肯",
+      "阿尔卑斯"
+    ]
+  },
+  {
+    "slug": "germany-2026",
+    "title": "2026 德国 15 天全景攻略 · 城堡与浪漫之路",
+    "cover": "images/germany/germany-cover.jpg",
+    "html": "germany-2026.html",
+    "date": "2026-08",
+    "destination": "德国",
+    "days": 15,
+    "difficulty": "欧洲",
+    "summary": "柏林→德累斯顿→罗滕堡→慕尼黑→莱茵河谷，15 天德国精华",
+    "tags": [
+      "德国",
+      "柏林",
+      "慕尼黑",
+      "新天鹅堡",
+      "浪漫之路",
+      "啤酒"
+    ]
+  },
+  {
+    "slug": "portugal-2026",
+    "title": "2026 葡萄牙 12 天全景攻略 · 大西洋明珠",
+    "cover": "images/portugal/portugal-cover.jpg",
+    "html": "portugal-2026.html",
+    "date": "2026-08",
+    "destination": "葡萄牙",
+    "days": 12,
+    "difficulty": "欧洲",
+    "summary": "里斯本→辛特拉→波尔图→阿尔加维，12 天航海帝国与蛋挞",
+    "tags": [
+      "葡萄牙",
+      "里斯本",
+      "波尔图",
+      "佩纳宫",
+      "蛋挞",
+      "大西洋"
+    ]
+  },
+  {
+    "slug": "greece-2026",
+    "title": "2026 希腊 12 天全景攻略 · 爱琴海神话",
+    "cover": "images/greece/greece-cover.jpg",
+    "html": "greece-2026.html",
+    "date": "2026-08",
+    "destination": "希腊",
+    "days": 12,
+    "difficulty": "欧洲",
+    "summary": "雅典→圣托里尼→米克诺斯，12 天古文明与蓝白海岛",
+    "tags": [
+      "希腊",
+      "圣托里尼",
+      "雅典卫城",
+      "米克诺斯",
+      "爱琴海",
+      "蓝顶教堂"
+    ]
+  },
+  {
+    "slug": "ireland-2026",
+    "title": "2026 爱尔兰 10 天全景攻略 · 翡翠岛",
+    "cover": "images/ireland/ireland-cover.jpg",
+    "html": "ireland-2026.html",
+    "date": "2026-08",
+    "destination": "爱尔兰",
+    "days": 10,
+    "difficulty": "欧洲",
+    "summary": "都柏林→高威→科克→凯里之环，10 天悬崖绿地与古堡",
+    "tags": [
+      "爱尔兰",
+      "都柏林",
+      "莫赫悬崖",
+      "高威",
+      "健力士",
+      "翡翠岛"
+    ]
+  },
+  {
+    "slug": "iceland-2026",
+    "title": "2026 冰岛 9 天全景攻略 · 冰火之国",
+    "cover": "images/iceland/iceland-cover.jpg",
+    "html": "iceland-2026.html",
+    "date": "2026-08",
+    "destination": "冰岛",
+    "days": 9,
+    "difficulty": "欧洲",
+    "summary": "雷克雅未克→黄金圈→南岸→冰河湖，9 天火山冰川瀑布极光",
+    "tags": [
+      "冰岛",
+      "极光",
+      "蓝湖",
+      "冰川",
+      "黄金圈",
+      "黑沙滩"
+    ]
+  },
+  {
+    "slug": "austria-2026",
+    "title": "2026 奥地利 10 天全景攻略 · 音乐与湖区",
+    "cover": "images/austria/austria-cover.jpg",
+    "html": "austria-2026.html",
+    "date": "2026-08",
+    "destination": "奥地利",
+    "days": 10,
+    "difficulty": "欧洲",
+    "summary": "维也纳→萨尔茨堡→哈尔施塔特→因斯布鲁克，10 天音乐之都与湖光山色",
+    "tags": [
+      "奥地利",
+      "维也纳",
+      "萨尔茨堡",
+      "哈尔施塔特",
+      "美泉宫",
+      "音乐会"
+    ]
+  },
+  {
+    "slug": "qatar-2026",
+    "title": "2026 卡塔尔 6 天全景攻略 · 海湾明珠",
+    "cover": "images/qatar/qatar-cover.jpg",
+    "html": "qatar-2026.html",
+    "date": "2026-08",
+    "destination": "卡塔尔",
+    "days": 6,
+    "difficulty": "中东",
+    "summary": "多哈→瓦其夫→珍珠湾→沙漠，6 天海湾文化都市",
+    "tags": [
+      "卡塔尔",
+      "多哈",
+      "伊斯兰艺术",
+      "瓦其夫市场",
+      "沙漠",
+      "2022世界杯"
+    ]
+  },
+  {
+    "slug": "jordan-2026",
+    "title": "2026 约旦 9 天全景攻略 · 玫瑰古城",
+    "cover": "images/jordan/jordan-cover.jpg",
+    "html": "jordan-2026.html",
+    "date": "2026-08",
+    "destination": "约旦",
+    "days": 9,
+    "difficulty": "中东",
+    "summary": "安曼→杰拉什→佩特拉→瓦迪拉姆→死海，9 天千年遗迹与荒漠",
+    "tags": [
+      "约旦",
+      "佩特拉",
+      "瓦迪拉姆",
+      "死海",
+      "杰拉什",
+      "沙漠"
+    ]
+  },
+  {
+    "slug": "uae-2026",
+    "title": "2026 阿联酋 9 天全景攻略 · 沙漠奇迹",
+    "cover": "images/uae/uae-cover.jpg",
+    "html": "uae-2026.html",
+    "date": "2026-08",
+    "destination": "阿联酋",
+    "days": 9,
+    "difficulty": "中东",
+    "summary": "迪拜→阿布扎比→沙迦，9 天哈利法塔清真寺与沙漠",
+    "tags": [
+      "阿联酋",
+      "迪拜",
+      "哈利法塔",
+      "阿布扎比",
+      "沙漠",
+      "棕榈岛"
+    ]
+  },
+  {
+    "slug": "saudiarabia-2026",
+    "title": "2026 沙特阿拉伯 12 天全景攻略 · 千年王朝",
+    "cover": "images/saudiarabia/saudiarabia-cover.jpg",
+    "html": "saudiarabia-2026.html",
+    "date": "2026-08",
+    "destination": "沙特阿拉伯",
+    "days": 12,
+    "difficulty": "中东",
+    "summary": "利雅得→埃尔奥拉→吉达，12 天黑格拉古城与红海",
+    "tags": [
+      "沙特",
+      "利雅得",
+      "埃尔奥拉",
+      "黑格拉",
+      "吉达",
+      "红海"
+    ]
+  },
+  {
+    "slug": "israel-2026",
+    "title": "2026 以色列 10 天全景攻略 · 圣城与死海",
+    "cover": "images/israel/israel-cover.jpg",
+    "html": "israel-2026.html",
+    "date": "2026-08",
+    "destination": "以色列",
+    "days": 10,
+    "difficulty": "中东",
+    "summary": "特拉维夫→耶路撒冷→死海马萨达→加利利，10 天三教圣地",
+    "tags": [
+      "以色列",
+      "耶路撒冷",
+      "死海",
+      "特拉维夫",
+      "马萨达",
+      "圣城"
+    ]
+  },
+  {
+    "slug": "uzbekistan-2026",
+    "title": "2026 乌兹别克斯坦 11 天全景攻略 · 丝路心脏",
+    "cover": "images/uzbekistan/uzbekistan-cover.jpg",
+    "html": "uzbekistan-2026.html",
+    "date": "2026-08",
+    "destination": "乌兹别克斯坦",
+    "days": 11,
+    "difficulty": "中亚",
+    "summary": "塔什干→撒马尔罕→布哈拉→希瓦，11 天丝路古城环线",
+    "tags": [
+      "乌兹别克",
+      "撒马尔罕",
+      "布哈拉",
+      "希瓦",
+      "雷吉斯坦",
+      "丝绸之路"
+    ]
+  },
+  {
+    "slug": "iran-2026",
+    "title": "2026 伊朗 12 天全景攻略 · 波斯文明",
+    "cover": "images/iran/iran-cover.jpg",
+    "html": "iran-2026.html",
+    "date": "2026-08",
+    "destination": "伊朗",
+    "days": 12,
+    "difficulty": "中东",
+    "summary": "德黑兰→设拉子→伊斯法罕→亚兹德，12 天波斯古文明环线",
+    "tags": [
+      "伊朗",
+      "波斯波利斯",
+      "伊斯法罕",
+      "设拉子",
+      "亚兹德",
+      "清真寺"
+    ]
+  },
+  {
+    "slug": "kazakhstan-2026",
+    "title": "2026 哈萨克斯坦 9 天全景攻略 · 中亚之心",
+    "cover": "images/kazakhstan/kazakhstan-cover.jpg",
+    "html": "kazakhstan-2026.html",
+    "date": "2026-08",
+    "destination": "哈萨克斯坦",
+    "days": 9,
+    "difficulty": "中亚",
+    "summary": "阿拉木图→恰伦峡谷→阿斯塔纳，9 天草原与天山",
+    "tags": [
+      "哈萨克斯坦",
+      "阿拉木图",
+      "阿斯塔纳",
+      "恰伦峡谷",
+      "天山",
+      "免签"
+    ]
+  },
+  {
+    "slug": "brazil-2026",
+    "title": "2026 巴西 20 天全景攻略 · 里约伊瓜苏亚马逊",
+    "cover": "images/brazil/brazil-cover.jpg",
+    "html": "brazil-2026.html",
+    "date": "2026-08",
+    "destination": "巴西",
+    "days": 20,
+    "difficulty": "美洲",
+    "summary": "里约→伊瓜苏→圣保罗→萨尔瓦多→马瑙斯→巴西利亚，20 天巴西大环线",
+    "tags": [
+      "巴西",
+      "里约热内卢",
+      "伊瓜苏瀑布",
+      "圣保罗",
+      "萨尔瓦多",
+      "亚马逊"
+    ]
+  },
+  {
+    "slug": "argentina-2026",
+    "title": "2026 阿根廷 16 天全景攻略 · 冰川与巴塔哥尼亚",
+    "cover": "images/argentina/argentina-cover.jpg",
+    "html": "argentina-2026.html",
+    "date": "2026-08",
+    "destination": "阿根廷",
+    "days": 16,
+    "difficulty": "美洲",
+    "summary": "布宜诺斯艾利斯→伊瓜苏→莫雷诺冰川→乌斯怀亚→巴里洛切，16 天巴塔哥尼亚环线",
+    "tags": [
+      "阿根廷",
+      "布宜诺斯艾利斯",
+      "莫雷诺冰川",
+      "乌斯怀亚",
+      "巴里洛切",
+      "伊瓜苏"
+    ]
+  },
+  {
+    "slug": "chile-2026",
+    "title": "2026 智利 14 天全景攻略 · 沙漠冰川四极",
+    "cover": "images/chile/chile-cover.jpg",
+    "html": "chile-2026.html",
+    "date": "2026-08",
+    "destination": "智利",
+    "days": 14,
+    "difficulty": "美洲",
+    "summary": "圣地亚哥→瓦尔帕莱索→阿塔卡马沙漠→蒙特港奇洛埃→百内国家公园，14 天纵贯智利南北",
+    "tags": [
+      "智利",
+      "百内国家公园",
+      "阿塔卡马沙漠",
+      "瓦尔帕莱索",
+      "圣地亚哥",
+      "奇洛埃"
+    ]
+  },
+  {
+    "slug": "peru-2026",
+    "title": "2026 秘鲁 12 天全景攻略 · 印加天空之城",
+    "cover": "images/peru/peru-cover.jpg",
+    "html": "peru-2026.html",
+    "date": "2026-08",
+    "destination": "秘鲁",
+    "days": 12,
+    "difficulty": "美洲",
+    "summary": "利马→库斯科→圣谷→马丘比丘→的的喀喀湖→阿雷基帕，12 天印加文明之旅",
+    "tags": [
+      "秘鲁",
+      "马丘比丘",
+      "库斯科",
+      "圣谷",
+      "的的喀喀湖",
+      "利马"
+    ]
+  },
+  {
+    "slug": "cuba-2026",
+    "title": "2026 古巴 8 天全景攻略 · 加勒比彩色老城",
+    "cover": "images/cuba/cuba-cover.jpg",
+    "html": "cuba-2026.html",
+    "date": "2026-08",
+    "destination": "古巴",
+    "days": 8,
+    "difficulty": "美洲",
+    "summary": "哈瓦那→特立尼达→巴拉德罗海滩，8 天古巴环线",
+    "tags": [
+      "古巴",
+      "哈瓦那",
+      "特立尼达",
+      "巴拉德罗"
+    ]
+  },
+  {
+    "slug": "colombia-2026",
+    "title": "2026 哥伦比亚 10 天全景攻略 · 咖啡与加勒比色彩",
+    "cover": "images/colombia/colombia-cover.jpg",
+    "html": "colombia-2026.html",
+    "date": "2026-08",
+    "destination": "哥伦比亚",
+    "days": 10,
+    "difficulty": "美洲",
+    "summary": "波哥大→麦德林→卡塔赫纳→瓜塔佩，10 天哥伦比亚环线",
+    "tags": [
+      "哥伦比亚",
+      "波哥大",
+      "麦德林",
+      "卡塔赫纳",
+      "瓜塔佩"
+    ]
+  },
+  {
+    "slug": "costarica-2026",
+    "title": "2026 哥斯达黎加 8 天全景攻略 · 云雾森林与太平洋",
+    "cover": "images/costarica/costarica-cover.jpg",
+    "html": "costarica-2026.html",
+    "date": "2026-08",
+    "destination": "哥斯达黎加",
+    "days": 8,
+    "difficulty": "美洲",
+    "summary": "圣何塞→阿雷纳尔火山→蒙特维多云雾林→曼努埃尔安东尼奥海滩，8 天自然环线",
+    "tags": [
+      "哥斯达黎加",
+      "圣何塞",
+      "阿雷纳尔火山",
+      "蒙特维多",
+      "曼努埃尔安东尼奥"
+    ]
+  },
+  {
+    "slug": "panama-2026",
+    "title": "2026 巴拿马 6 天全景攻略 · 运河与加勒比群岛",
+    "cover": "images/panama/panama-cover.jpg",
+    "html": "panama-2026.html",
+    "date": "2026-08",
+    "destination": "巴拿马",
+    "days": 6,
+    "difficulty": "美洲",
+    "summary": "巴拿马城→运河米拉弗洛雷斯→博卡斯/圣布拉斯群岛，6 天加勒比环线",
+    "tags": [
+      "巴拿马",
+      "巴拿马城",
+      "巴拿马运河",
+      "博卡斯德尔托罗",
+      "圣布拉斯"
+    ]
+  },
+  {
+    "slug": "canada-2026",
+    "title": "2026 加拿大 20 天全景攻略 · 枫叶与落基山",
+    "cover": "images/canada/canada-cover.jpg",
+    "html": "canada-2026.html",
+    "date": "2026-08",
+    "destination": "加拿大",
+    "days": 20,
+    "difficulty": "美洲",
+    "summary": "多伦多→尼亚加拉→班夫→落基山→蒙特利尔，20 天枫叶之国环线",
+    "tags": [
+      "加拿大",
+      "班夫",
+      "尼亚加拉",
+      "蒙特利尔",
+      "魁北克"
+    ]
+  },
+  {
+    "slug": "mexico-2026",
+    "title": "2026 墨西哥 14 天全景攻略 · 玛雅与加勒比",
+    "cover": "images/mexico/mexico-cover.jpg",
+    "html": "mexico-2026.html",
+    "date": "2026-08",
+    "destination": "墨西哥",
+    "days": 14,
+    "difficulty": "美洲",
+    "summary": "墨西哥城→特奥蒂瓦坎→瓜纳华托→坎昆，14 天玛雅文明与加勒比海岸",
+    "tags": [
+      "墨西哥",
+      "坎昆",
+      "特奥蒂瓦坎",
+      "瓜纳华托",
+      "图卢姆"
+    ]
+  },
+  {
+    "slug": "ethiopia-2026",
+    "title": "2026 埃塞俄比亚 8 天全景攻略 · 咖啡起源与岩石教堂",
+    "cover": "images/ethiopia/ethiopia-cover.jpg",
+    "html": "ethiopia-2026.html",
+    "date": "2026-08",
+    "destination": "埃塞俄比亚",
+    "days": 8,
+    "difficulty": "非洲",
+    "summary": "亚的斯亚贝巴→拉利贝拉→阿克苏姆→巴赫达尔→贡德尔，8 天北部圣地环线",
+    "tags": [
+      "埃塞俄比亚",
+      "拉利贝拉",
+      "岩石教堂",
+      "阿克苏姆",
+      "塔纳湖",
+      "咖啡"
+    ]
+  },
+  {
+    "slug": "tunisia-2026",
+    "title": "2026 突尼斯 8 天全景攻略 · 蓝白小镇与撒哈拉",
+    "cover": "images/tunisia/tunisia-cover.jpg",
+    "html": "tunisia-2026.html",
+    "date": "2026-08",
+    "destination": "突尼斯",
+    "days": 8,
+    "difficulty": "非洲",
+    "summary": "突尼斯城→迦太基→西迪布赛义德→苏塞→马赫迪耶→杜兹撒哈拉，8 天地中海与撒哈拉双极环线",
+    "tags": [
+      "突尼斯",
+      "西迪布赛义德",
+      "迦太基",
+      "撒哈拉",
+      "苏塞",
+      "免签"
+    ]
+  },
+  {
+    "slug": "morocco-2026",
+    "title": "2026 摩洛哥 14 天全景攻略 · 蓝城沙漠与红色皇城",
+    "cover": "images/morocco/morocco-cover.jpg",
+    "html": "morocco-2026.html",
+    "date": "2026-08",
+    "destination": "摩洛哥",
+    "days": 14,
+    "difficulty": "非洲",
+    "summary": "卡萨布兰卡→拉巴特→舍夫沙万→菲斯→撒哈拉→马拉喀什，14 天免签北非环线",
+    "tags": [
+      "摩洛哥",
+      "舍夫沙万",
+      "撒哈拉",
+      "菲斯",
+      "马拉喀什",
+      "免签"
+    ]
+  },
+  {
+    "slug": "southafrica-2026",
+    "title": "2026 南非 16 天全景攻略 · 克鲁格草原与彩虹之国",
+    "cover": "images/southafrica/southafrica-cover.jpg",
+    "html": "southafrica-2026.html",
+    "date": "2026-08",
+    "destination": "南非",
+    "days": 16,
+    "difficulty": "非洲",
+    "summary": "约翰内斯堡→克鲁格→开普敦→好望角→花园大道，16 天野性与都市环线",
+    "tags": [
+      "南非",
+      "克鲁格",
+      "开普敦",
+      "好望角",
+      "花园大道",
+      "桌山"
+    ]
+  },
+  {
+    "slug": "kenya-2026",
+    "title": "2026 肯尼亚 12 天全景攻略 · 马赛马拉与草原迁徙",
+    "cover": "images/kenya/kenya-cover.jpg",
+    "html": "kenya-2026.html",
+    "date": "2026-08",
+    "destination": "肯尼亚",
+    "days": 12,
+    "difficulty": "非洲",
+    "summary": "内罗毕→马赛马拉→纳库鲁湖→安博塞利→蒙巴萨/迪亚尼，草原大迁徙+印度洋海滩",
+    "tags": [
+      "肯尼亚",
+      "马赛马拉",
+      "动物大迁徙",
+      "安博塞利",
+      "纳库鲁湖",
+      "迪亚尼海滩"
+    ]
+  },
+  {
+    "slug": "tanzania-2026",
+    "title": "2026 坦桑尼亚 12 天全景攻略 · 塞伦盖蒂桑给巴尔",
+    "cover": "images/tanzania/tanzania-cover.jpg",
+    "html": "tanzania-2026.html",
+    "date": "2026-08",
+    "destination": "坦桑尼亚",
+    "days": 12,
+    "difficulty": "非洲",
+    "summary": "阿鲁沙→塞伦盖蒂→恩戈罗恩戈罗→乞力马扎罗→桑给巴尔，火山口+赤道雪峰+海岛",
+    "tags": [
+      "坦桑尼亚",
+      "塞伦盖蒂",
+      "恩戈罗恩戈罗",
+      "乞力马扎罗",
+      "桑给巴尔",
+      "动物大迁徙"
+    ]
+  },
+  {
+    "slug": "namibia-2026",
+    "title": "2026 纳米比亚 10 天全景攻略 · 红沙漠与野生动物",
+    "cover": "images/namibia/namibia-cover.jpg",
+    "html": "namibia-2026.html",
+    "date": "2026-08",
+    "destination": "纳米比亚",
+    "days": 10,
+    "difficulty": "非洲",
+    "summary": "温得和克出发的自驾大环线：苏丝斯黎红沙漠·死亡谷→斯瓦科普蒙德/鲸湾港生蚝与海豚→埃托沙灯光水坑大象与犀牛。",
+    "tags": [
+      "纳米比亚",
+      "苏丝斯黎",
+      "死亡谷",
+      "埃托沙",
+      "自驾"
+    ]
+  },
+  {
+    "slug": "madagascar-2026",
+    "title": "2026 马达加斯加 10 天全景攻略 · 猴面包树与狐猴之岛",
+    "cover": "images/madagascar/madagascar-cover.jpg",
+    "html": "madagascar-2026.html",
+    "date": "2026-08",
+    "destination": "马达加斯加",
+    "days": 10,
+    "difficulty": "非洲",
+    "summary": "塔那那利佛→安达西贝雨林→穆龙达瓦猴面包树大道→圣玛丽岛观鲸，10 天生态孤岛环线",
+    "tags": [
+      "马达加斯加",
+      "猴面包树",
+      "狐猴",
+      "圣玛丽岛",
+      "安达西贝",
+      "穆龙达瓦"
+    ]
+  },
+  {
+    "slug": "senegal-2026",
+    "title": "2026 塞内加尔 7 天全景攻略 · 玫瑰湖与殖民老城",
+    "cover": "images/senegal/senegal-cover.jpg",
+    "html": "senegal-2026.html",
+    "date": "2026-08",
+    "destination": "塞内加尔",
+    "days": 7,
+    "difficulty": "非洲",
+    "summary": "达喀尔→戈雷岛→玫瑰湖粉盐→圣路易斯法式老城→萨卢姆红树林，7 天西非海岸环线",
+    "tags": [
+      "塞内加尔",
+      "玫瑰湖",
+      "达喀尔",
+      "圣路易斯",
+      "戈雷岛",
+      "萨卢姆三角洲"
+    ]
+  },
+  {
+    "slug": "ghana-2026",
+    "title": "2026 加纳 7 天全景攻略 · 黄金海岸的城堡与阿散蒂",
+    "cover": "images/ghana/ghana-cover.jpg",
+    "html": "ghana-2026.html",
+    "date": "2026-08",
+    "destination": "加纳",
+    "days": 7,
+    "difficulty": "非洲",
+    "summary": "阿克拉→海岸角/埃尔米纳城堡→卡库姆树冠→库马西阿散蒂王都，7 天黄金三角历史环线",
+    "tags": [
+      "加纳",
+      "海岸角城堡",
+      "埃尔米纳",
+      "库马西",
+      "肯特布",
+      "卡库姆"
+    ]
+  },
+  {
+    "slug": "maldives-2026",
+    "title": "2026 马尔代夫 7 天全景攻略 · 居民岛与水屋双体验",
+    "cover": "images/maldives/maldives-cover.jpg",
+    "html": "maldives-2026.html",
+    "date": "2026-08",
+    "destination": "马尔代夫",
+    "days": 7,
+    "difficulty": "海岛",
+    "summary": "马累→马富施居民岛→度假岛水屋→返程，玻璃海浮潜+水屋躺平",
+    "tags": [
+      "马尔代夫",
+      "水屋",
+      "居民岛",
+      "浮潜",
+      "马富施"
+    ]
+  },
+  {
+    "slug": "bhutan-2026",
+    "title": "2026 不丹 8 天全景攻略 · 虎穴寺与喜马拉雅秘境",
+    "cover": "images/bhutan/bhutan-cover.jpg",
+    "html": "bhutan-2026.html",
+    "date": "2026-08",
+    "destination": "不丹",
+    "days": 8,
+    "difficulty": "南亚",
+    "summary": "帕罗→廷布→普那卡→帕罗，虎穴寺徒步+三大宗堡+多楚拉山口",
+    "tags": [
+      "不丹",
+      "虎穴寺",
+      "廷布",
+      "普那卡",
+      "帕罗"
+    ]
+  },
+  {
+    "slug": "palau-2026",
+    "title": "2026 帕劳 7 天全景攻略 · 水母湖与洛克群岛",
+    "cover": "images/palau/palau-cover.jpg",
+    "html": "palau-2026.html",
+    "date": "2026-08",
+    "destination": "帕劳",
+    "days": 7,
+    "difficulty": "大洋洲/海岛",
+    "summary": "科罗尔→水母湖与大断层→岩石群岛出海环线，7 天帕劳水上仙境",
+    "tags": [
+      "帕劳",
+      "水母湖",
+      "大断层",
+      "洛克群岛",
+      "牛奶湖",
+      "出海"
+    ]
+  },
+  {
+    "slug": "mauritius-2026",
+    "title": "2026 毛里求斯 9 天全景攻略 · 印度洋的七色岛",
+    "cover": "images/mauritius/mauritius-cover.jpg",
+    "html": "mauritius-2026.html",
+    "date": "2026-08",
+    "destination": "毛里求斯",
+    "days": 9,
+    "difficulty": "非洲/海岛",
+    "summary": "路易港→莫纳山→蓝湾海岸线→鹿岛→自然桥，9 天毛里求斯环岛",
+    "tags": [
+      "毛里求斯",
+      "莫纳山",
+      "蓝湾",
+      "鹿岛",
+      "七色土",
+      "自然桥"
+    ]
+  },
+  {
+    "slug": "seychelles-2026",
+    "title": "2026 塞舌尔 8 天全景攻略 · 花岗岩上的伊甸园",
+    "cover": "images/seychelles/seychelles-cover.jpg",
+    "html": "seychelles-2026.html",
+    "date": "2026-08",
+    "destination": "塞舌尔",
+    "days": 8,
+    "difficulty": "非洲/海岛",
+    "summary": "马埃岛→普拉兰岛五月谷→拉迪格岛→圣安妮海洋公园，8 天塞舌尔三岛跳岛",
+    "tags": [
+      "塞舌尔",
+      "五月谷",
+      "海椰子",
+      "拉迪格岛",
+      "普拉兰岛",
+      "圣安妮"
+    ]
+  },
+  {
+    "slug": "myanmar-2026",
+    "title": "2026 缅甸 10 天全景攻略 · 佛塔金与茵莱湖",
+    "cover": "images/myanmar/myanmar-cover.jpg",
+    "html": "myanmar-2026.html",
+    "date": "2026-08",
+    "destination": "缅甸",
+    "days": 10,
+    "difficulty": "东南亚",
+    "summary": "仰光→蒲甘→曼德勒→茵莱湖，10 天万塔佛国三城一湖环线",
+    "tags": [
+      "缅甸",
+      "蒲甘",
+      "瑞光大金塔",
+      "乌本桥",
+      "茵莱湖",
+      "热气球"
+    ]
+  },
+  {
+    "slug": "laos-2026",
+    "title": "2026 老挝 8 天全景攻略 · 琅勃拉邦万荣万象",
+    "cover": "images/laos/laos-cover.jpg",
+    "html": "laos-2026.html",
+    "date": "2026-08",
+    "destination": "老挝",
+    "days": 8,
+    "difficulty": "东南亚",
+    "summary": "琅勃拉邦→万荣→万象，中老铁路串联千年佛都、喀斯特户外与湄公河首都",
+    "tags": [
+      "老挝",
+      "琅勃拉邦",
+      "光西瀑布",
+      "万荣",
+      "热气球",
+      "万象塔銮",
+      "中老铁路"
+    ]
+  },
+  {
+    "slug": "newzealand-2026",
+    "title": "2026 新西兰 20 天全景攻略 · 南北岛大环线",
+    "cover": "images/newzealand/newzealand-cover.jpg",
+    "html": "newzealand-2026.html",
+    "date": "2026-08",
+    "destination": "新西兰",
+    "days": 20,
+    "difficulty": "大洋洲",
+    "summary": "奥克兰→罗托鲁瓦→基督城→特卡波星空→库克山→皇后镇→米尔福德峡湾→但尼丁，南北岛自驾大环线",
+    "tags": [
+      "新西兰",
+      "皇后镇",
+      "特卡波湖",
+      "库克山",
+      "米尔福德峡湾",
+      "霍比特人村"
+    ]
+  },
+  {
+    "slug": "fiji-2026",
+    "title": "2026 斐济 10 天全景攻略 · 亚萨瓦跳岛与珊瑚海岸",
+    "cover": "images/fiji/fiji-cover.jpg",
+    "html": "fiji-2026.html",
+    "date": "2026-08",
+    "destination": "斐济",
+    "days": 10,
+    "difficulty": "大洋洲",
+    "summary": "楠迪→丹娜努→亚萨瓦跳岛→珊瑚海岸→苏瓦，Bula Pass 船票串联 333 座岛屿",
+    "tags": [
+      "斐济",
+      "亚萨瓦",
+      "楠迪",
+      "丹娜努",
+      "珊瑚海岸",
+      "苏瓦",
+      "浮潜"
+    ]
+  },
+  {
+    "slug": "brunei-2026",
+    "title": "2026 文莱 5 天全景攻略 · 清真寺水上村与雨林",
+    "cover": "images/brunei/brunei-cover.jpg",
+    "html": "brunei-2026.html",
+    "date": "2026-08",
+    "destination": "文莱",
+    "days": 5,
+    "difficulty": "东南亚",
+    "summary": "金色清真寺、水上威尼斯与婆罗洲雨林，小而富的慢生活小国",
+    "tags": [
+      "文莱",
+      "斯里巴加湾市",
+      "奥马尔清真寺",
+      "水上村",
+      "乌鲁淡布隆"
+    ]
   }
 ]

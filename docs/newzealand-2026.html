@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 新西兰 20 天全景攻略 · 南北岛大环线</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #9b2226;
+    --red-light: #c24a4e;
+    --gold: #d9a441;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e6dfd4;
+    --blue: #2a9d8f;
+    --cover1: #6e1619;
+    --ov1: rgba(107,22,25,.88);
+    --ov2: rgba(155,34,38,.72);
+    --ov3: rgba(58,125,92,.38);
+    --ov4: rgba(42,157,143,.20);
+    --key-bg: #f2efe4;
+    --info-bg: #eef4f0;
+    --head-bg: rgba(155,34,38,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/newzealand/newzealand-cover.jpg" alt="新西兰旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 20 天环线 · 北岛 + 南岛</div>
+      <h1>新西兰 20 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 奥克兰 · 霍比特人村 · 地热罗托鲁瓦 · 特卡波星空 · 库克山 · 皇后镇 · 米尔福德峡湾</div>
+      <div class="meta">
+        <span>🛫 行程链：奥克兰 → 罗托鲁瓦 → 基督城 → 特卡波湖 → 库克山/瓦纳卡 → 皇后镇 → 米尔福德峡湾 → 但尼丁 → 返程</span>
+        <span>📅 时间窗口：20 天 19 晚</span>
+        <span>✈️ 北京⇄奥克兰 直飞约 12–13 小时</span>
+        <span>🛂 签证：中国护照需新西兰访客签证（在线申请约 15 个工作日，NZD441 含 IVL）</span>
+        <span>🕐 时差 +4~+5 小时（夏令时 +5） · 🔌 电压 230V I 型插座（三脚）</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 20 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 20 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">奥克兰</span>
+      <span class="arrow">→</span>
+      <span class="node">罗托鲁瓦</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">基督城</span>
+      <span class="arrow">→</span>
+      <span class="node">特卡波湖</span>
+      <span class="arrow">→</span>
+      <span class="node">库克山/瓦纳卡</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">皇后镇</span>
+      <span class="arrow">→</span>
+      <span class="node">米尔福德峡湾</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">但尼丁</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 20 天怎么安排最合理</span>
+      新西兰是「<strong>一岛一世界、中土即现实</strong>」的目的地：北岛看霍比特人村与活地热，南岛看星空湖泊与峡湾冰川。20 天刚好把南北岛精华一次走完，节奏上<strong>南岛自驾 12 天是主线</strong>——特卡波观星、库克山徒步、皇后镇冒险、米尔福德游船，每一段都不赶。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需提前申请<strong>访客签证（Visitor Visa）</strong>，在线申请、NZD441 起（含 NZD100 IVL 旅游税），官方 80% 两周内出结果，建议提前 1–2 个月申请</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>北岛 5 天（奥克兰→罗托鲁瓦）+ 南岛 13 天自驾 + 返程 2 天；南岛为全程精华</td>
+</tr>
+<tr>
+<td>时差与季节</td>
+<td>新西兰比北京快 4 小时（标准）/ 5 小时（10–3 月夏令时）；12–2 月为夏季旺季，天气最稳</td>
+</tr>
+<tr>
+<td>电源</td>
+<td>电压 230V，<strong>I 型三脚插座</strong>（同国内澳标三角），需带转换插头</td>
+</tr>
+<tr>
+<td>货币与汇率</td>
+<td>新西兰元 NZD；1 元人民币 ≈ 0.22 NZD，NZD 100 ≈ 455 元；现金需求低，Visa/Master 全境可刷</td>
+</tr>
+<tr>
+<td>自驾注意</td>
+<td>中国驾照可凭翻译件租车，靠左行驶；冬季高山段须备雪链，皇后镇—米尔福德山路弯多</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 20000–30000 ／ 标准 38000–55000 ／ 舒适 80000–120000（人民币）</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>中国护照必须办签</strong>：新西兰没有免签，NZeTA 只面向美英日韩等免签国，中国公民老老实实走访客签证在线申请，材料含流水、行程与酒店预订，提前 1–2 个月最稳。② 南岛观星与峡湾<strong>都吃天气</strong>：特卡波观星团遇云必取消、米尔福德峡湾常下雨，所以观星留 2 晚、峡湾行程留弹性，且皇后镇→米尔福德往返车程 8 小时，建议报一日游巴士或直接宿蒂阿瑙。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 20 天版</h2>
+
+    <p>以下为 20 天 19 晚的推荐节奏：北岛环游 5 天（奥克兰进出），飞基督城后开启 12 天南岛自驾大环线。每日主景点 ≤2 个，自驾里程控制在 3 小时内。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵奥克兰</td>
+<td>北京✈奥克兰（直飞约 12.5h），入住市区，倒时差，傍晚天空塔看日落</td>
+<td>奥克兰</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>伊甸山火山口 → 使命湾 → 奥克兰战争纪念博物馆 或 皇后街购物</td>
+<td>奥克兰</td>
+<td>千帆之都</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>霍比特人村（2.5h 导览）→ 罗托鲁瓦，晚餐毛利美食</td>
+<td>罗托鲁瓦</td>
+<td>中土世界</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>怀奥塔普地热公园（香槟池）→ 蒂普亚毛利文化村（毛利战舞+地热间歇泉）</td>
+<td>罗托鲁瓦</td>
+<td>地热+毛利</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>爱歌顿农场剪羊毛秀 → 罗托鲁瓦湖，午后飞基督城（约 1.5h）</td>
+<td>基督城</td>
+<td>北岛收尾</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>基督城取车 → 阿什伯顿补给 → 特卡波湖，傍晚好牧人教堂 + 湖畔日落</td>
+<td>特卡波湖</td>
+<td>星空前奏</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>特卡波湖：约翰山天文台步道/牧羊犬雕像 → 晚上观星团（预留第 2 晚补观）</td>
+<td>特卡波湖</td>
+<td>暗夜观星</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>特卡波 → 库克山：胡克谷步道（3h，冰湖+雪山），宿库克山村或返回特卡波</td>
+<td>库克山</td>
+<td>冰川徒步</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>塔斯曼冰川步道（游船可选）→ 普卡基湖蓝色牛奶湖 → 瓦纳卡</td>
+<td>瓦纳卡</td>
+<td>冰川+蓝湖</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>瓦纳卡：孤树打卡 → 罗伊峰步道（半日徒步）或 迷幻世界</td>
+<td>瓦纳卡</td>
+<td>湖畔休闲</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>瓦纳卡 → 皇冠山脉 → 皇后镇，傍晚湖边散步</td>
+<td>皇后镇</td>
+<td>抵达皇后镇</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>天空缆车上鲍勃峰 → Luge 滑车 → 山顶午餐，俯瞰瓦卡蒂普湖</td>
+<td>皇后镇</td>
+<td>冒险之城</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>格莱诺基 + 天堂镇（指环王取景地），湖边野餐半日</td>
+<td>皇后镇</td>
+<td>魔戒之路</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>皇后镇自由日：蹦极/喷射快艇/滑翔伞 三选一，下午箭镇淘金小镇</td>
+<td>皇后镇</td>
+<td>极限活动</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>米尔福德峡湾一日游（巴士+游船，瀑布与海豹），返皇后镇或宿蒂阿瑙</td>
+<td>皇后镇</td>
+<td>峡湾游船</td>
+</tr>
+<tr>
+<td>D16</td>
+<td>皇后镇 → 但尼丁（沿海岸线），傍晚八角广场 + 老火车站</td>
+<td>但尼丁</td>
+<td>维多利亚城</td>
+</tr>
+<tr>
+<td>D17</td>
+<td>奥塔哥半岛：拉纳克城堡 → 信天翁中心 → 小蓝企鹅归巢（晚上）</td>
+<td>但尼丁</td>
+<td>野生动物日</td>
+</tr>
+<tr>
+<td>D18</td>
+<td>鲍德温街（世界最陡街）→ 但尼丁第一教堂 → 下午飞奥克兰</td>
+<td>奥克兰</td>
+<td>回北岛</td>
+</tr>
+<tr>
+<td>D19</td>
+<td>奥克兰自由日：怀特玛塔港帆船出海 或 德文波特半岛</td>
+<td>奥克兰</td>
+<td>千帆之都</td>
+</tr>
+<tr>
+<td>D20 返程</td>
+<td>奥克兰✈北京（直飞约 12.5h），到家休整</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍掉但尼丁（D16–D18 压缩为 2 天），或皇后镇自由日合并进峡湾日；冬半年（6–9 月）优先雪景滑雪，把瓦纳卡换成皇冠峰滑雪场。带娃家庭建议砍霍比特村晚宴、观星改科普馆（Dark Sky Experience），保留羊驼农场。米尔福德峡湾也可改为过夜游船（约 NZD649），省下往返车程。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 20 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达奥克兰</span>
+          <span class="d-desc">千帆之都初印象</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">北京✈奥克兰（国航 CA783 直飞约 12.5h，夜航跨日抵达），机场过海关约 30–60 分钟</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">机场大巴/SkyBus 进市区（约 1h，单程约 NZD 21），或 Uber 约 NZD 60</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">入住市区酒店（推荐皇后街/海滨一带），先换汇+买 2 天 Hop-on Hop-off 观光车票</td></tr>
+          <tr><td class="t-time">18:00–20:30</td><td class="t-what"><b>天空塔</b>（登塔约 NZD 46）：328 米俯瞰奥克兰全景与双港湾日落，晚餐塔下皇后街餐厅</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">回酒店休息，倒时差（时差 +4~+5h，前两天建议早睡）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">新西兰入境水果、肉类、种子严禁携带，违者重罚，登机前自查；机场退税/入境申报走「Nothing to declare」通道最快。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 奥克兰市区</span>
+          <span class="d-desc">伊甸山 + 使命湾</span>
+          <span class="d-tag ">🌋 城市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>伊甸山 Mount Eden</b>（免费）：死火山口盆地，360° 俯瞰奥克兰双海湾，风大注意防风</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>使命湾 Mission Bay</b>（免费）：火山岩黑沙滩 + 海滨步道，海边咖啡馆午餐</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>奥克兰战争纪念博物馆</b>（成人约 NZD 35）：毛利文化大厅 + 太平洋岛民馆，绝对值得</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">皇后街购物 + 码头区，看帆船游艇码头（美洲杯基地）</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">晚餐：码头海鲜餐厅或天空塔旋转餐厅（Stratosfare 午市性价比高）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">伊甸山停车位少，建议打车/公交前往；博物馆 15:30 后停止入内，留意闭馆日。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 霍比特人村</span>
+          <span class="d-desc">中土世界一日</span>
+          <span class="d-tag ">🏠 魔戒日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">奥克兰出发自驾/参团前往玛塔玛塔（约 2h），或乘 InterCity 巴士</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>霍比特人村 Hobbiton</b>（Signature Tour 成人 NZD 130）：绿龙酒馆、袋底洞、磨坊与湖畔，含饮品</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">园内午餐或玛塔玛塔小镇 café</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">继续南行至<b>罗托鲁瓦</b>（约 1.5h），途经剑桥小镇喝咖啡，入住罗托鲁瓦温泉酒店</td></tr>
+          <tr><td class="t-time">18:00–20:30</td><td class="t-what">晚餐：毛利特色鹿肉/岩烤餐，或湖边餐厅；酒店泡地热泳池解乏</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">霍比特村每天多班导览，旺季 12–2 月提前 2–3 周官网订票；想避开人流选早场 9:00 或晚场（含灯笼之夜）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 罗托鲁瓦地热</span>
+          <span class="d-desc">怀奥塔普 + 毛利村</span>
+          <span class="d-tag ">♨️ 地热日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>怀奥塔普地热公园 Wai-O-Tapu</b>（成人约 NZD 42）：香槟池、艺术家调色板、间歇泉，全程 1.5–2h</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：罗托鲁瓦湖畔 fish & chips 或韩餐</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what"><b>蒂普亚 Te Puia 毛利文化村</b>（成人约 NZD 65）：Pōhutu 间歇泉每小时喷发 + 毛利战舞 Haka + 工艺雕刻学校</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">湖边散步：市政花园英式花园、湖边黑天鹅；<b>爱歌顿农场</b>剪羊毛秀（若时间够）</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">晚餐：毛利 Hāngi 地炉晚宴（可选，需预约）或中餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">怀奥塔普香槟池最佳光线是上午顺光；硫磺味重，对气味敏感者戴口罩。罗托鲁瓦常年地热蒸汽，酒店泳池多为天然地热水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 飞南岛</span>
+          <span class="d-desc">基督城初印象</span>
+          <span class="d-tag alt">🛬 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">爱歌顿农场 Agrodome（成人约 NZD 50）：剪羊毛秀 + 牛羊驼牧场，喂食活动适合全家</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">罗托鲁瓦湖快速巡游（可选）或湖畔午餐</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">罗托鲁瓦✈基督城（奥克兰中转，全程约 3h，提前订约 600–900 元）</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">入住基督城，<b>大教堂广场 + 纸板教堂</b>（免费）：震后重建城市，Avon 河泛舟可选</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐：基督城 New Regent Street 彩色街区，或河畔市场</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">基督城是南岛租车第一选择（车源最多、价格比皇后镇便宜 10–15%）；明天取车开启自驾，建议今晚先在超市补给饮用水零食。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 特卡波湖</span>
+          <span class="d-desc">星空小镇初见</span>
+          <span class="d-tag ">🌌 星空前奏</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">基督城取车（推荐 Apex/JUCY，全险），正式开启南岛自驾</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">基督城 → 阿什伯顿（补给加油站+超市）→ 费尔利，沿途坎特伯雷平原农场风光</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">抵达<b>特卡波湖 Lake Tekapo</b>，湖景午餐；下午湖边漫步，鲁冰花季（11–1 月）湖畔花海</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>好牧人教堂</b>（免费外观）：湖畔石教堂经典机位，傍晚光线最佳</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what">晚餐：日式 Kohan 餐厅（湖畔人气）或镇内咖啡馆；饭后观星踩点</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">特卡波位于奥拉基麦肯齐暗夜保护区，镇内路灯 22 点后减光；教堂门口人多，清晨或黄昏去最好。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 暗夜观星</span>
+          <span class="d-desc">约翰山观星团</span>
+          <span class="d-tag alt">🔭 观星日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">约翰山天文台步道（Mt John Walkway，免费）：1.5h 徒步俯瞰特卡波湖蓝绿色湖水</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">湖畔午餐，下午自由：湖畔咖啡馆发呆 / 羊驼农场 / 直升机观光（可选）</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">休息储备体力（观星在深夜）</td></tr>
+          <tr><td class="t-time">19:30–20:30</td><td class="t-what">晚餐后前往 Dark Sky Project 报到（镇中心）</td></tr>
+          <tr><td class="t-time">21:00–23:00</td><td class="t-what"><b>观星团</b>（Summit 约 NZD 219 / Crater 约 NZD 139）：南十字星、麦哲伦星云、天蝎座银河，天文望远镜+中文讲解可选</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">观星团天气不好自动改期或退款，务必订 2 晚（D6/D7）留补观弹性；山上深夜体感接近 0°C，租雪服或自带羽绒服。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 库克山</span>
+          <span class="d-desc">胡克谷步道</span>
+          <span class="d-tag ">🏔 冰川日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">特卡波 → 库克山村（约 1.5h，途经普卡基湖牛奶蓝湖，必停拍照）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>胡克谷步道 Hooker Valley Track</b>（免费，往返 3h）：吊桥三连 + 胡克冰川湖，终点雪山倒影</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">库克山村 The Old Mountaineers Café 午餐（鹿肉汉堡）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">塔斯曼冰川观景台（Blue Lakes 步道 1h）或直升机冰川降落（可选，约 NZD 450）</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">入住库克山村或返回特卡波，晚餐，夜晚继续观星补光</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">胡克谷步道全年开放、无需预约，冬天需冰爪雪鞋；库克山村住宿贵且少，夏天务必提前 1–2 个月订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 塔斯曼冰川</span>
+          <span class="d-desc">蓝湖 + 瓦纳卡</span>
+          <span class="d-tag alt">💙 蓝湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>塔斯曼冰川步道</b>（1h 往返，观冰湖浮冰）；可选冰川船游 Glacier Explorers（约 NZD 169）</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">库克山 → 特威泽尔小镇午餐（高原三文鱼农场值得去）</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what">特威泽尔 → 林迪斯山口 → <b>瓦纳卡 Wanaka</b>（约 2h，山谷湖泊景观公路）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>孤树 That Wanaka Tree</b>（免费）：湖中孤柳，日落机位；瓦纳卡湖边步道</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">晚餐：瓦纳卡镇中心餐厅（湖边牛排馆人气高）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">林迪斯山口冬季常积雪封路，夏季最美；瓦纳卡住宿比皇后镇便宜，作为跳板很划算。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 瓦纳卡</span>
+          <span class="d-desc">罗伊峰 or 迷幻世界</span>
+          <span class="d-tag ">🏞 徒步日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:30</td><td class="t-what"><b>罗伊峰步道 Roy's Peak</b>（免费，往返 5–6h，16km）：悬崖观景台俯瞰瓦纳卡湖，早出发避开烈晒</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">徒步下山，镇上午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>迷幻世界 Puzzling World</b>（成人约 NZD 27）：倾斜屋 + 迷宫花园，适合轻松下午</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">瓦纳卡湖西岸日落 / 涌泉溪（喷泉）散步</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：湖边 café 或泰餐，早点休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">罗伊峰冬季（6–9 月）可能有雪，需冰爪；体力一般可改 1.5h 的 Diamond Lake 步道。夏季 7 点前上山看日出最出片。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 抵达皇后镇</span>
+          <span class="d-desc">冒险之都</span>
+          <span class="d-tag ">🚙 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">瓦纳卡 → <b>皇冠山脉 Crown Range</b>（新西兰最高公路垭口，卡德罗纳山谷俯瞰）</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">箭镇（下午再细逛）或直接进皇后镇</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">皇后镇入住，<b>瓦卡蒂普湖 Lake Wakatipu</b> 湖滨午餐（Fergburger 网红汉堡提前点）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">湖滨大道散步 + 码头看蒸汽船 Earnslaw，Queenstown Gardens 花园</td></tr>
+          <tr><td class="t-time">18:00–20:30</td><td class="t-what">晚餐：湖边餐厅（推荐 Bluesky 或 Rātā），日落前天空缆车看全景（可在 D12 安排）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">皇后镇停车贵且难，建议酒店选湖滨步行区；Fergburger 常年排队 30 分钟+，可微信预约取餐。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 天空缆车</span>
+          <span class="d-desc">鲍勃峰 + Luge</span>
+          <span class="d-tag ">🚡 冒险日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>天空缆车 Skyline Gondola</b>（成人往返约 NZD 69）：南半球最陡缆车，480m 上升至鲍勃峰</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>Luge 滑车</b>（+3 次约 NZD 89）：重力赛车俯瞰湖景，山顶观景台</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">山顶 Stratosfare 午餐（自助约 NZD 90）或简餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">下午自由：<b>瓦卡蒂普湖蒸汽船</b>（Earnslaw，约 NZD 99）或 湖滨皮划艇</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">晚餐：镇中心；晚上可再上缆车看夜景（缆车通票可多次使用）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">缆车旺季排队 30–45 分钟，建议 9 点前到；Klook 预订通常比官网便宜 5–12%。Luge 至少玩 3 次才过瘾。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 格莱诺基</span>
+          <span class="d-desc">魔戒之路半日</span>
+          <span class="d-tag alt">🏔 魔戒日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">皇后镇 → <b>格莱诺基 Glenorchy</b>（45min，湖畔公路，指环王艾辛格取景）</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what">格莱诺基湖边码头 + <b>天堂镇 Paradise</b>（砂石路，洛丝萝林取景地，返程折返）</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">格莱诺基湖畔野餐或小镇 café 午餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">返程皇后镇，途经 <b>里弗斯牧场</b> / 或下午参加骑马穿越（可选，约 NZD 150）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：湖滨日落 + 皇后镇夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">天堂镇为砂石路，普通轿车可走但灰大；雨季注意道路水淹。无人机在此禁飞（靠近直升机航线）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 极限皇后镇</span>
+          <span class="d-desc">蹦极/喷射快艇 + 箭镇</span>
+          <span class="d-tag ">🪂 极限日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">极限活动三选一：<b>卡瓦劳大桥蹦极</b>（43m，约 NZD 205）/ <b>沙特欧瓦喷射快艇</b>（约 NZD 149）/ 滑翔伞（约 NZD 199）</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：箭镇或皇后镇</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>箭镇 Arrowtown</b>（免费）：19 世纪淘金小镇，华人村遗址 + 白杨大道秋色（4–5 月最美）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">返皇后镇，湖滨漫步</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：湖边或山顶，早休息（明天早起去峡湾）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蹦极/喷射快艇需提前 1 天订并确认体重限制（蹦极 35–235kg）；箭镇秋天红枫+银杏是一年最美。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 米尔福德峡湾</span>
+          <span class="d-desc">世界第八大奇迹</span>
+          <span class="d-tag ">🚢 峡湾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30</td><td class="t-what">皇后镇出发（跟团一日游 NZD 292 起含巴士+游船），或自驾前往蒂阿瑙宿一晚更从容</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">沿米尔福德公路：镜湖、猴溪、克林隧道观景台，全程单程约 5h（含停靠）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">登船：<b>米尔福德峡湾游船</b>（RealNZ 日间约 NZD 145–169，1.5–2h）：斯塔林瀑布、海豹与冠企鹅</td></tr>
+          <tr><td class="t-time">13:00–16:00</td><td class="t-what">游船回程后自由：峡湾游步道（Kea 步道）或直升机观光（可选）</td></tr>
+          <tr><td class="t-time">16:00–21:00</td><td class="t-what">返程皇后镇（或宿蒂阿瑙），晚上抵酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">米尔福德一年 200+ 天下雨，雨后瀑布更壮美；下雨反而好看——不要因天气取消。跟团一日游凌晨出发，务必前一晚早睡。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 海岸线东行</span>
+          <span class="d-desc">维多利亚城但尼丁</span>
+          <span class="d-tag ">🚙 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">皇后镇 → <b>克伦威尔</b>（水果小镇）→ 奥玛鲁方向沿海岸，途经莫埃拉基大圆石 Moeraki Boulders</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">莫埃拉基大圆石（免费）：海边巨型石球，午餐海边 café</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">莫埃拉基 → <b>但尼丁 Dunedin</b>（约 1.5h）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">入住但尼丁（推荐八角广场附近），<b>但尼丁火车站</b>（免费外观）+ 奥塔哥大学历史街区</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：奥塔哥半岛海鲜或英式酒吧</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">沿海岸线比走 8 号高速多 1 小时但风景更值；大圆石建议涨潮前到（退潮才露出完整石球）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D17 · 奥塔哥半岛</span>
+          <span class="d-desc">信天翁 + 企鹅归巢</span>
+          <span class="d-tag alt">🐧 野生动物日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>拉纳克城堡 Larnach Castle</b>（成人约 NZD 36）：新西兰唯一城堡，维多利亚花园超美</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>皇家信天翁中心</b>（Royal Albatross Centre，导览约 NZD 50）：信天翁栖息地 + 蒂劳奥海滩</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">半岛午餐：海鲜餐厅</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">半岛观景点：Sandfly Bay 眺望（海狮出没）</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what"><b>蓝企鹅归巢</b>（奥塔哥半岛观企鹅，约 NZD 45）：黄昏看小蓝企鹅蹒跚回家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">信天翁中心冬季闭馆概率高，提前官网查开放日；观企鹅禁止闪光灯与大声，冬季回巢早（17 点前后）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D18 · 回北岛</span>
+          <span class="d-desc">鲍德温街 + 飞奥克兰</span>
+          <span class="d-tag ">🛬 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>鲍德温街 Baldwin Street</b>（免费）：世界最陡有人居住街道（35°），可攀爬拍照</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what"><b>但尼丁第一教堂</b> + 奥塔哥博物馆（免费），城市漫步</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：但尼丁海鲜/肉派</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">但尼丁✈奥克兰（中转基督城约 3h，提前订 500–900 元）</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">入住奥克兰，市区晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">鲍德温街步行攀登 5 分钟可到顶，横穿街道留影更佳；但尼丁机场小，提前 1.5h 到即可。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D19 · 奥克兰自由日</span>
+          <span class="d-desc">帆船出海 or 德文波特</span>
+          <span class="d-tag ">⛵ 收尾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>怀特玛塔港帆船出海</b>（America's Cup 体验约 NZD 129，2h）或 海豚巡游</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">码头海鲜午餐</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>德文波特 Devonport</b>（免费）：北岸文艺小镇，Mt Victoria 炮台山俯瞰海湾（渡轮 12 分钟）</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐：奥克兰市区收官大餐（毛利融合料理）</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">整理行李，明天返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">帆船出海受天气影响，提前 1–2 天订；德文波特渡轮班次密，傍晚回市区看夜景。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D20 · 返程</span>
+          <span class="d-desc">奥克兰✈北京</span>
+          <span class="d-tag return">✈️ 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">自由：市区补货（新西兰羊毛制品、麦卢卡蜂蜜、Manuka 化妆品）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">退房，乘 SkyBus 或 Uber 前往机场（提前 3h 到）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">机场退税（GST 15%，同一家店消费 NZD100+ 可退税）+ 午餐</td></tr>
+          <tr><td class="t-time">14:00–19:00</td><td class="t-what">奥克兰✈北京（直飞约 12.5h），跨日到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">机场退税需保留购物小票、离境前到 GST 退税柜台办理；登机口安检前确认未携带农产品与贝壳类纪念品。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-cover.jpg" alt="皇后镇·瓦卡蒂普湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">皇后镇·瓦卡蒂普湖 <small>免费</small></div>
+          <div class="sc-feat">南岛冒险之都。<b>湖滨日落 + 鲍勃峰全景</b>，蹦极发源地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–4 天 · 🚙 自驾/飞机到皇后镇机场</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-1.jpg" alt="特卡波湖·暗夜星空" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">特卡波湖·暗夜星空 <small>观星团 NZD 119–219</small></div>
+          <div class="sc-feat">世界暗夜保护区。<b>南十字星 + 银河肉眼可见</b>，约翰山天文台。</div>
+          <div class="sc-meta">📅 观星 21:00–23:00 · ⏱ 1 晚 · 🚙 自驾，镇中心报到</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-7.jpg" alt="库克山·胡克谷步道" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">库克山·胡克谷步道 <small>免费</small></div>
+          <div class="sc-feat">新西兰最高峰 3724m。<b>吊桥三连 + 冰川湖</b>，3h 往返。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3–5h · 🚙 库克山村起点</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-3.jpg" alt="霍比特人村" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">霍比特人村 <small>NZD 130</small></div>
+          <div class="sc-feat">魔戒电影取景地。<b>袋底洞 + 绿龙酒馆</b>，2.5h 导览。</div>
+          <div class="sc-meta">📅 9:00–16:00 多场 · ⏱ 2.5h · 🚌 奥克兰/罗托鲁瓦出发</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-4.jpg" alt="米尔福德峡湾游船" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">米尔福德峡湾游船 <small>NZD 145–169</small></div>
+          <div class="sc-feat">世界第八大奇迹。<b>瀑布 + 海豹冠企鹅</b>，1.5–2h 巡游。</div>
+          <div class="sc-meta">📅 班次密集 · ⏱ 1.5–2h · 🚢 峡湾码头登船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-6.jpg" alt="罗托鲁瓦·怀奥塔普" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">罗托鲁瓦·怀奥塔普 <small>NZD 42 起</small></div>
+          <div class="sc-feat">新西兰地热名片。<b>香槟池 + 间歇泉</b>，硫磺蒸汽谷。</div>
+          <div class="sc-meta">📅 8:30–17:00 · ⏱ 1.5–2h · 🚙 罗托鲁瓦南 30min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-5.jpg" alt="奥克兰·天空塔" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">奥克兰·天空塔 <small>NZD 46</small></div>
+          <div class="sc-feat">南半球最高塔 328m。<b>双港湾全景 + 旋转餐厅</b>。</div>
+          <div class="sc-meta">📅 9:00–22:30 · ⏱ 1–1.5h · 🚇 市区中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/newzealand/newzealand-2.jpg" alt="瓦纳卡·孤树" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦纳卡·孤树 <small>免费</small></div>
+          <div class="sc-feat">湖中孤柳。<b>日出日落倒影</b>，新西兰出镜率最高的树。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 30min–1h · 🚙 湖边停车场</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（皇后镇、特卡波星空、库克山、霍比特人村、米尔福德峡湾、罗托鲁瓦、奥克兰天空塔、瓦纳卡孤树均为新西兰实景或同主题示意图），用于页面配图。更多免费景点：约翰山步道、好牧人教堂、格莱诺基、莫埃拉基大圆石、鲍德温街。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 0.22 新西兰元（NZD 100 ≈ 455 元）。往返机票按淡季 4000–5500 元计，旺季（12–2 月）上浮 40%+。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（20000–30000）</th>
+<th>标准（38000–55000）</th>
+<th>舒适（80000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄奥克兰转机 3500–4500</td>
+<td>直飞 5000–7000</td>
+<td>直飞+舱位升级 12000–18000</td>
+</tr>
+<tr>
+<td>住宿（19 晚）</td>
+<td>青旅/民宿 250–450/晚</td>
+<td>汽车旅馆/酒店 700–1100/晚</td>
+<td>湖景/温泉酒店 2000–4000/晚</td>
+</tr>
+<tr>
+<td>交通</td>
+<td>InterCity 巴士+转机 4000–5000</td>
+<td>租车 12 天+油费 7000–9000</td>
+<td>租 SUV+直升机/滑雪 15000–25000</td>
+</tr>
+<tr>
+<td>门票与活动</td>
+<td>基础景点约 1500–2000</td>
+<td>观星+峡湾+缆车 3500–4500</td>
+<td>全含+蹦极+冰川船 8000–12000</td>
+</tr>
+<tr>
+<td>餐饮（20 天）</td>
+<td>超市+快餐 3000–4000</td>
+<td>正常下馆子 6000–8000</td>
+<td>海鲜/米其林/红酒 12000–20000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 45000 元）</span>
+      往返直飞机票 6000 + 住宿 19 晚 17000（平均 900/晚）+ 租车油费 8000 + 门票活动 4500 + 餐饮 7000 + 签证/杂费 2500 ≈ <strong>42000–46000 元</strong>。大头是住宿与租车；观星、峡湾、缆车三样活动是南岛必花，提前 1 个月预订有折扣。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>18.1 只看南岛的 12 天版</h3>
+
+
+    <ul>
+
+      <li>D1 基督城（直飞/转机抵）</li>
+
+      <li>D2–D3 特卡波湖观星 2 晚</li>
+
+      <li>D4–D5 库克山+瓦纳卡</li>
+
+      <li>D6–D9 皇后镇 4 天（缆车/蹦极/格莱诺基/箭镇）</li>
+
+      <li>D10 米尔福德峡湾一日</li>
+
+      <li>D11 但尼丁半岛</li>
+
+      <li>D12 返程</li>
+
+    </ul>
+
+    <h3>18.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：霍比特人村（10 岁以下免费）+ 爱歌顿农场喂羊 + 特卡波改 Dark Sky 室内科普馆 + 瓦纳卡迷幻世界 + 皇后镇 TSS 蒸汽船（小朋友超爱）。砍掉蹦极/喷射快艇等刺激项目，罗伊峰步道换 1 小时轻松环湖。新西兰儿童住宿多半加床，租车需确认儿童座椅（免费租用）。</p>
+
+    <h3>18.3 冬季滑雪版（6–9 月）</h3>
+
+
+    <p>新西兰冬天正好反季：皇后镇皇冠峰/卓越山滑雪（缆车日票约 NZD 120–150）、瓦纳卡卡德罗纳雪场、特卡波雪中教堂更出片。冬天南岛住宿便宜 30–50%，但租车必须雪链、米尔福德公路部分时段需防滑链强制。自驾里程减半，节奏更慢。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 新西兰 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→奥克兰约 12–13h</td>
+<td>往返 5000–9000 元（旺季 10000+）</td>
+<td>国航 CA579/CA783 每周多班，787-9 执飞</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>16–24h</td>
+<td>往返 3500–5000 元</td>
+<td>经广州/上海/香港，南航/东航/国泰，便宜但费时</td>
+</tr>
+<tr>
+<td>新西兰境内航班</td>
+<td>奥克兰⇄基督城约 1.5h</td>
+<td>单程 500–900 元</td>
+<td>新西兰航空 Jetstar 廉航，提前 1–2 个月订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 新西兰境内交通核心提醒</span>
+      南岛自由行<strong>强烈建议自驾</strong>：巴士会错过 80% 沿途风景，InterCity 单程 50–80 NZD 但班次少；租车选基督城取还最便宜（经济型 50–80 NZD/天，全险 +20–30 NZD/天，异地还车 +150–350 NZD）。全程靠左行驶、STOP 必须停车、路口让行右侧来车；环岛让行规则和国内不同，先学交规再上路。
+    </div>
+
+    <h3>19.2 新西兰境内交通</h3>
+    <ul>
+      <li><strong>自驾</strong>：南岛首选，Apex/JUCY 等本地公司 50–120 NZD/天，基督城取车选择最多；加油用 Gaspy App 比价</li>
+      <li><strong>InterCity 巴士</strong>：不自驾者的替代方案，串联基督城—特卡波—皇后镇，Flexi Pass 15h 约 199 NZD</li>
+      <li><strong>境内航班</strong>：奥克兰⇄基督城/皇后镇/但尼丁 1.5h，Jetstar 廉航常促销，南北岛衔接必备</li>
+      <li><strong>皇后镇市内</strong>：湖滨步道+免费公交+观光车，小镇 30 分钟可逛完</li>
+      <li><strong>米尔福德峡湾交通</strong>：一日游巴士（含船票 NZD 292 起）最省心；自驾需 5h 单程</li>
+      <li><strong>出租车/Uber</strong>：起步价约 NZD 4.5，主要机场—市区、夜间使用</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>奥克兰·皇后街/海滨</td>
+<td>经济 300–500 / 标准 700–1100</td>
+<td>机场交通方便，吃喝集中</td>
+<td>周末贵，停车难</td>
+</tr>
+<tr>
+<td>罗托鲁瓦·湖畔温泉区</td>
+<td>经济 350–550 / 标准 800–1200</td>
+<td>地热泳池+毛利文化村近</td>
+<td>硫磺味重</td>
+</tr>
+<tr>
+<td>特卡波湖·湖畔</td>
+<td>经济 500–800 / 标准 1000–1800</td>
+<td>暗夜星空+湖景第一排</td>
+<td>旺季 12–2 月提前 1 个月订</td>
+</tr>
+<tr>
+<td>皇后镇·湖滨步行区</td>
+<td>经济 450–700 / 标准 900–1500</td>
+<td>出门即湖景，餐厅多</td>
+<td>停车最贵，节假日翻倍</td>
+</tr>
+<tr>
+<td>瓦纳卡·镇中心</td>
+<td>经济 350–550 / 标准 700–1100</td>
+<td>比皇后镇便宜，安静</td>
+<td>旺季房间紧俏</td>
+</tr>
+<tr>
+<td>但尼丁·八角广场</td>
+<td>经济 300–450 / 标准 600–900</td>
+<td>历史街区，性价比高</td>
+<td>城市氛围弱</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍔 必吃经典</h3>
+        <ul>
+          <li>Fergburger 大汉堡（皇后镇）</li>
+          <li>新西兰牛排/羊排（Lakeview 牛排馆）</li>
+          <li>海陆大餐：布拉夫牡蛎、青口贝</li>
+          <li>Fergbaker 烘焙 + Meat Pie 肉派</li>
+        </ul>
+        <h3>🐟 海鲜</h3>
+        <ul>
+          <li>三文鱼刺身（特威泽尔高原三文鱼场）</li>
+          <li>Fish & Chips（湖畔码头小店）</li>
+          <li>布拉夫牡蛎（3–8 月当季）</li>
+          <li>白葡萄酒：马尔堡长相思</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍦 在地名物</h3>
+        <ul>
+          <li>Hokey Pokey 香草蜂蜜脆糖冰淇淋</li>
+          <li>奶油派 Cream Puffs</li>
+          <li>麦卢卡蜂蜜 + Manuka 蜂蜜润喉糖</li>
+          <li>白咖啡 Flat White（新西兰是发源地之一）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>皇后镇湖滨餐厅街 + Skyline 山顶自助</li>
+          <li>特卡波 Kohan 日料（湖畔）</li>
+          <li>基督城 New Regent Street 彩色街</li>
+          <li>但尼丁奥塔哥半岛海鲜餐厅</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 新西兰餐厅人均 NZD 30–60，预约高峰（19:00）经常满座，用 Google 评分 4.5+ 选店；② 超市（Countdown/Pak'nSave）解决早晚餐能省一半餐饮预算；③ 霍比特村内餐饮要提前订；④ 餐厅普遍不收现金、刷卡有 2–3% 手续费，Visa/Master 首选；⑤ 生蚝生鱼务必选官方认证店，避免肠胃问题影响行程。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 新西兰访客签证（在线申请，提前 1–2 个月）</li>
+        <li>Visa/Master 信用卡（银联少覆盖）+ 少量 NZD 现金</li>
+        <li>I 型三角转换插头（国内澳标三角可用）</li>
+        <li>驾照原件 + 认证翻译件（租车必备，可淘宝代办）</li>
+      </ul>
+      <ul>
+        <li>机票+酒店+租车+观星/峡湾/霍比特村活动全部提前订</li>
+        <li>离线地图（Google Maps 下载新西兰全境）+ Gaspy 加油 App</li>
+        <li>羽绒服/冲锋衣（南岛昼夜温差大，观星 0°C）</li>
+        <li>防晒霜+帽子（新西兰紫外线全球最强）+ 防蚊液</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>入境安检严格</strong>：水果、肉类、种子、蜂蜜严禁携带，申报通道勿隐瞒，罚金 NZD 400 起；② 靠左行驶+环岛让行规则，取车后先在空旷停车场练 30 分钟再上路；③ 特卡波/皇后镇冬季路面结冰，租车必须加租雪链并让店员演示安装；④ 新西兰紫外线极强，晴天 15 分钟可晒伤，防晒+墨镜是硬装备；Wi-Fi 覆盖一般，山区无信号，提前下离线地图。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      新西兰是「<strong>把电影取景地过成日常</strong>」的目的地——霍比特人村的袋底洞、特卡波的银河、库克山的冰川湖、米尔福德的瀑布与海豹，20 天刚好串成南北岛大环线。签注办妥、南岛自驾跑起来，剩下的就是把相机充满电。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#9b2226",
+    "d": 3,
+    "n": "北岛段 · 奥克兰→罗托鲁瓦",
+    "pts": [
+      [
+        -36.85,
+        174.763
+      ],
+      [
+        -38.137,
+        176.251
+      ]
+    ]
+  },
+  {
+    "c": "#2a9d8f",
+    "d": 3,
+    "n": "南岛主线 · 基督城→特卡波→库克山→瓦纳卡→皇后镇→米尔福德→但尼丁",
+    "pts": [
+      [
+        -43.532,
+        172.631
+      ],
+      [
+        -44.005,
+        170.475
+      ],
+      [
+        -43.733,
+        170.096
+      ],
+      [
+        -44.697,
+        169.146
+      ],
+      [
+        -45.031,
+        168.662
+      ],
+      [
+        -44.672,
+        167.924
+      ],
+      [
+        -45.878,
+        170.503
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -36.85,
+    "lng": 174.763,
+    "name": "奥克兰·天空塔",
+    "t": "D1 傍晚 · 1.5h",
+    "fee": "NZD 46",
+    "note": "328m 双港湾全景"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -38.137,
+    "lng": 176.251,
+    "name": "罗托鲁瓦·怀奥塔普",
+    "t": "D4 上午 · 2h",
+    "fee": "NZD 42 起",
+    "note": "香槟池、毛利文化村"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -44.005,
+    "lng": 170.475,
+    "name": "特卡波湖·暗夜星空",
+    "t": "D6–7 · 2 晚",
+    "fee": "观星 NZD 119–219",
+    "note": "好牧人教堂、约翰山"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -43.733,
+    "lng": 170.096,
+    "name": "库克山·胡克谷",
+    "t": "D8 全天 · 1 天",
+    "fee": "免费",
+    "note": "胡克谷步道、塔斯曼冰川"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": -44.697,
+    "lng": 169.146,
+    "name": "瓦纳卡·孤树",
+    "t": "D9–10 · 1 天",
+    "fee": "免费",
+    "note": "罗伊峰、迷幻世界"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": -45.031,
+    "lng": 168.662,
+    "name": "皇后镇·天空缆车",
+    "t": "D11–14 · 3 天",
+    "fee": "缆车 NZD 69",
+    "note": "Luge、格莱诺基、箭镇"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": -44.672,
+    "lng": 167.924,
+    "name": "米尔福德峡湾",
+    "t": "D15 · 1 天",
+    "fee": "游船 NZD 145–169",
+    "note": "瀑布、海豹、冠企鹅"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": -45.878,
+    "lng": 170.503,
+    "name": "但尼丁·奥塔哥半岛",
+    "t": "D16–17 · 2 天",
+    "fee": "城堡 NZD 36",
+    "note": "鲍德温街、信天翁、企鹅"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-46.6, 166.8], [-34.8, 177.2]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#9b2226\"></span>北岛段（奥克兰→罗托鲁瓦）<br><span class=\"sw\" style=\"background:#2a9d8f\"></span>南岛主线（基督城→但尼丁）<br><span class=\"sw dash\"></span>南北岛间为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

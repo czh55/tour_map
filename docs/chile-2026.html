@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 智利 14 天全景攻略 · 沙漠冰川四极</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #c1692e;
+    --red-light: #d4883f;
+    --gold: #7b4f9e;
+    --ink: #3a342e;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #eadbc8;
+    --blue: #2a6db5;
+    --cover1: #5c2f1a;
+    --ov1: rgba(88,45,26,.88);
+    --ov2: rgba(193,105,46,.72);
+    --ov3: rgba(123,79,158,.38);
+    --ov4: rgba(42,109,181,.20);
+    --key-bg: #f5e9dc;
+    --info-bg: #f1ede6;
+    --head-bg: rgba(193,105,46,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/chile/chile-cover.jpg" alt="智利旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 14 天纵贯线 · 沙漠 + 都市 + 冰川</div>
+      <h1>智利 14 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 圣地亚哥 · 瓦尔帕莱索 · 阿塔卡马沙漠 · 蒙特港奇洛埃 · 百内国家公园</div>
+      <div class="meta">
+        <span>🛫 行程链：圣地亚哥 → 瓦尔帕莱索 → 阿塔卡马沙漠 → 蒙特港/奇洛埃 → 百内国家公园 → 返程</span>
+        <span>📅 时间窗口：14 天 13 晚</span>
+        <span>✈️ 北京⇄圣地亚哥 转机约 22 小时（无直飞）</span>
+        <span>🛂 签证：持美签/加签免签 90 天；无美签需办智利签证（关键）</span>
+        <span>🕐 时差 -11 小时 · 🔌 电压 220V C/L 插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 14 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 14 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">圣地亚哥</span>
+      <span class="arrow">→</span>
+      <span class="node">瓦尔帕莱索</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">阿塔卡马</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">蒙特港/奇洛埃</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">百内</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 14 天怎么安排最合理</span>
+      智利是「<strong>一国之境、四极地貌</strong>」的目的地：北部是地球上最干燥的阿塔卡马沙漠，中部是圣地亚哥与瓦尔帕莱索的人文都市，南部则是蒙特港的湖海与巴塔哥尼亚的冰川。14 天刚好把「沙漠→都市→湖区→冰川」四种极端地貌串成一条纵贯线，国内段靠飞机衔接，节奏紧凑但不赶。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>持美签/加签（剩余有效期 6 个月以上，过境签除外）可<strong>免签入境 90 天</strong>；无美签须提前办智利旅游签，建议出发前 4–6 周办理</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>圣地亚哥 3 天 + 瓦尔帕莱索 1 天 + 阿塔卡马沙漠 4 天 + 蒙特港/奇洛埃 2 天 + 百内国家公园 3 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 14 天经圣地亚哥转机返京，全程约 22h；国内 4 段飞机建议提前 1–2 个月订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>圣地亚哥 → 瓦尔帕莱索 → 阿塔卡马 → 蒙特港 → 百内（国内段多为飞机）</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 18000–28000 ／ 标准 35000–50000 ／ 舒适 75000–110000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办美签或智利签 ② 线上抢百内门票（pasesparques.cl，旺季无现场票）③ 订国内 4 段飞机</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>10–4 月百内旺季（晴暖）；阿塔卡马全年少雨、观星最佳 3–10 月；注意南北半球季节相反</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>智利比索 + 信用卡为主；圣佩德罗和百内多收现金，提前取好</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>百内门票只能线上预订</strong>：自 2024 年起公园无现场购票，旺季热门日期提前数周售罄，票在所选日期前后各 5 天有效，且 2026/4/27–8/30 三塔（Base Torres）徒步强制授权向导。② <strong>高海拔+大温差</strong>：阿塔卡马（2400–4320m）初到容易高反，第一天放慢节奏、喝古柯茶；沙漠昼夜温差可超 30°C，洋葱式穿衣。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 14 天版</h2>
+
+    <p>以下为 14 天 13 晚的推荐节奏：圣地亚哥起、经瓦尔帕莱索，先飞北部阿塔卡马沙漠，再飞南部蒙特港/奇洛埃，最后深入百内国家公园，国内段以飞机为主（LATAM/Sky/JetSMART）。每日主景点 ≤2 个。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵圣地亚哥</td>
+<td>北京✈圣地亚哥（转机约 22h），入住贝亚维斯塔，武器广场散步+晚餐</td>
+<td>圣地亚哥</td>
+<td>抵达+倒时差</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>武器广场 → 中央市场（帝王蟹/海鲜）→ 圣卢西亚山 → 拉莫内达宫</td>
+<td>圣地亚哥</td>
+<td>老城日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>圣克里斯托瓦尔山缆车（圣母像全景）→ 贝亚维斯塔 → 聂鲁达查斯寇纳故居</td>
+<td>圣地亚哥</td>
+<td>城景日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>瓦尔帕莱索一日：康塞普西翁山+百年索道 → 聂鲁达塞巴斯蒂安娜 → 街头涂鸦</td>
+<td>圣地亚哥</td>
+<td>山城日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>圣地亚哥✈卡拉马（2h）→ 接驳巴士到圣佩德罗·德阿塔卡马（2400m），基托尔堡垒日落</td>
+<td>圣佩德罗</td>
+<td>飞沙漠</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>塔蒂奥间歇泉日出（4320m，凌晨 4:30 出发）+ 普里塔马温泉；晚上观星团</td>
+<td>圣佩德罗</td>
+<td>间歇泉+观星</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>月亮谷（10000 比索，需线上预约）→ 死亡谷滑沙 → 月亮谷日落</td>
+<td>圣佩德罗</td>
+<td>月亮谷日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>高原湖泊：米斯坎蒂湖/米尼克斯湖 → 查萨泻湖盐沼火烈鸟</td>
+<td>圣佩德罗</td>
+<td>盐沼日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>圣佩德罗→卡拉马✈圣地亚哥转✈蒙特港，湖畔小城+海鲜市场</td>
+<td>蒙特港</td>
+<td>飞湖区</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>奇洛埃一日：巴士含轮渡到卡斯特罗 → 水上高脚屋+世界遗产木教堂</td>
+<td>蒙特港</td>
+<td>奇洛埃日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>蒙特港✈蓬塔阿雷纳斯（3.5h）→ 巴士到纳塔莱斯港，线上买百内门票</td>
+<td>纳塔莱斯港</td>
+<td>飞巴塔哥尼亚</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>百内三塔观景台徒步（往返 8–10h）或裴欧埃湖+格雷冰川观景台</td>
+<td>纳塔莱斯港</td>
+<td>三塔日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>格雷冰川游船（蓝冰）+ 裴欧埃湖 + 萨尔托格兰德瀑布</td>
+<td>纳塔莱斯港</td>
+<td>冰川日</td>
+</tr>
+<tr>
+<td>D14 返程</td>
+<td>纳塔莱斯港→蓬塔阿雷纳斯✈圣地亚哥✈北京，到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍蒙特港/奇洛埃（D9–10），阿塔卡马直接飞蓬塔阿雷纳斯省出 2 天；也可把瓦尔帕莱索（D4）改成过夜，圣地亚哥少 1 天。百内是体力活，行前评估是否走得动三塔线；走不动就换成格雷冰川游船+裴欧埃湖的轻松版。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 14 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 飞抵圣地亚哥</span>
+          <span class="d-desc">北京✈圣地亚哥</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–22:00（北京时间）</td><td class="t-what">北京✈圣地亚哥：无直飞，经欧洲/中东/北美中转，全程约 22h，推荐法航/土耳其/海航，南美段尽量衔接白天航班</td></tr>
+          <tr><td class="t-time">当地 12:00–14:00</td><td class="t-what">抵阿图罗·梅里诺机场（SCL，市中心西北 17km），机场大巴/网约车进城约 30–40 分钟</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">入住贝亚维斯塔（Bellavista）或武器广场附近酒店，便利店换少量比索（机场汇率略差）</td></tr>
+          <tr><td class="t-time">17:30–20:00</td><td class="t-what">武器广场散步：大教堂+中央邮局，晚餐圣地亚哥帝王蟹或肉馅卷饼（empanada）</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">回酒店休息，倒时差（北京-圣地亚哥时差 -11h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣地亚哥比北京慢 11 小时，第一晚早点睡；第二天开始行程。机场进城注意只坐官方出租/网约车。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 圣地亚哥老城</span>
+          <span class="d-desc">武器广场+中央市场+圣卢西亚山</span>
+          <span class="d-tag ">🏛 老城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>武器广场（Plaza de Armas）</b>（免费）：圣地亚哥心脏，大教堂、中央邮局、骑警巡逻</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>中央市场（Mercado Central）</b>（免费）：百年铸铁市场，海鲜摊密集，帝王蟹季（12–2 月）必吃</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：中央市场内海鲜料理，或附近肉馅卷饼店</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what"><b>圣卢西亚山（Cerro Santa Lucía）</b>（免费）：1541 年建城起点，山顶城堡俯瞰老城</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what"><b>拉莫内达宫</b>（总统府，外观免费）：宪法广场+骑警换岗（约 10:00/18:00）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">武器广场周末有街头艺人和手工艺集市；老城小偷较多，手机不要放外衣口袋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 圣克里斯托瓦尔山</span>
+          <span class="d-desc">缆车上山+聂鲁达故居</span>
+          <span class="d-tag ">⛰ 城景日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">乘地铁到贝拉维斯塔/巴西站，步行到圣克里斯托瓦尔山缆车站</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>圣克里斯托瓦尔山（Cerro San Cristóbal）</b>（缆车往返 <5000 比索）：880m 城市制高点，圣母像+安第斯雪山全景</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">下山逛<b>贝亚维斯塔（Bellavista）</b>：波西米亚街区、涂鸦墙，午餐在皮斯科酸酒酒吧</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>查斯寇纳故居（La Chascona）</b>（成人约 7000 比索）：诗人聂鲁达三处故居之一，彩色小屋+秘密通道</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">可选：迈波谷/空加瓜谷酒庄半日（提前报团约 400–800 元），或自由购物</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣克里斯托瓦尔山建议上午 10 点前到缆车站避开排队；聂鲁达故居周一闭馆。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 瓦尔帕莱索一日</span>
+          <span class="d-desc">彩色山城+涂鸦</span>
+          <span class="d-tag alt">🎨 山城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">圣地亚哥 Turbus 站乘大巴到瓦尔帕莱索（约 2h，票价约 6000–9000 比索，班次密集）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>康塞普西翁山（Cerro Concepción）</b>：百年索道（funicular）+石板阶梯+彩虹房屋</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what"><b>聂鲁达塞巴斯蒂安娜故居（La Sebastiana）</b>（成人 7000 比索）：诗人俯瞰海港的书房</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">午餐：港区海鲜+肉馅卷饼，海边看货轮进出</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>街头涂鸦区</b>（免费）：露天美术馆，邮票街（Pasaje Bavestrello）</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">返回圣地亚哥（末班车约 20:00），晚餐智利烤牛肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">瓦尔帕莱索全城坡多石阶，穿平底鞋；也可住一晚看彩灯夜景。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 飞抵阿塔卡马</span>
+          <span class="d-desc">圣地亚哥✈卡拉马→圣佩德罗</span>
+          <span class="d-tag ">🏜 沙漠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">圣地亚哥✈卡拉马（CJC，约 2h，LATAM/Sky/JetSMART，单程约 300–600 元）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">卡拉马机场接驳巴士（约 9000–14000 比索）行驶 100km 到<b>圣佩德罗·德阿塔卡马</b>（2400m，1.5–2h）</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">入住土坯小镇酒店，主街 Caracoles 报团+换汇</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">适应海拔：徒步/骑车到<b>基托尔堡垒（Pukará de Quitor）</b>（门票约 2660 比索）看日落</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐羊驼排，喝古柯茶，早睡</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣佩德罗海拔 2400m，第一天放慢节奏；主街报团可砍价，一次报 2 个以上行程通常有折扣。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 塔蒂奥间歇泉</span>
+          <span class="d-desc">日出间歇泉+温泉+观星</span>
+          <span class="d-tag ">🌋 间歇泉日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">04:00–04:30</td><td class="t-what">凌晨出发：塔蒂奥间歇泉团（海拔 4320m，行程约 37000–46000 比索+入园费约 14000 比索）</td></tr>
+          <tr><td class="t-time">06:00–08:30</td><td class="t-what"><b>日出间歇泉（El Tatio）</b>：黎明 -10°C 低温下数十根蒸汽柱喷向 6 米高空，蒸汽孔烹制早餐</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">返程经<b>普里塔马温泉（Puritama）</b>（约 30000 比索）：沙漠中的天然温泉池</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">回到圣佩德罗，午休（高海拔很耗体力）</td></tr>
+          <tr><td class="t-time">20:00–23:00</td><td class="t-what"><b>观星之旅</b>（约 32000–52000 比索）：激光笔星座讲解+望远镜，肉眼可见银河核心与麦哲伦星云</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">间歇泉凌晨极冷（-10°C），穿足保暖衣物；高反常见，动作放慢、多喝水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 月亮谷</span>
+          <span class="d-desc">火星地貌+滑沙+日落</span>
+          <span class="d-tag alt">🌕 月亮谷日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">睡到自然醒，租自行车（约 9000 比索/天）或参加下午团</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：主街烤肉/馅饼</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>月亮谷（Valle de la Luna）</b>（门票 10000 比索，需线上预约时段）：风蚀盐层+沙丘+大沙丘（Duna Mayor）观景台</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what">顺路<b>死亡谷（Valle de la Muerte）</b>：100 米沙丘滑沙（团约 28000–36000 比索）</td></tr>
+          <tr><td class="t-time">18:30–19:30</td><td class="t-what">月亮谷观景点看日落：白色盐层→红岩→粉紫天空（尽早占位）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">月亮谷限流需提前在线预约；日落团下午 5–7 点光线最美，自备水（园内无服务设施）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 高原湖泊</span>
+          <span class="d-desc">米斯坎蒂湖+盐沼火烈鸟</span>
+          <span class="d-tag ">🦩 盐沼日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–07:00</td><td class="t-what">出发高原湖泊团（约 55000–74000 比索，含车与向导，湖泊入园费约 9000 比索另付）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>米斯坎蒂湖（Laguna Miscanti）与米尼克斯湖（Miñiques）</b>（4000m）：火山倒影+高原草甸</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">途中<b>托科瑙村（Toconao）</b>：石钟楼与仙人掌</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">返回午餐，午休</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what"><b>查萨泻湖（Laguna Chaxa）</b>（入园约 13000 比索）：阿塔卡马盐沼三种火烈鸟+火山背景日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">高原湖泊海拔 4000m，即使夏天也只有 5–15°C，穿保暖外套；备抗高反药。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 飞蒙特港</span>
+          <span class="d-desc">圣佩德罗→蒙特港</span>
+          <span class="d-tag ">🛫 湖海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">圣佩德罗→卡拉马机场（接驳巴士 1.5–2h）</td></tr>
+          <tr><td class="t-time">09:30–13:30</td><td class="t-what">卡拉马✈圣地亚哥✈蒙特港（PMC，总转机约 4h）</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">入住蒙特港，湖畔小城+海鲜市场（Mercado Angelmó）</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">港口看日落；预订明日奇洛埃往返巴士</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蒙特港是湖区（Lake District）门户，也是走陆路去巴塔哥尼亚的起点；住宿选择多。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 奇洛埃岛</span>
+          <span class="d-desc">水上高脚屋+木教堂</span>
+          <span class="d-tag ">🏝 奇洛埃日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–11:00</td><td class="t-what">蒙特港长途站乘巴士到<b>卡斯特罗（Castro）</b>（3.5h 含渡轮，Cruz del Sur 约 6000–8000 比索，巴士直接上船不用换乘）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>水上高脚屋（Palafitos）</b>（免费）：查考海峡 30 分钟渡轮+彩色棚屋</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：奇洛埃特色 curanto（海鲜+肉类大锅）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>圣弗朗西斯科教堂</b>（世界遗产木教堂）+<b>达尔卡韦（Dalcahue）</b>手工艺集市</td></tr>
+          <tr><td class="t-time">16:00–19:30</td><td class="t-what">返蒙特港，晚餐湖鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">奇洛埃有 16 座世界遗产木教堂，风格独特；旺季（12–2 月）渡轮排队，早出发。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 飞百内门户</span>
+          <span class="d-desc">蒙特港✈蓬塔阿雷纳斯→纳塔莱斯港</span>
+          <span class="d-tag alt">🏔 巴塔哥尼亚日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">蒙特港✈蓬塔阿雷纳斯（PUQ，约 3.5h，LATAM/Sky）</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what">蓬塔阿雷纳斯→<b>纳塔莱斯港（Puerto Natales）</b>巴士（约 3h，8000–12000 比索）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">入住纳塔莱斯港，小镇补货+换汇</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>线上购百内门票</b>（pasesparques.cl，旺季 21000 比索/3天），确认明日巴士班次</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">晚餐：巴塔哥尼亚烤羊肉，早睡</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">百内门票无现场购票，务必出发前在官网买好并离线存 QR 码（园内无信号）；2026/4/27–8/30 三塔线需授权向导。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 百内三塔</span>
+          <span class="d-desc">三塔观景台徒步</span>
+          <span class="d-tag ">🥾 三塔日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–07:00</td><td class="t-what">纳塔莱斯港→公园入口接驳巴士（约 2h，单程 3000–5000 比索）</td></tr>
+          <tr><td class="t-time">07:30–12:00</td><td class="t-what"><b>三塔（Las Torres）观景台徒步</b>：单程约 10km，穿越伦加森林+冰碛石爬升</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">路餐（自备三明治/能量棒）</td></tr>
+          <tr><td class="t-time">13:00–16:30</td><td class="t-what">登顶或原路折返，看<b>花岗岩三塔</b>全景（最佳机位，日出 7:30 前后日照金山）</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">出园返纳塔莱斯港，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">三塔徒步体力要求高、往返 8–10h，天气多变（晴天暴晒+阵雨骤来）；旺季住园内山屋需提前数月订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 格雷冰川</span>
+          <span class="d-desc">蓝冰游船+裴欧埃湖</span>
+          <span class="d-tag ">🧊 冰川日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">再入百内（门票 3 天有效）：乘车到格雷湖（Lago Grey）</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>格雷冰川游船（Navegación Glaciar Grey）</b>（约 400–700 元/人）：近距离看蓝冰浮冰崩落</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what"><b>裴欧埃湖（Lago Pehoé）</b>观景：宝石蓝湖水+湖心岛酒店经典机位</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>萨尔托格兰德瀑布</b>短途徒步，偶遇安第斯秃鹫</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">返纳塔莱斯港，晚餐烤羊+智利红酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">百内天气一日四季，防风冲锋衣+帽子手套必备；格雷游船旺季提前 2–3 天订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 返程</span>
+          <span class="d-desc">纳塔莱斯港→北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–10:00</td><td class="t-what">纳塔莱斯港→蓬塔阿雷纳斯巴士（3h）</td></tr>
+          <tr><td class="t-time">11:30–16:00</td><td class="t-what">蓬塔阿雷纳斯✈圣地亚哥（3.5h）</td></tr>
+          <tr><td class="t-time">17:00–次日</td><td class="t-what">圣地亚哥✈北京（转机约 22h，南美段中转 1 次）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣地亚哥机场免税店可补货智利红酒与皮斯科；如时间允许可加一天圣地亚哥购物/迈波谷酒庄。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-cover.jpg" alt="百内·三塔（Torres del Paine）" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">百内·三塔（Torres del Paine） <small>21000 比索/3天</small></div>
+          <div class="sc-feat">花岗岩三塔+裴欧埃湖，<b>日照金山</b>（日出 7:30），智利千元钞背面图案。</div>
+          <div class="sc-meta">📅 旺季 10-4月 7:00-21:00 · ⏱ 2-3天 · 🚌 纳塔莱斯港巴士 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-1.jpg" alt="阿塔卡马·月亮谷" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿塔卡马·月亮谷 <small>10000 比索</small></div>
+          <div class="sc-feat">风蚀盐层+沙丘，<b>日落从白盐到粉紫</b>，NASA 火星模拟地。</div>
+          <div class="sc-meta">📅 日落 17:00-19:00 · ⏱ 2-3h · 🚌 圣佩德罗 13km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-2.jpg" alt="圣地亚哥·圣克里斯托瓦尔山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">圣地亚哥·圣克里斯托瓦尔山 <small>缆车往返 <5000 比索</small></div>
+          <div class="sc-feat">880m 城市制高点，<b>圣母像+安第斯雪山全景</b>，俯瞰两半城。</div>
+          <div class="sc-meta">📅 8:00-20:00 · ⏱ 1.5-3h · 🚇 贝亚维斯塔站步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-3.jpg" alt="瓦尔帕莱索" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦尔帕莱索 <small>聂鲁达故居 7000 比索</small></div>
+          <div class="sc-feat">彩虹山城+百年索道+<b>世界级街头涂鸦</b>，诗人聂鲁达之城。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚌 圣地亚哥大巴 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-4.jpg" alt="塔蒂奥间歇泉" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塔蒂奥间歇泉 <small>行程+入园约 5-6 万比索</small></div>
+          <div class="sc-feat">海拔 4320m，<b>日出蒸汽柱喷 6m 高</b>+蒸汽烹早餐。</div>
+          <div class="sc-meta">📅 凌晨 4:30 出发 · ⏱ 半天 · 🚌 圣佩德罗 80km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-5.jpg" alt="阿塔卡马·观星" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿塔卡马·观星 <small>约 3-5 万比索</small></div>
+          <div class="sc-feat">地球上最清澈夜空，<b>银河核心+麦哲伦星云</b>肉眼可见。</div>
+          <div class="sc-meta">📅 夜 20:00-23:00 · ⏱ 2-3h · 🔭 ALMA 天文台 50km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-6.jpg" alt="奇洛埃·卡斯特罗" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">奇洛埃·卡斯特罗 <small>免费（教堂募捐）</small></div>
+          <div class="sc-feat">水上高脚屋（palafitos）+<b>16 座世界遗产木教堂</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1 天 · 🚢 查考海峡渡轮 30min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/chile/chile-7.jpg" alt="阿塔卡马·盐沼火烈鸟" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿塔卡马·盐沼火烈鸟 <small>入园约 13000 比索</small></div>
+          <div class="sc-feat">查萨湖三色火烈鸟+<b>火山倒影盐湖</b>，傍晚光线最佳。</div>
+          <div class="sc-meta">📅 半日 · ⏱ 3-4h · 🚌 圣佩德罗出发</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（百内三塔、月亮谷、圣克里斯托瓦尔山、瓦尔帕莱索、塔蒂奥间歇泉、星空、奇洛埃高脚屋等均为智利实景），用于页面配图。更多免费看点：圣地亚哥武器广场、圣卢西亚山、中央市场，瓦尔帕莱索涂鸦街。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元人民币 ≈ 96 智利比索。往返机票按淡季 8000–13000 元计，境内 4 段国内航班（SCL-CJC、CJC-SCL、SCL-PMC、SCL-PUQ）合计约 1500–3000 元。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（18000–28000）</th>
+<th>标准（35000–50000）</th>
+<th>舒适（75000–110000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄圣地亚哥 8000–11000</td>
+<td>转机更优/含联程 12000–16000</td>
+<td>宽体舱+舒适转机 20000–30000</td>
+</tr>
+<tr>
+<td>住宿（13 晚）</td>
+<td>青旅/民宿 200–350/晚</td>
+<td>三至四星 450–800/晚</td>
+<td>精品酒店/度假村 1500–3000/晚</td>
+</tr>
+<tr>
+<td>境内交通</td>
+<td>4 段廉航+巴士 2500–4000</td>
+<td>LATAM 正价+部分直飞 5000–7000</td>
+<td>含包车/私人接驳 10000–16000</td>
+</tr>
+<tr>
+<td>门票与活动</td>
+<td>月亮谷+百内门票 1500–2500</td>
+<td>含间歇泉/观星/格雷船 3500–5500</td>
+<td>全部行程+私人向导 8000–12000</td>
+</tr>
+<tr>
+<td>餐饮（14 天）</td>
+<td>市场+快餐 2000–3000</td>
+<td>正常下馆子 4000–6000</td>
+<td>海景餐厅/米其林级 10000–18000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 40000 元）</span>
+      往返机票 14000 + 住宿 13 晚 9500（平均 730/晚）+ 境内 4 段航班与巴士 6000 + 门票与活动 5000 + 餐饮 5500 ≈ <strong>40000–45000 元</strong>。阿塔卡马跟团（间歇泉+观星+盐沼+月亮谷）约 2500–4000 元是隐形大头，主街报团可砍价。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>14.1 时间紧的 10 天浓缩版</h3>
+
+
+    <ul>
+
+      <li>D1–D2 圣地亚哥（砍掉酒庄）</li>
+
+      <li>D3 瓦尔帕莱索一日</li>
+
+      <li>D4–D6 阿塔卡马（月亮谷+间歇泉+观星）</li>
+
+      <li>D7 飞蒙特港/奇洛埃半日</li>
+
+      <li>D8–D9 百内（两日精华线）</li>
+
+      <li>D10 返程</li>
+
+    </ul>
+
+    <h3>14.2 徒步爱好者版（W 线）</h3>
+
+
+    <p>百内延长为 5 天走 W 线（三塔—法国谷—格雷冰川），阿塔卡马缩为 2 天（月亮谷+间歇泉），砍掉蒙特港/奇洛埃。W 线营地需提前半年预订，旺季为 11–3 月；全程自背露营约 800–1500 美元/人，走轻装山屋约 1500–2500 美元。</p>
+
+    <h3>14.3 冬季版（6–9 月）</h3>
+
+
+    <p>百内淡季门票 11000 比索且人少，但严寒多风，三塔线 2026/4/27–8/30 强制授权向导；阿塔卡马冬季天空最清澈、观星最佳，但黎明前行程极冷（-10°C）。智利国内机票和住宿整体便宜 20–30%。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>13.1 北京 ⇄ 智利 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>国际航班</td>
+<td>北京→圣地亚哥 转机约 22–25h</td>
+<td>往返 8000–13000 元</td>
+<td>无直飞，经欧洲/中东/北美中转，法航/土耳其/海航</td>
+</tr>
+<tr>
+<td>国内航班</td>
+<td>圣地亚哥→卡拉马 2h；→蒙特港 1h45；→蓬塔阿雷纳斯 3h30</td>
+<td>单程 300–800 元</td>
+<td>LATAM/Sky/JetSMART，提前 1–2 个月订</td>
+</tr>
+<tr>
+<td>长途巴士</td>
+<td>圣地亚哥—瓦尔帕莱索 2h</td>
+<td>单程 6000–9000 比索</td>
+<td>Turbus/Condor，班次密集</td>
+</tr>
+<tr>
+<td>渡轮</td>
+<td>蒙特港—纳塔莱斯港 4 天 3 夜（Navimag）</td>
+<td>含舱位 700–1400 美元</td>
+<td>世界最美渡轮航线之一，需提前订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 智利境内交通核心提醒</span>
+      智利地形狭长，国内段几乎全靠飞机：圣地亚哥—卡拉马（阿塔卡马）2h、—蒙特港 1h45、—蓬塔阿雷纳斯 3h30，LATAM/Sky/JetSMART 三家中廉价航司可选，提前 1–2 个月订单程 300–800 元。若时间充裕且想看峡湾，蒙特港—纳塔莱斯港有世界最美渡轮线之一 Navimag（4 天 3 夜，含餐含舱位）。
+    </div>
+
+    <h3>13.2 智利境内交通</h3>
+    <ul>
+      <li><strong>圣地亚哥地铁</strong>：L1–L6+，单程约 800 比索，景点多在地铁+步行圈内</li>
+      <li><strong>圣地亚哥—瓦尔帕莱索</strong>：Turbus 大巴约 2h，班次密集，票可线上买</li>
+      <li><strong>卡拉马机场→圣佩德罗</strong>：接驳巴士 1.5–2h，约 9000–14000 比索</li>
+      <li><strong>圣佩德罗镇内</strong>：步行 10–15 分钟即达，景点须报团/租 4×4</li>
+      <li><strong>蓬塔阿雷纳斯→纳塔莱斯港</strong>：巴士 3h，约 8000–12000 比索</li>
+      <li><strong>纳塔莱斯港→百内入口</strong>：公园接驳巴士 2h，单程约 3000–5000 比索</li>
+    </ul>
+
+    <h3>13.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>圣地亚哥·贝亚维斯塔/武器广场</td>
+<td>经济 200–350 / 标准 400–800</td>
+<td>老城核心，景点步行可达</td>
+<td>晚高峰地铁人多</td>
+</tr>
+<tr>
+<td>瓦尔帕莱索·康塞普西翁山</td>
+<td>经济 200–400 / 标准 400–900</td>
+<td>彩色山城+海景</td>
+<td>坡多，行李搬运累</td>
+</tr>
+<tr>
+<td>圣佩德罗·德阿塔卡马</td>
+<td>经济 250–500 / 标准 600–1200</td>
+<td>沙漠小镇，报团方便</td>
+<td>旺季一房难求，提前 2–3 个月</td>
+</tr>
+<tr>
+<td>蒙特港/卡斯特罗</td>
+<td>经济 200–400 / 标准 400–800</td>
+<td>湖海双景，奇洛埃出发地</td>
+<td>旅游设施一般</td>
+</tr>
+<tr>
+<td>纳塔莱斯港</td>
+<td>经济 250–500 / 标准 500–1000</td>
+<td>百内门户，旅行社集中</td>
+<td>旺季房价翻倍</td>
+</tr>
+<tr>
+<td>百内园内</td>
+<td>营地/山屋 150–600 / 酒店 1500–4000</td>
+<td>看日出三塔，沉浸自然</td>
+<td>须提前数月预订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍤 必吃经典</h3>
+        <ul>
+          <li>帝王蟹（皇蟹）：中央市场季供，12–2 月最肥</li>
+          <li>海鲜锅/烤鱼：蒙特港 Angelmó 市场</li>
+          <li>肉馅卷饼 empanada：智利国食，几乎每餐必备</li>
+          <li>炭烤牛肉/羊肉：巴塔哥尼亚烤全羊</li>
+        </ul>
+        <h3>🍷 在地名物</h3>
+        <ul>
+          <li>皮斯科酸酒 Pisco Sour：餐前开胃</li>
+          <li>智利红酒：迈波谷/空加瓜谷 DO 产区</li>
+          <li>奇洛埃 curanto：海鲜+肉类地坑蒸锅</li>
+          <li>羊驼排：圣佩德罗与库斯科同源的高原菜</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥤 街头与家常</h3>
+        <ul>
+          <li>mote con huesillo：甜玉米+干桃汁，国民饮品</li>
+          <li>completos：智利热狗（牛油果酱+番茄+蛋黄酱）</li>
+          <li>sopaipilla：南瓜饼，雨天标配</li>
+          <li>Pastel de Choclo：玉米肉馅派</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>圣地亚哥中央市场 Mercado Central（海鲜）</li>
+          <li>贝亚维斯塔美食街与皮斯科酒吧</li>
+          <li>瓦尔帕莱索港区与塞罗康塞普西翁山</li>
+          <li>纳塔莱斯港烧烤店（巴塔哥尼亚烤羊）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 圣地亚哥和百内地区消费接近欧洲水平，一份主餐 15000–25000 比索；② 圣佩德罗主街餐厅贵，去 Paso Turístico 区吃工作日套餐（Menú del día 约 6000–7000 比索）；③ 海鲜务必吃熟制（生食卫生风险），帝王蟹季 12–2 月；④ 智利红酒认 DO 认证产区，在酒庄买比超市便宜。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 美签/智利签（持美签免签 90 天）</li>
+        <li>百内门票（pasesparques.cl 线上，旺季提前数周）</li>
+        <li>智利比索现金（圣佩德罗/百内多收现金）</li>
+        <li>电源转接头（220V C/L 插座）</li>
+      </ul>
+      <ul>
+        <li>国内 4 段机票（SCL-CJC-PMC-PUQ）提前订</li>
+        <li>阿塔卡马行程提前报团（间歇泉/观星/盐沼）</li>
+        <li>抗高反：古柯茶、乙酰唑胺、多喝水</li>
+        <li>防风冲锋衣+徒步鞋（百内天气多变）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>百内门票无现场购票</strong>，票在所选日期前后各 5 天有效，园内无信号，出发前离线存好 QR 码；② 阿塔卡马高海拔（间歇泉 4320m）高反常见，动作放慢、多喝水、备古柯茶；③ 智利小费约 10%（非强制），餐厅刷卡时注意账单是否已含；④ 圣佩德罗 ATM 只有两台、常缺钞，从卡拉马/圣地亚哥带够现金。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      智利是一条从世界最干旱沙漠到巴塔哥尼亚冰峰的「纵贯线」——阿塔卡马的月球地表、瓦尔帕莱索的彩色山城、百内的花岗岩三塔，14 天刚好把地球最极端的地貌一次集齐。签证是唯一硬门槛：办好美签（可免签），剩下的就是提前抢百内门票、订好国内四段飞机。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c1692e",
+    "d": 3,
+    "n": "智利纵贯主线 · 圣地亚哥→瓦尔帕莱索→阿塔卡马→蒙特港→百内",
+    "pts": [
+      [
+        -33.448,
+        -70.669
+      ],
+      [
+        -33.047,
+        -71.613
+      ],
+      [
+        -22.909,
+        -68.201
+      ],
+      [
+        -41.4718,
+        -72.9396
+      ],
+      [
+        -50.941,
+        -73.406
+      ]
+    ]
+  },
+  {
+    "c": "#2a6db5",
+    "d": 3,
+    "n": "百内园内线 · 蓬塔阿雷纳斯→纳塔莱斯港→三塔",
+    "pts": [
+      [
+        -53.1638,
+        -70.9171
+      ],
+      [
+        -51.731,
+        -72.506
+      ],
+      [
+        -50.941,
+        -73.406
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -33.448,
+    "lng": -70.669,
+    "name": "圣地亚哥·武器广场",
+    "t": "D2 全天 · 2 天",
+    "fee": "免费",
+    "note": "大教堂、中央市场、圣卢西亚山"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -33.047,
+    "lng": -71.613,
+    "name": "瓦尔帕莱索",
+    "t": "D4 全天 · 1 天",
+    "fee": "聂鲁达故居 7000 比索",
+    "note": "彩虹山城、百年索道、涂鸦街"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -22.909,
+    "lng": -68.201,
+    "name": "圣佩德罗·德阿塔卡马",
+    "t": "D5-D8 · 4 天",
+    "fee": "月亮谷 10000 比索",
+    "note": "2400m 沙漠小镇、观星大本营"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -22.351,
+    "lng": -68.01,
+    "name": "塔蒂奥间歇泉",
+    "t": "D6 凌晨 · 半天",
+    "fee": "行程约 5-6 万比索",
+    "note": "4320m 日出蒸汽柱、温泉"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": -22.912,
+    "lng": -68.332,
+    "name": "月亮谷·死亡谷",
+    "t": "D7 下午 · 半天",
+    "fee": "月亮谷 10000 比索",
+    "note": "火星地貌日落、滑沙"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": -41.4718,
+    "lng": -72.9396,
+    "name": "蒙特港/奇洛埃",
+    "t": "D9-D10 · 2 天",
+    "fee": "免费（轮渡另计）",
+    "note": "湖海门户、高脚屋、木教堂"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": -23.127,
+    "lng": -68.183,
+    "name": "阿塔卡马盐沼·查萨湖",
+    "t": "D8 下午 · 半天",
+    "fee": "入园约 13000 比索",
+    "note": "火烈鸟、火山倒影"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": -50.941,
+    "lng": -73.406,
+    "name": "百内·三塔",
+    "t": "D12-D13 · 2 天",
+    "fee": "21000 比索/3天",
+    "note": "花岗岩三塔、格雷冰川、裴欧埃湖"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-52.8, -76.0], [-20.5, -66.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c1692e\"></span>智利纵贯主线（圣地亚哥→百内）<br><span class=\"sw\" style=\"background:#2a6db5\"></span>百内园内线（蓬塔阿雷纳斯→纳塔莱斯港→三塔）<br><span class=\"sw dash\"></span>圣地亚哥—阿塔卡马—蒙特港—蓬塔阿雷纳斯段为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

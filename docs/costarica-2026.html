@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 哥斯达黎加 8 天全景攻略 · 云雾森林与太平洋</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #3a7d5c;
+    --red-light: #549a73;
+    --gold: #d9a441;
+    --ink: #24332c;
+    --muted: #6f8078;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #dfe8e0;
+    --blue: #1f6e63;
+    --cover1: #1e4a35;
+    --ov1: rgba(30,74,53,.88);
+    --ov2: rgba(58,125,92,.72);
+    --ov3: rgba(217,108,47,.38);
+    --ov4: rgba(42,157,143,.20);
+    --key-bg: #e8f0e9;
+    --info-bg: #eff3ef;
+    --head-bg: rgba(58,125,92,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/costarica/costarica-cover.jpg" alt="哥斯达黎加旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 8 天环线 · 火山 + 云雾林 + 太平洋海滩</div>
+      <h1>哥斯达黎加 8 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 圣何塞 · 阿雷纳尔火山温泉 · 蒙特维多云雾林 · 曼努埃尔安东尼奥</div>
+      <div class="meta">
+        <span>🛫 行程链：圣何塞 → 阿雷纳尔 → 蒙特维多 → 曼努埃尔安东尼奥 → 返程</span>
+        <span>📅 时间窗口：8 天 7 晚</span>
+        <span>✈️ 北京✈圣何塞 经洛杉矶/达拉斯转机约 20h+</span>
+        <span>🛂 签证：中国护照需签证；有美/加/申根签可免签 30 天</span>
+        <span>🕐 时差 -14 小时 · 🔌 电压 120V A/B 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 8 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 8 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node">圣何塞</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">阿雷纳尔火山</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">蒙特维多云雾林</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">曼努埃尔安东尼奥</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 8 天怎么安排最合理</span>
+      哥斯达黎加是「<strong>全球生物多样性密度最高</strong>」的国度（占地球陆地 0.03%，拥有 5% 物种）。8 天走最经典的太平洋线：阿雷纳尔火山看锥形火山与温泉、蒙特维多钻进云雾林看树冠、曼努埃尔安东尼奥把雨林和海滩压缩进一个公园。<strong>节奏先火山后森林再到海</strong>，一路向南不回头。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办哥斯达黎加签证；<strong>持有效美国/加拿大/申根签证或居留许可可免签入境 30 天</strong>，需返程机票与住宿证明</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>比北京慢 14 小时</td>
+</tr>
+<tr>
+<td>电源</td>
+<td>120V，A/B 型插座（两扁脚），需转换头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>哥斯达黎加科朗 CRC，1 元 ≈ 71 科朗；美元在旅游区广泛通用</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>圣何塞 1 天 + 阿雷纳尔 2 天 + 蒙特维多 2 天 + 曼努埃尔安东尼奥 2 天 + 返程 1 天</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 圣何塞 → 阿雷纳尔 → 蒙特维多 → 曼努埃尔安东尼奥 → 北京</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 15000–22000 ／ 标准 28000–42000 ／ 舒适 55000–80000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办签或确认美签 ② SINAC 官网订国家公园门票（每日限流）③ 订三段拼车 shuttle</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>国家公园每日限流</strong>：曼努埃尔安东尼奥每日仅放行约 800 人，必须在 SINAC 官网（sinac.gob.go.cr）提前实名购票，现场排队往往买不到。② <strong>雨季下午必下雨</strong>：5–11 月雨季每天午后有阵雨，户外活动（悬索桥、火山徒步）都排在上午，下午安排温泉、博物馆等室内项目。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 8 天版</h2>
+
+    <p>以下为 8 天 7 晚的推荐节奏：圣何塞中转 1 晚，北上阿雷纳尔住 2 晚泡火山温泉，渡湖到蒙特维多云雾林住 2 晚，最后南下太平洋海岸住 2 晚，返程回圣何塞机场。段间交通靠拼车 shuttle 或租车。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵圣何塞</td>
+<td>北京✈圣何塞（经洛杉矶/达拉斯转机约 20h+），入住市区，适应</td>
+<td>圣何塞</td>
+<td>抵达+适应</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>圣何塞→阿雷纳尔（车程 2.5h）：阿雷纳尔火山国家公园步道 + 傍晚天然温泉</td>
+<td>阿雷纳尔</td>
+<td>火山+温泉</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>拉福图纳：瀑布徒步 → 滑索 / 火山湖浆板，阿雷纳尔山景</td>
+<td>阿雷纳尔</td>
+<td>冒险日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>渡阿雷纳尔湖→蒙特维多（约 3h）：云雾林保护区徒步看绿咬鹃</td>
+<td>蒙特维多</td>
+<td>转场+云雾林</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>蒙特维多：悬索桥树冠漫步 → 蜂鸟园 → 夜游雨林寻夜行动物</td>
+<td>蒙特维多</td>
+<td>树冠+夜游</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>蒙特维多→曼努埃尔安东尼奥（车程 3.5h）：国家公园主步道看树懒猴子</td>
+<td>曼努埃尔安东尼奥</td>
+<td>转场+观兽</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>曼努埃尔安东尼奥：公园海滩 + 皮划艇 / 日落帆船出海</td>
+<td>曼努埃尔安东尼奥</td>
+<td>海滩+出海</td>
+</tr>
+<tr>
+<td>D8 返程</td>
+<td>克波斯→圣何塞机场（约 2.5h），✈转机回北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      阿雷纳尔到蒙特韦德走湖上渡船+陆路约 3h（景观线），也可绕行 4h 陆路；带娃可把 D3 滑索换成树懒保护中心与蝴蝶园；想看更野的森林可把蒙特维多换托图格罗国家公园（加勒比海龟季）。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 8 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达圣何塞</span>
+          <span class="d-desc">转机 20h+ 入境</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">全天</td><td class="t-what">北京✈圣何塞（经洛杉矶/达拉斯/迈阿密转机，总航程约 20h+；美国转机需美签，或选欧洲/墨西哥转机）</td></tr>
+          <tr><td class="t-time">抵达</td><td class="t-what">胡安·圣玛丽亚国际机场入境，出示签证/免签资格、返程机票与酒店订单，入境需旅行保险（医疗保额至少 5 万美元）</td></tr>
+          <tr><td class="t-time">16:00</td><td class="t-what">入住圣何塞市区，兑换科朗/确认美元现金</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">Mercado Central 中央市场晚餐：Gallo Pinto 豆饭 + 鲜榨果汁</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">哥斯达黎加入境会抽查旅行保险，务必买覆盖医疗保额 5 万美元以上的保单；机场换汇汇率尚可，别在机场换太多。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 阿雷纳尔火山</span>
+          <span class="d-desc">火山步道+天然温泉</span>
+          <span class="d-tag ">🌋 火山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">圣何塞出发，拼车/租车前往<b>拉福图纳</b>（La Fortuna，车程 2.5–3h）</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">入住拉福图纳生态旅馆，午餐</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>阿雷纳尔火山国家公园</b>步道（门票约 15 美元）：1968 年熔岩流徒步，看完美锥形火山</td></tr>
+          <tr><td class="t-time">17:30–20:00</td><td class="t-what"><b>天然温泉</b>：塔巴孔/巴尔迪温泉（约 45–80 美元）或免费河滩温泉，泡汤看火山轮廓</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿雷纳尔 2010 年后进入平静期，但火山锥与周边温泉依然震撼；温泉选夜间场便宜且人少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 拉福图纳冒险</span>
+          <span class="d-desc">瀑布+滑索/浆板</span>
+          <span class="d-tag alt">🏄 冒险日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>拉福图纳瀑布</b>（约 18 美元）：500 级台阶下到瀑布深潭，可跳水游泳</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">瀑布脚下花园与小径漫步</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：Soda 小餐馆 Casado 套餐</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what">二选一：<b>滑索 canopy tour</b>（约 60–80 美元）穿火山雨林，或<b>阿雷纳尔湖浆板</b>看火山倒影</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐 + 夜间泡温泉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">滑索对体重/年龄有下限，报名前确认；浆板选下午湖面平静时段，火山倒影绝美。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 蒙特维多云雾林</span>
+          <span class="d-desc">渡湖转场+森林徒步</span>
+          <span class="d-tag ">🌲 云雾林日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">拉福图纳出发：经<b>阿雷纳尔湖渡船</b>（约 30min）+ 陆路，全程约 3h 到蒙特维多</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">入住蒙特维多木屋旅馆，午餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>蒙特维多云雾林生物保护区</b>（约 25 美元）：苔藓覆盖的原始林、云雾与绿咬鹃，徒步 2–3h</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：山间木屋烛光餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蒙特维多海拔 1400 米，常年起雾湿润，温度偏低带件外套；渡船时刻需提前确认，错过要绕行 4h。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 树冠与夜游</span>
+          <span class="d-desc">悬索桥+蜂鸟园+夜游</span>
+          <span class="d-tag ">🌿 树冠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what"><b>悬索桥树冠漫步</b>（塞尔瓦图拉/天空步道，约 25–40 美元）：数座吊桥穿行树冠层</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><b>蜂鸟园</b>：14 种蜂鸟在喂食器旁打转，快门声不停</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">自由补充：蝴蝶园 / 滑索 / 圣埃琳娜保护区（人更少）</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what"><b>夜游雨林</b>（约 30–40 美元）：手电筒找树懒、青蛙与夜行昆虫</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">夜游是蒙特韦德的招牌体验，向导的发现力决定体验；蜂鸟园上午光线最好，适合拍鸟。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 曼努埃尔安东尼奥</span>
+          <span class="d-desc">转场 3.5h+公园观兽</span>
+          <span class="d-tag ">🐒 观兽日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">蒙特维多出发，拼车南下<b>曼努埃尔安东尼奥</b>（车程约 3.5h）</td></tr>
+          <tr><td class="t-time">11:30</td><td class="t-what">入住克波斯/公园门口，午餐</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>曼努埃尔安东尼奥国家公园</b>主步道（门票 18 美元，官网提前订）：白面卷尾猴、双趾树懒、巨嘴鸟与四片海滩</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">克波斯海港晚餐：海鲜 Ceviche + 日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">公园入口需出示实名购票码，建议订最早时段（7:00）入园人最少；徒步 2–3h 主步道基本能看全「海景+丛林+野生动物」。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 海滩与出海</span>
+          <span class="d-desc">国家公园海滩+皮划艇</span>
+          <span class="d-tag ">🏖 海滩日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">公园内<b>主海滩</b>浮潜/游泳（若 D6 没走主步道则补公园徒步）</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">皮划艇穿红树林（约 40–60 美元）：鳄鱼、苍鹭、翠鸟</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：克波斯海鲜市场</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">二选一：<b>日落帆船出海</b>（约 70–90 美元，含浮潜与玛格丽特酒）或海滩躺平</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">告别晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">12–4 月旱季海况好，帆船几乎天天开；雨季出海前查浪况，晕船药提前吃。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 返程</span>
+          <span class="d-desc">克波斯→圣何塞机场</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">退房，拼车返回圣何塞（约 2.5h），沿途可停咖啡庄园买豆</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">圣何塞机场值机，买哥斯达黎加咖啡与巧克力伴手礼</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">胡安·圣玛丽亚机场起飞，转机回北京</td></tr>
+          <tr><td class="t-time">落地</td><td class="t-what">到家休息，倒 2 天时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">机场可买 Tarrazú 产区咖啡礼盒；返程预留 3h 到机场，行李超重注意廉航行李额。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-cover.jpg" alt="阿雷纳尔·火山国家公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿雷纳尔·火山国家公园 <small>约 15 美元</small></div>
+          <div class="sc-feat">完美锥形活火山。<b>1968 年熔岩流步道</b>，火山喷发史现场。</div>
+          <div class="sc-meta">📅 8:00–16:00 · ⏱ 2–3h · 🚗 拉福图纳 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-1.jpg" alt="蒙特维多·云雾林保护区" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒙特维多·云雾林保护区 <small>约 25 美元</small></div>
+          <div class="sc-feat">苔藓云雾森林。<b>绿咬鹃与云雾</b>，全球生态多样性标杆。</div>
+          <div class="sc-meta">📅 7:00–16:00 · ⏱ 2–3h · 🚶 步行/接驳</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-6.jpg" alt="曼努埃尔安东尼奥·国家公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">曼努埃尔安东尼奥·国家公园 <small>18 美元（限流预订）</small></div>
+          <div class="sc-feat">最小却最火。<b>卷尾猴+树懒+四片海滩</b>，雨林与海同框。</div>
+          <div class="sc-meta">📅 7:00–16:00 · ⏱ 3–4h · 🚶 公园门口</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-4.jpg" alt="拉福图纳·瀑布" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">拉福图纳·瀑布 <small>约 18 美元</small></div>
+          <div class="sc-feat">75 米瀑布。<b>500 级台阶下潭跳水</b>，火山山脚清凉秘境。</div>
+          <div class="sc-meta">📅 8:00–16:00 · ⏱ 2.5h · 🚶 镇郊</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-2.jpg" alt="蒙特维多·悬索桥" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒙特维多·悬索桥 <small>约 25–40 美元</small></div>
+          <div class="sc-feat">树冠层漫步。<b>数座吊桥穿行树顶</b>，云雾林最佳视角。</div>
+          <div class="sc-meta">📅 7:30–16:30 · ⏱ 2–3h · 🚶 保护区旁</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-3.jpg" alt="蒙特维多·夜游雨林" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒙特维多·夜游雨林 <small>约 30–40 美元</small></div>
+          <div class="sc-feat">夜间生态课堂。<b>树懒、树蛙与夜行昆虫</b>，向导带队。</div>
+          <div class="sc-meta">📅 18:00 前后 · ⏱ 2h · 🚶 保护区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-5.jpg" alt="哥斯达黎加·瀑布群" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">哥斯达黎加·瀑布群 <small>约 10–18 美元</small></div>
+          <div class="sc-feat">雨林瀑布。<b>Nauyaca/拉安赫尔瀑布</b>，雨季水量充沛。</div>
+          <div class="sc-meta">📅 8:00–16:00 · ⏱ 2h · 🚗 沿途</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/costarica/costarica-7.jpg" alt="曼努埃尔安东尼奥·海滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">曼努埃尔安东尼奥·海滩 <small>免费</small></div>
+          <div class="sc-feat">哥斯达黎加最美海滩。<b>月牙沙滩+雨林环抱</b>，冲浪浮潜皆宜。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚶 公园内</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（阿雷纳尔火山、蒙特维多悬索桥、云雾森林、树懒、巨嘴鸟、瀑布与海滩等均为哥斯达黎加实景），用于页面配图。更多免费景点：中央市场、蜂鸟园、蝴蝶园、圣埃琳娜保护区。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 71 哥斯达黎加科朗估算。哥斯达黎加是美洲「生态旅游贵国」，住宿与活动费用高，美签转机线路与国内订票能省 20%。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（15000–22000）</th>
+<th>标准（28000–42000）</th>
+<th>舒适（55000–80000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机往返 8000–9500</td>
+<td>含美签转机 10000–13000</td>
+<td>商务/直挂 18000–26000</td>
+</tr>
+<tr>
+<td>住宿（7 晚）</td>
+<td>青旅 150–250/晚</td>
+<td>生态旅馆 500–1000/晚</td>
+<td>度假村/观景 1500–3000/晚</td>
+</tr>
+<tr>
+<td>交通</td>
+<td>拼车+公交 1500–2500</td>
+<td>租车 4WD 3000–5000</td>
+<td>包车/专车 8000–15000</td>
+</tr>
+<tr>
+<td>门票活动</td>
+<td>基础公园 500–1000</td>
+<td>含温泉/滑索 2500–4500</td>
+<td>全含+向导 7000–10000</td>
+</tr>
+<tr>
+<td>餐饮（8 天）</td>
+<td>市场+Soda 1600–2500</td>
+<td>正常下馆子 3000–5000</td>
+<td>Fine Dining 8000–12000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 32000 元）</span>
+      往返机票 11500 + 住宿 7 晚 5600（平均 800/晚）+ 拼车/租车 4000 + 门票与活动（温泉/滑索/夜游/帆船）3500 + 餐饮 4000 + 保险/杂费 1500 ≈ <strong>30000–33000 元</strong>。活动项目是大头，二选一能省 800–1200 元；租车四人分摊最划算。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>8.1 精简 6 天版</h3>
+
+
+    <ul>
+
+      <li>圣何塞 1 晚</li>
+
+      <li>阿雷纳尔 2 天（火山+温泉）</li>
+
+      <li>蒙特维多 2 天（云雾林+悬索桥）</li>
+
+      <li>曼努埃尔安东尼奥 1 天，返程</li>
+
+    </ul>
+
+    <h3>8.2 加勒比海岸版</h3>
+
+
+    <p>把曼努埃尔安东尼奥换成加勒比侧：托图格罗国家公园（7–10 月海龟产卵季）、卡维塔与普埃尔托维耶霍的非洲裔加勒比文化。两条海岸气质完全不同，太平洋侧成熟、加勒比侧原生态，适合二次造访的旅行者。</p>
+
+    <h3>8.3 观鲸与远海版</h3>
+
+
+    <p>太平洋侧延伸：从克波斯南下到乌维塔/奥萨半岛（德雷克湾、科尔科瓦多国家公园），旱季 12–4 月看鲸与海豚，是资深生态旅行者的深度选项，但路况差、需要更多时间与预算。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 哥斯达黎加 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（唯一方式）</td>
+<td>北京→圣何塞 20–28h</td>
+<td>往返 8000–11000 元</td>
+<td>经洛杉矶/达拉斯/迈阿密（需美签）或墨西哥城/欧洲转机</td>
+</tr>
+<tr>
+<td>直飞</td>
+<td>—</td>
+<td>—</td>
+<td>中国无直飞哥斯达黎加航班</td>
+</tr>
+<tr>
+<td>租车</td>
+<td>—</td>
+<td>4WD 约 60–90 美元/天</td>
+<td>山路多建议 SUV/4WD，用 Waze 导航，买全险</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 哥斯达黎加境内交通核心提醒</span>
+      哥斯达黎加是「山多路弯」的国度，主要景点间靠<strong>拼车 shuttle</strong>（圣何塞—阿雷纳尔约 50–60 美元/人）或<strong>自驾 4WD</strong>；阿雷纳尔到蒙特韦德的捷径是<strong>阿雷纳尔湖渡船 + 陆路</strong>约 3h。所有国家公园门票提前在 <strong>SINAC 官网</strong>实名预订（每日限流）。
+    </div>
+
+    <h3>8.2 哥斯达黎加境内交通</h3>
+    <ul>
+      <li><strong>拼车 shuttle</strong>：圣何塞—阿雷纳尔 2.5h（约 50–60 美元/人），提前 1 天订</li>
+      <li><strong>阿雷纳尔湖渡船</strong>：阿雷纳尔—蒙特维多捷径（30min 渡船+陆路，约 3h 全程）</li>
+      <li><strong>蒙特维多—克波斯</strong>：拼车 3.5h，或自驾 4WD</li>
+      <li><strong>租车自驾</strong>：4WD 60–90 美元/天，油价高、山路窄，买全险</li>
+      <li><strong>市内 Uber</strong>：圣何塞可用，小镇步行+当地 taxi</li>
+      <li><strong>航班（可选）</strong>：圣何塞—克波斯/利比里亚短途，赶时间可用</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>圣何塞·市区</td>
+<td>经济 200–350 / 标准 400–700</td>
+<td>转机枢纽、中央市场近</td>
+<td>城市感一般</td>
+</tr>
+<tr>
+<td>拉福图纳（阿雷纳尔）</td>
+<td>生态旅馆 400–900</td>
+<td>火山景观、温泉步行</td>
+<td>旺季一房难求</td>
+</tr>
+<tr>
+<td>蒙特维多·山间</td>
+<td>木屋 300–700</td>
+<td>云雾林里的木屋</td>
+<td>山路湿冷、蚊虫多</td>
+</tr>
+<tr>
+<td>克波斯/曼努埃尔安东尼奥</td>
+<td>海滨 400–1000</td>
+<td>海滩+雨林同区</td>
+<td>旺季提前 2 周订</td>
+</tr>
+<tr>
+<td>圣何塞机场区</td>
+<td>经济 300–500</td>
+<td>返程方便</td>
+<td>无景点</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🌯 必吃经典</h3>
+        <ul>
+          <li>Gallo Pinto 红豆米饭（国民早餐）</li>
+          <li>Casado 套餐（饭+豆+肉+沙拉）</li>
+          <li>Ceviche 酸橘汁腌鱼</li>
+          <li>鲜榨果汁（木瓜/菠萝/百香果）</li>
+        </ul>
+        <h3>🍍 本地特色</h3>
+        <ul>
+          <li>Sopa Negra 黑豆汤</li>
+          <li>Plantain 烤大蕉</li>
+          <li>Patacones 炸青蕉饼</li>
+          <li>热带水果市场</li>
+        </ul>
+      </div>
+      <div>
+        <h3>☕ 咖啡文化</h3>
+        <ul>
+          <li>Tarrazú 产区精品咖啡</li>
+          <li>咖啡庄园参观（圣何塞周边）</li>
+          <li>巧克力工坊（本地产可可）</li>
+          <li>糖厂/朗姆酒（可选）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>圣何塞 Mercado Central</li>
+          <li>拉福图纳 Soda 小餐馆</li>
+          <li>蒙特维多木屋餐馆</li>
+          <li>克波斯海港海鲜店</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① Pura Vida 慢节奏，餐馆上菜慢是常态，别催；② 国家公园内禁止带入外食（瓶装水除外）；③ 账单多已含 10% 服务费，无需再给小费；④ 生水不可直饮，买瓶装水或自带过滤水壶。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 哥斯达黎加签证（或美/加/申根签免签）</li>
+        <li>旅行保险（医疗保额 ≥5 万美元，入境抽查）</li>
+        <li>返程机票 + 酒店订单打印件</li>
+        <li>SINAC 官网预订国家公园门票</li>
+      </ul>
+      <ul>
+        <li>转换插头（120V A/B 型）</li>
+        <li>防晒霜、驱蚊液（含 DEET）</li>
+        <li>防水衣物/雨衣（雨季必备）</li>
+        <li>离线地图 + Waze 导航</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>租车必买全险</strong>：哥斯达黎加路窄弯多、雨季泥泞，保险不保就自己兜底；② <strong>公园限流</strong>：曼努埃尔安东尼奥每日 800 人上限，官网不预约现场基本进不去；③ <strong>雨季下午下雨</strong>：户外活动排上午，下午安排温泉/博物馆；④ <strong>别喂野生动物</strong>：猴子会抢包，树懒与金刚鹦鹉看看就好。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      哥斯达黎加是「<strong>一生一次的生态课</strong>」——阿雷纳尔的火山温泉、蒙特维多的云雾森林树冠、曼努埃尔安东尼奥雨林与海滩的同框，8 天刚好走完最经典的三段。手续上最大的门槛是签证（有美签即可免签 30 天），剩下的就是把好奇心交给森林与大海。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#3a7d5c",
+    "d": 4,
+    "n": "哥斯达黎加主线 · 圣何塞→阿雷纳尔→蒙特维多→曼努埃尔安东尼奥",
+    "pts": [
+      [
+        9.928,
+        -84.091
+      ],
+      [
+        10.463,
+        -84.703
+      ],
+      [
+        10.301,
+        -84.798
+      ],
+      [
+        9.378,
+        -84.156
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 9.928,
+    "lng": -84.091,
+    "name": "圣何塞·中央市场",
+    "t": "D1 傍晚 · 1.5h",
+    "fee": "免费",
+    "note": "Gallo Pinto、鲜榨果汁"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 10.463,
+    "lng": -84.703,
+    "name": "阿雷纳尔·火山国家公园",
+    "t": "D2 下午 · 3h",
+    "fee": "约 15 美元",
+    "note": "熔岩流步道、火山锥"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 10.472,
+    "lng": -84.643,
+    "name": "拉福图纳·瀑布",
+    "t": "D3 上午 · 2.5h",
+    "fee": "约 18 美元",
+    "note": "500 级台阶下潭"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 10.464,
+    "lng": -84.636,
+    "name": "阿雷纳尔·天然温泉",
+    "t": "D2 傍晚 · 2h",
+    "fee": "45–80 美元",
+    "note": "塔巴孔/巴尔迪温泉"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 10.301,
+    "lng": -84.798,
+    "name": "蒙特维多·云雾林保护区",
+    "t": "D4 下午 · 3h",
+    "fee": "约 25 美元",
+    "note": "绿咬鹃、苔藓森林"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 10.321,
+    "lng": -84.806,
+    "name": "蒙特维多·悬索桥",
+    "t": "D5 上午 · 2.5h",
+    "fee": "约 25–40 美元",
+    "note": "树冠吊桥、蜂鸟园"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 9.378,
+    "lng": -84.156,
+    "name": "曼努埃尔安东尼奥·国家公园",
+    "t": "D6 下午 · 3h",
+    "fee": "18 美元",
+    "note": "树懒猴子、四片海滩"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 9.381,
+    "lng": -84.147,
+    "name": "曼努埃尔安东尼奥·海滩",
+    "t": "D7 全天 · 1 天",
+    "fee": "免费",
+    "note": "浮潜、皮划艇、日落帆船"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[8.9, -85.3], [11.1, -83.4]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#3a7d5c\"></span>哥斯达黎加主线（圣何塞→阿雷纳尔→蒙特维多→曼努埃尔安东尼奥）<br><span class=\"sw dash\"></span>阿雷纳尔—蒙特维多段经阿雷纳尔湖渡船</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

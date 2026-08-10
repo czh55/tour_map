@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 德国 15 天全景攻略 · 城堡与浪漫之路</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #dd0000;
+    --red-light: #9e0b0f;
+    --gold: #ffce00;
+    --ink: #2a2a2a;
+    --muted: #8a847c;
+    --bg: #f8f6f0;
+    --card: #ffffff;
+    --line: #e8e2d6;
+    --blue: #1f3a68;
+    --cover1: #1c1c1c;
+    --ov1: rgba(28,28,28,.88);
+    --ov2: rgba(109,0,0,.72);
+    --ov3: rgba(221,0,0,.38);
+    --ov4: rgba(255,206,0,.20);
+    --key-bg: #fdf6dd;
+    --info-bg: #f4f1ea;
+    --head-bg: rgba(221,0,0,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/germany/germany-cover.jpg" alt="德国旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 15 天环线 · 柏林 + 慕尼黑 + 浪漫之路</div>
+      <h1>德国 15 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 柏林 · 德累斯顿 · 罗滕堡 · 慕尼黑 · 海德堡 · 莱茵河谷</div>
+      <div class="meta">
+        <span>🛫 行程链：柏林 → 德累斯顿 → 法兰克福 → 罗滕堡 → 慕尼黑 → 海德堡 → 莱茵河谷 → 返程</span>
+        <span>📅 时间窗口：15 天 14 晚</span>
+        <span>✈️ 北京⇄柏林/慕尼黑 直飞约 9.5–11 小时</span>
+        <span>🛂 签证：申根 C 类（中国护照需办，90 欧 + VFS 服务费）</span>
+        <span>🕐 时差 -7 小时（冬）/-6 小时（夏） · 🔌 230V C/F 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 15 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 15 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">柏林</span>
+      <span class="arrow">→</span>
+      <span class="node">德累斯顿</span>
+      <span class="arrow">→</span>
+      <span class="node">法兰克福</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">罗滕堡</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">慕尼黑</span>
+      <span class="arrow">→</span>
+      <span class="node">海德堡</span>
+      <span class="arrow">→</span>
+      <span class="node">莱茵河谷</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 15 天怎么安排最合理</span>
+      德国是「<strong>历史、童话与啤酒</strong>」三位一体的目的地：柏林把沉重的冷战历史摊开展览，罗滕堡把中世纪封存在城墙里，慕尼黑把啤酒与阿尔卑斯装进一个杯。15 天刚好串成一条<strong>北进南收的环线</strong>——前 7 天走城市与浪漫之路，后 8 天泡慕尼黑与莱茵河谷，节奏上<strong>每段不赶</strong>。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办<strong>申根 C 类签证</strong>：德国驻华使领馆审理，签证费 90 欧 + VFS 服务费约 19 欧，材料齐全通常数日–2 周出签，提前 1–2 个月办理</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>柏林 4 天 → 德累斯顿 1 天 → 法兰克福 1 天 → 罗滕堡 2 天 → 慕尼黑 4 天 → 海德堡 1 天 → 莱茵河谷 1 天 → 返程</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 15 天从法兰克福/慕尼黑返程，直飞班次多但旺季需提前 1 个月订票</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>柏林 → 德累斯顿 → 法兰克福 → 罗滕堡 → 慕尼黑 → 海德堡 → 莱茵河谷</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 12000–18000 ／ 标准 22000–32000 ／ 舒适 48000–65000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办申根签证 ② 订往返机票 + ICE 特价票 ③ 新天鹅堡官网预约时间段（旺季提前 1–2 月）</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>5–10 月最舒适；9.19–10.4 啤酒节；11 月底–12 月圣诞市场（罗滕堡最美）</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>欧元现金（备 200–300 欧）+ Visa/Mastercard；德国小店与面包店常只收现金</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>新天鹅堡必须官网预约时间段</strong>：成人 21 欧 + 每张 2.5 欧订票费，旺季当天票早上 8 点就可能售罄，不预约基本进不去。② <strong>德国周日几乎全部商店关门</strong>（面包店/药店/火车站例外），购物与采购避开周日，餐饮也提前确认营业时间。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 15 天版</h2>
+
+    <p>以下为 15 天 14 晚的推荐节奏：先柏林后南下，经浪漫之路进慕尼黑，再沿海德堡—莱茵河谷回法兰克福。每日主景点 ≤2 个，城际以 ICE 高铁为主（提前订特价票），阿尔卑斯山区结合地区火车+巴士。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵柏林</td>
+<td>北京✈柏林（海航直飞约 9.5–11h），机场快线进城，入住米特区，傍晚勃兰登堡门灯光</td>
+<td>柏林</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>勃兰登堡门 → 国会大厦穹顶（预约）→ 犹太人大屠杀纪念碑 → 查理检查站</td>
+<td>柏林</td>
+<td>历史日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>柏林墙纪念馆 → 东边画廊 → 博物馆岛（佩加蒙大修中，看新博物馆/旧博物馆）</td>
+<td>柏林</td>
+<td>冷战与艺术</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>波茨坦无忧宫一日（S7 约 40min）→ 返城看柏林大教堂 + 御林广场</td>
+<td>柏林</td>
+<td>普鲁士王宫</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>ICE 到德累斯顿：圣母教堂 → 茨温格宫 → 易北河畔</td>
+<td>德累斯顿</td>
+<td>巴洛克古城</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>ICE 到法兰克福（中转）：罗马广场 → 美因塔/欧元塔 → 美因河畔</td>
+<td>法兰克福</td>
+<td>中转休整</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>ICE 经维尔茨堡转车到罗滕堡，市政厅广场 + Plönlein + 城墙漫步</td>
+<td>罗滕堡</td>
+<td>抵达中世纪</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>圣雅各教堂 → 中世纪犯罪博物馆 → 圣诞博物馆 → 守夜人夜游</td>
+<td>罗滕堡</td>
+<td>中世纪深度</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>ICE 到慕尼黑：玛丽安广场 + 新市政厅钟楼 → 圣彼得教堂登顶 → HB 皇家啤酒馆</td>
+<td>慕尼黑</td>
+<td>啤酒之都</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>新天鹅堡一日：RE 到 Füssen → 玛丽安桥 → 新天鹅堡预约场次 → 高天鹅堡外观</td>
+<td>慕尼黑</td>
+<td>童话城堡</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>国王湖一日：RE 到贝希特斯加登 → 游船 → 圣巴多罗买礼拜堂 → Obersee 徒步</td>
+<td>慕尼黑</td>
+<td>阿尔卑斯湖</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>宁芬堡宫 → 德意志博物馆 →（9.19–10.4 加啤酒节）或英国花园</td>
+<td>慕尼黑</td>
+<td>巴伐利亚日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>ICE 到海德堡：城堡 + 缆车 → 老桥 → 哲学家小径</td>
+<td>海德堡</td>
+<td>哲学家之城</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>ICE 到圣戈阿 → KD 游船到吕德斯海姆（罗蕾莱之岩 + 40 城堡）→ 返法兰克福</td>
+<td>法兰克福</td>
+<td>莱茵河谷</td>
+</tr>
+<tr>
+<td>D15 返程</td>
+<td>法兰克福老城补货 → 机场退税 → 法兰克福✈北京（直飞约 9.5–11h）</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍德累斯顿（D5）与法兰克福（D6）合并为一天，或用慕尼黑进出（省略海德堡—莱茵河谷段）。带娃家庭建议砍掉国王湖与啤酒节，换成德意志博物馆+乐高乐园。圣诞季（11 月底–12 月）优先罗滕堡与纽伦堡圣诞市场。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 15 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达柏林</span>
+          <span class="d-desc">入住柏林米特区</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">02:40–06:45</td><td class="t-what">北京✈柏林（海航 HU489 直飞约 9.5h，每周 5 班；凌晨起飞、当地清晨落地，机上补觉</td></tr>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">机场快线 FEX/RE 到柏林中央火车站（约 30min），换地铁入住米特区酒店</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">倒时差缓冲：街区咖啡 Brunch（柏林人最爱的周末方式），先熟悉地形</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：柏林咖喱香肠 Currywurst（约 4 欧）+ 一杯啤酒</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what"><b>勃兰登堡门</b>（免费）：巴黎广场 + 国会大厦外观，傍晚灯光亮起最好看</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：德国猪肘+啤酒，早睡倒时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">时差 -6 小时（夏令时），去程落地是当地清晨，精神最好；当晚早睡，第二天满血。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 柏林历史日</span>
+          <span class="d-desc">勃兰登堡门 + 国会大厦</span>
+          <span class="d-tag ">🏛 历史日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what"><b>勃兰登堡门</b>（免费）：柏林地标，清晨光线最佳、游客最少</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>国会大厦玻璃穹顶</b>（免费，需提前 2–4 周官网预约时段）：登顶俯瞰柏林全景</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：米特区小馆或咖喱香肠快餐</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what"><b>犹太人大屠杀纪念碑</b>（免费）：2711 根水泥柱组成的静默森林</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>查理检查站</b>（室外免费）：冷战美苏坦克对峙点，可顺逛对面墙博物馆（18 欧）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：柏林啤酒馆，试试柏林小麦啤 Berliner Weisse</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国会大厦穹顶必须带护照过安检，预约入口在施普雷河侧；夏季日照到 21 点，行程可往后排。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 柏林墙 + 博物馆岛</span>
+          <span class="d-desc">冷战与艺术一日</span>
+          <span class="d-tag ">🎨 柏林墙日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>柏林墙纪念馆</b>（Bernauer Straße，免费）：保留墙体、岗楼与资料中心，历史现场感最强</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>东边画廊</b>（免费）：1.3km 残存墙体上的涂鸦，「兄弟之吻」是必打卡机位</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：东边画廊旁土耳其 Döner 或炸鱼</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>博物馆岛</b>（一天通票 24 欧）：佩加蒙大修中，主看新博物馆纳芙蒂蒂像、旧博物馆圆厅</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：哈克市场啤酒馆 + 街头小吃，夜间逛老城</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">博物馆岛周一大多闭馆，避开周一安排；佩加蒙博物馆 2027 年前部分关闭，去前先查官网开放馆。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 波茨坦无忧宫</span>
+          <span class="d-desc">普鲁士王宫一日</span>
+          <span class="d-tag alt">👑 波茨坦日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">S7 市郊铁路到波茨坦（约 40min），票价含在柏林日票内</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>无忧宫</b>（成人约 19 欧含城堡导览）：腓特烈大帝夏宫，葡萄园梯田 + 喷泉花园</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">波茨坦老城午餐：萨克森烤猪排或湖区鱼</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">塞琪琳霍夫宫外观（波茨坦会议旧址）+ 老城世界遗产区</td></tr>
+          <tr><td class="t-time">16:30–19:00</td><td class="t-what">返柏林，<b>柏林大教堂</b>（外观）+ <b>御林广场</b>（免费）：双教堂夹广场的巴洛克夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">无忧宫可改市内替代：柏林电视塔（约 22 欧）俯瞰全城，或直接逛街（哈克市场/弗里德里希大街）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 德累斯顿</span>
+          <span class="d-desc">易北河畔佛罗伦萨</span>
+          <span class="d-tag ">🏰 德累斯顿日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">ICE 柏林→德累斯顿（约 2h，提前订特价票 19–40 欧）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>圣母教堂</b>（免费，登顶约 8 欧）：二战重建的巴洛克穹顶，易北河谷全景</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：萨克森烤肉 + 红卷心菜 + 土豆丸子</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>茨温格宫</b>（广场免费，历代大师美术馆约 12 欧）：巴洛克建筑杰作，瓷器收藏世界顶级</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">易北河畔漫步看落日，晚餐：德累斯顿小香肠 + 圣诞果脯蛋糕（Stollen）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">德累斯顿圣诞市场（11 月底–12 月）是全德最古老之一；圣母教堂登顶要爬约 100 级楼梯。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 法兰克福</span>
+          <span class="d-desc">中转休整日</span>
+          <span class="d-tag alt">🚉 中转日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">ICE 德累斯顿→法兰克福（约 4.5h，经莱比锡/埃尔福特），车上休息</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">入住主火车站附近（机场快线方便），午餐：苹果酒 Apfelwein + 猪排</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>罗马广场</b>（免费）：罗默市政厅、正义喷泉、木筋房老城</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>美因塔/欧元塔</b>外观，美因河畔散步看日落</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：法兰克福小香肠（Frankfurter）+ 绿酱（Grüne Soße）+ 土豆沙拉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">法兰克福只是中转站，别安排重景点；重点是吃好睡好，为浪漫之路养精蓄锐。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 浪漫之路·罗滕堡</span>
+          <span class="d-desc">抵达中世纪小镇</span>
+          <span class="d-tag ">🏘 罗滕堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">ICE 法兰克福→维尔茨堡（约 1h）→ RE 到 Steinach → 接驳巴士到罗滕堡（全程约 2.5h）</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">入住老城内酒店（中世纪城墙内的木筋房）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>市政厅广场 + Plönlein 明信片角</b>（免费）：木筋房彩绘 + 双塔机位</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>城墙栈道</b>（免费）：2.5km 完整城墙，看塔楼与陶伯河谷</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：弗兰肯白葡萄酒 + 香肠拼盘，夜晚城墙亮灯</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">罗滕堡没有火车站，必须经 Steinach 换接驳巴士；住一晚才能等到日间旅行团散去，夜晚小镇像回到中世纪。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 罗滕堡深度</span>
+          <span class="d-desc">守夜人夜游</span>
+          <span class="d-tag ">🕯 中世纪日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>圣雅各教堂</b>（约 5 欧）：圣血祭坛 + 木雕艺术，哥特建筑精华</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>中世纪犯罪博物馆</b>（约 8 欧）：铁处女、羞耻面具、刑具，暗黑又猎奇</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：Schneeballen 雪球（罗滕堡特产糖霜甜点）+ 咖啡</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>德国圣诞博物馆 + Käthe Wohlfahrt 圣诞村</b>（博物馆约 8 欧）：全年圣诞氛围，胡桃夹子收藏</td></tr>
+          <tr><td class="t-time">20:00–21:30</td><td class="t-what"><b>守夜人夜游</b>（约 9 欧）：提灯巡城，中世纪轶事与小镇传说</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">守夜人巡游需提前在官网订位（约 9 欧/人）；圣诞季（11 月底–12 月）罗滕堡是全德最美圣诞小镇。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 慕尼黑</span>
+          <span class="d-desc">玛丽安广场 + 啤酒馆</span>
+          <span class="d-tag ">🍺 慕尼黑日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">罗滕堡→（RE 到安斯巴赫转 ICE）→慕尼黑（约 3h）</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">入住慕尼黑市中心（玛丽安广场/火车站周边）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what"><b>玛丽安广场 + 新市政厅</b>（免费）：钟楼 11/12 点木偶报时，市政厅外墙极美</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>圣彼得教堂塔楼</b>（约 5 欧）：登顶俯瞰玛丽安广场全景</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>皇家啤酒馆 HB</b>：猪肘 + 白香肠 + 1L 啤酒，慕尼黑第一站标配</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">慕尼黑住宿比柏林贵 30–50%，啤酒节期间（9.19–10.4）房价暴涨 3 倍以上，务必提前 2–3 个月订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 新天鹅堡</span>
+          <span class="d-desc">迪士尼城堡原型</span>
+          <span class="d-tag alt">🏰 天鹅堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00</td><td class="t-what">慕尼黑主火车站乘 RE 到 Füssen（约 2h）→ 巴士 78 到霍亨施旺高</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>玛丽安桥</b>（免费）：经典机位拍新天鹅堡全景，桥窄人多要早到</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>新天鹅堡</b>（成人 21 欧 + 2.5 欧订票费，必须官网预约场次）：路德维希二世童话城堡内部导览</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">Füssen 午餐：湖区烤鳟鱼 + 白啤酒</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>高天鹅堡外观</b>（不登堡免费）或阿尔普湖散步（0.5h 环湖）</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">RE 返慕尼黑，晚餐：巴伐利亚香肠店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">新天鹅堡必须官网预约时间段，旺季（7–8 月）提前 1–2 个月订；门票含约 35 分钟内部导览，禁止拍照。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 国王湖</span>
+          <span class="d-desc">阿尔卑斯高山湖</span>
+          <span class="d-tag ">🏔 国王湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00</td><td class="t-what">慕尼黑 RE 到贝希特斯加登（约 2.5h）→ 巴士 841 到国王湖码头</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>国王湖游船</b>（往返 Salet 约 29.8 欧，2026 价）：湖心回音壁小号表演，水色绿如翡翠</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what"><b>圣巴多罗买礼拜堂</b>（下船徒步）：红顶洋葱教堂 + 湖鲜烤鱼午餐</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">徒步 Obersee 上湖（约 1.5h 往返）：高山牧场、瀑布、纯净蓝湖</td></tr>
+          <tr><td class="t-time">16:00–19:00</td><td class="t-what">返程慕尼黑，晚餐：白香肠 + 甜芥末 + 碱水结</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国王湖夏季船票紧张建议提前网上订；6 岁以下免费，6–13 岁儿童 10 欧；湖边无手机信号，提前下载船票 PDF。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 宁芬堡 + 啤酒节</span>
+          <span class="d-desc">巴伐利亚悠闲日</span>
+          <span class="d-tag ">🎠 巴伐利亚日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>宁芬堡宫</b>（联票约 14 欧）：巴洛克夏宫，天鹅湖 + 美人厅，宫殿花园免费散步</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：慕尼黑白香肠 Weißwurst + 甜芥末（午前食用传统）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>德意志博物馆</b>（约 17 欧）：世界最大科技馆，飞机船舶机械应有尽有</td></tr>
+          <tr><td class="t-time">17:30–20:00</td><td class="t-what"><b>啤酒节特蕾西娅草坪</b>（9.19–10.4）：1L 啤酒杯 + 巴伐利亚乐队；非啤酒节改英国花园啤酒园</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">9.19–10.4 正值啤酒节：帐篷需早去占位（中午后爆满），1L 啤酒约 15–16 欧；平日首选英国花园（免费）边看冲浪边喝啤酒。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 海德堡</span>
+          <span class="d-desc">诗人与哲学家之城</span>
+          <span class="d-tag alt">🏛 海德堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">ICE 慕尼黑→海德堡（约 3h，提前订特价票）</td></tr>
+          <tr><td class="t-time">11:30–14:00</td><td class="t-what"><b>海德堡城堡</b>（缆车往返 + 城堡约 24 欧联票）：歌德盛赞的红砂岩废墟 + 世界最大酒桶</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what"><b>老桥</b>（免费）+ 桥门，内卡河畔午餐（河边酒馆）</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>哲学家小径</b>（免费）：老城对岸半山，俯瞰城堡与老桥全景</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">入住海德堡，晚餐：猪肘或意大利餐，老城夜市</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海德堡城堡缆车 + 门票联票最划算；哲学家小径 45 分钟往返，是海德堡最上镜的机位。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 莱茵河谷</span>
+          <span class="d-desc">城堡密布之河</span>
+          <span class="d-tag ">⛴ 莱茵河日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">海德堡→（ICE）→圣戈阿 St. Goar（约 2h）</td></tr>
+          <tr><td class="t-time">10:30–15:00</td><td class="t-what"><b>KD 游船</b>：圣戈阿→吕德斯海姆（单程约 27 欧，顺流 3h）：罗蕾莱之岩 + 40 余座中世纪城堡</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>吕德斯海姆</b>（免费）：画眉鸟巷 Drosselgasse 酒馆街，雷司令配香肠</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">ICE 返法兰克福（约 1h），入住机场附近酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">莱茵河谷游船推荐顺流方向（圣戈阿→吕德斯海姆）；沿途可随时下船逛城堡（马克斯堡、猫堡鼠堡）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 返程</span>
+          <span class="d-desc">法兰克福✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">法兰克福老城补货、咖啡，整理退税单据（蓝联/环球蓝联）</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">机场快线到法兰克福机场（约 20min）</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">退税 + 免税店扫货（小熊软糖、瑞士莲、双立人）</td></tr>
+          <tr><td class="t-time">15:00–07:00(+1)</td><td class="t-what">法兰克福✈北京（直飞约 9.5–11h，凌晨落地北京）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">法兰克福是欧洲最大枢纽，直飞北京班次多；退税商品随身携带/托运分窗口盖章，旺季提前 2h 到机场。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-cover.jpg" alt="新天鹅堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">新天鹅堡 <small>21 欧（+2.5 欧订票费）</small></div>
+          <div class="sc-feat">迪士尼城堡原型。路德维希二世的<b>童话城堡 + 玛丽安桥全景</b>，梦幻到不真实。</div>
+          <div class="sc-meta">📅 旺季 9:00–18:00 · ⏱ 3–4h · 🚆 慕尼黑 RE→Füssen 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-1.jpg" alt="柏林·勃兰登堡门" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">柏林·勃兰登堡门 <small>免费</small></div>
+          <div class="sc-feat">柏林地标。<b>巴黎广场 + 胜利女神像</b>，冷战与统一的见证。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 30min–1h · 🚇 U5 勃兰登堡门站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-2.jpg" alt="柏林·东边画廊" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">柏林·东边画廊 <small>免费</small></div>
+          <div class="sc-feat">1.3km 露天画廊。<b>「兄弟之吻」涂鸦</b>，柏林墙最长的幸存墙体。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 华沙大街站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-3.jpg" alt="慕尼黑·玛丽安广场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">慕尼黑·玛丽安广场 <small>免费（登塔另计）</small></div>
+          <div class="sc-feat">慕尼黑心脏。<b>新市政厅木偶钟</b> 11/12 点报时 + 圣母教堂双塔。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 U3/U6 玛丽安广场站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-4.jpg" alt="罗滕堡老城" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">罗滕堡老城 <small>免费（博物馆另计）</small></div>
+          <div class="sc-feat">德国保存最完整的中世纪城。<b>城墙栈道 + Plönlein 明信片角</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚆 Steinach 换接驳巴士</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-5.jpg" alt="国王湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">国王湖 <small>游船往返约 29.8 欧</small></div>
+          <div class="sc-feat">巴伐利亚最蓝的湖。<b>回音壁小号 + 红顶洋葱教堂</b>，阿尔卑斯秘境。</div>
+          <div class="sc-meta">📅 4–10 月 · ⏱ 半天 · 🚆 慕尼黑→贝希特斯加登 2.5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-6.jpg" alt="科隆大教堂" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">科隆大教堂 <small>外观免费（登塔另计）</small></div>
+          <div class="sc-feat">哥特式双塔。<b>欧洲最大哥特教堂 + 霍亨索伦桥爱情锁</b>。</div>
+          <div class="sc-meta">📅 6:00–20:00 · ⏱ 1–2h · 🚇 主火车站旁</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/germany/germany-7.jpg" alt="慕尼黑啤酒节" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">慕尼黑啤酒节 <small>免费入场（酒食另计）</small></div>
+          <div class="sc-feat">世界最大民间节庆。<b>1L 啤酒杯 + 巴伐利亚乐队</b>，每年 9 月中–10 月初。</div>
+          <div class="sc-meta">📅 2026.9.19–10.4 · ⏱ 半天 · 🚇 特蕾西娅草坪站</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（新天鹅堡、勃兰登堡门、柏林墙涂鸦、玛丽安广场、罗滕堡、国王湖、科隆大教堂、啤酒节等均为德国实景），用于页面配图。更多免费景点：国会大厦穹顶（免费需预约）、柏林墙纪念馆、御林广场、英国花园、吕德斯海姆画眉鸟巷。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 欧元 ≈ 7.8 元人民币估算。往返机票按淡季直飞 6000–8000 元计（北京⇄柏林海航直飞，提前 6 周订有优惠）。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（12000–18000）</th>
+<th>标准（22000–32000）</th>
+<th>舒适（48000–65000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机 5000–7000</td>
+<td>直飞 6500–9500</td>
+<td>商务/灵活 14000–20000</td>
+</tr>
+<tr>
+<td>住宿（14 晚）</td>
+<td>青旅/民宿 250–400/晚</td>
+<td>三星酒店 600–1000/晚</td>
+<td>四五星 1500–3000/晚</td>
+</tr>
+<tr>
+<td>交通（ICE 等）</td>
+<td>特价票 + 市内日票 2500–3500</td>
+<td>ICE 特价 + 阿尔卑斯巴士 4000–6000</td>
+<td>ICE + 租车 + 打车 8000–12000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点约 600–1000</td>
+<td>含新天鹅堡/国王湖船 1500–2500</td>
+<td>全含 + 深度导览 4000–6000</td>
+</tr>
+<tr>
+<td>餐饮（15 天）</td>
+<td>面包店/Döner 3000–4500</td>
+<td>正常下馆子 6000–9000</td>
+<td>米其林/啤酒节畅饮 15000–25000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 30000 元）</span>
+      往返机票 7500 + 住宿 14 晚 10500（平均 750/晚）+ ICE 与交通 4500 + 门票 1800 + 餐饮 7000 ≈ <strong>30000–32000 元</strong>。大头是住宿与机票；ICE 特价票提前 6–8 周订能省 1500–2500 元，啤酒节期间慕尼黑住宿是最大变量。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>15.1 南进北出反向版（慕尼黑进出）</h3>
+
+
+    <ul>
+
+      <li>D1–D3 慕尼黑 + 新天鹅堡 + 国王湖</li>
+
+      <li>D4–D5 慕尼黑→海德堡→莱茵河谷</li>
+
+      <li>D6–D8 罗滕堡 + 浪漫之路</li>
+
+      <li>D9–D11 法兰克福→德累斯顿→柏林</li>
+
+      <li>D12–D15 柏林 4 天 + 波茨坦，慕尼黑✈返程</li>
+
+    </ul>
+
+    <h3>15.2 亲子/缩短版调整</h3>
+
+
+    <p>带娃推荐：砍掉德累斯顿、海德堡与国王湖，把慕尼黑延长到 6 天（德意志博物馆 + 宁芬堡 + 乐高乐园 + 英国花园），罗滕堡降到 1 天。柏林部分保留动物园（世界最古老之一）与博物馆岛。德国 14 岁以下儿童多数博物馆免费。</p>
+
+    <h3>15.3 圣诞市场版（11 月底–12 月）</h3>
+
+
+    <p>圣诞季推荐：罗滕堡 Reiterlesmarkt + 纽伦堡圣诞市场（欧洲最大）+ 德累斯顿 Striezelmarkt + 科隆大教堂前圣诞市集，全程配热红酒（Glühwein）。冬季日照短、天气冷，室内博物馆比重提高，机票与住宿较夏季便宜 20–30%。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>16.1 北京 ⇄ 德国 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞柏林（推荐）</td>
+<td>北京→柏林约 9.5–11h</td>
+<td>往返 6000–8000 元</td>
+<td>海航 HU489/490，每周 5 班（除周二/周六），凌晨起飞</td>
+</tr>
+<tr>
+<td>直飞慕尼黑</td>
+<td>北京→慕尼黑约 11h</td>
+<td>往返 8000–12000 元</td>
+<td>国航/汉莎每日 1 班，商务舱 15000+ 元</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>12–20h</td>
+<td>5000–7000 元</td>
+<td>经迪拜/多哈/伊斯坦布尔，便宜但费时</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 德国境内交通核心提醒</span>
+      城际首选<strong>ICE 高铁</strong>：提前 6–8 周在 bahn.de / DB Navigator 订 Super Sparpreis 特价票（柏林—慕尼黑最低 17.99 欧起，原价 100 欧+），指定车次不可改签。新天鹅堡与国王湖需地区火车 RE + 接驳巴士；罗滕堡无火车站，须经 Steinach 换乘。周末班次建议加订座位（约 5.5 欧）。
+    </div>
+
+    <h3>16.2 德国境内交通</h3>
+    <ul>
+      <li><strong>ICE 高铁</strong>：柏林—慕尼黑 4h、柏林—德累斯顿 2h、慕尼黑—海德堡 3h，特价票 17.99 欧起</li>
+      <li><strong>区域列车 RE/RB</strong>：Füssen、贝希特斯加登、Steinach 等支线，用 DB Navigator 查时刻</li>
+      <li><strong>市内交通</strong>：柏林 AB 区日票约 9 欧、慕尼黑日票约 9 欧，地铁/电车/巴士通用，地铁站自助机购票</li>
+      <li><strong>接驳巴士</strong>：新天鹅堡山脚巴士 78/73 往返 Füssen，国王湖码头巴士 841</li>
+      <li><strong>莱茵游船</strong>：KD 船班圣戈阿—吕德斯海姆单程约 27 欧（顺流 3h），季节 4–10 月</li>
+      <li><strong>自驾</strong>：浪漫之路中段（罗滕堡—丁克尔斯比尔—诺德林根）无火车站，自驾最自由，租车约 60–100 欧/天</li>
+    </ul>
+
+    <h3>16.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>柏林·米特区/选帝侯大街</td>
+<td>经济 300–500 / 标准 600–1000</td>
+<td>景点集中，夜生活丰富</td>
+<td>旺季贵，周末满房</td>
+</tr>
+<tr>
+<td>柏林·弗里德里希斯海因</td>
+<td>经济 250–450</td>
+<td>艺术家街区，性价比高</td>
+<td>离核心景点稍远</td>
+</tr>
+<tr>
+<td>慕尼黑·玛丽安广场/火车站</td>
+<td>经济 450–700 / 标准 800–1400</td>
+<td>老城步行可达，交通枢纽</td>
+<td>啤酒节暴涨 3 倍以上</td>
+</tr>
+<tr>
+<td>慕尼黑·伊萨河畔</td>
+<td>标准 700–1200</td>
+<td>安静街区，德式生活感</td>
+<td>离老城步行 20 分钟</td>
+</tr>
+<tr>
+<td>罗滕堡·老城内</td>
+<td>经济 400–600 / 标准 700–1200</td>
+<td>住在中世纪城墙内，一晚体验</td>
+<td>圣诞季一房难求</td>
+</tr>
+<tr>
+<td>法兰克福·主火车站周边</td>
+<td>经济 400–600 / 标准 700–1100</td>
+<td>机场快线方便，中转首选</td>
+<td>车站周边环境一般</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍺 必吃经典</h3>
+        <ul>
+          <li>德国猪肘 Schweinshaxe（脆皮烤肘 + 啤酒）</li>
+          <li>香肠全家福：Currywurst 咖喱香肠、Bratwurst 烤肠、Weißwurst 白香肠</li>
+          <li>碱水结 Brezel（配啤酒或蘸奶酪酱）</li>
+          <li>湖区烤鳟鱼（国王湖/Füssen 特色）</li>
+        </ul>
+        <h3>🍖 在地名物</h3>
+        <ul>
+          <li>慕尼黑白香肠 + 甜芥末（午前食用）</li>
+          <li>德累斯顿圣诞果脯蛋糕 Stollen</li>
+          <li>法兰克福小香肠 + 绿酱 Grüne Soße</li>
+          <li>莱茵河谷雷司令白葡萄酒</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥨 街头小吃</h3>
+        <ul>
+          <li>咖喱香肠 Currywurst（柏林 2.5–4 欧）</li>
+          <li>土耳其 Döner 烤肉（柏林 5–8 欧）</li>
+          <li>Schneeballen 雪球甜点（罗滕堡特产）</li>
+          <li>Glühwein 热红酒（圣诞季必备）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>柏林：哈克市场、选帝侯大街咖喱香肠店</li>
+          <li>慕尼黑：HB 皇家啤酒馆、玛丽安广场周边</li>
+          <li>罗滕堡：市政厅广场旁传统酒馆</li>
+          <li>法兰克福：苹果酒 Apfelwein 馆（Ebbelwoi）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 德国餐厅周日关门率高、周一也有不少店休，出发前用 Google 确认营业时间；② 啤酒馆服务员只算整数，小费按消费 5–10% 直接给现金；③ 猪肘分量巨大，两人点一份 + 沙拉刚好；④ 面包店、超市的 Döner 与香肠是穷游性价比神器，别只盯着餐厅。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期超离境 3 个月）+ 申根签证</li>
+        <li>旅行保险（申根要求保额 3 万欧）</li>
+        <li>往返机票 + ICE 特价票（提前 6–8 周）</li>
+        <li>新天鹅堡官网预约时间段</li>
+      </ul>
+      <ul>
+        <li>欧元现金 200–300 欧（小店只收现金）</li>
+        <li>转换插头（230V C/F 型两圆脚）</li>
+        <li>下载 DB Navigator + Google Maps</li>
+        <li>查天气：新天鹅堡能见度、国王湖船班</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>周日商店全关</strong>（药店/火车站例外），采购避开周日，餐饮提前确认；② <strong>新天鹅堡必须预约</strong>，旺季当天票早上 8 点售罄，不预约进不去；③ 德国火车常晚点或临时换站台，站内大屏与 DB App 双保险，留 30 分钟缓冲；④ 部分面包店、公厕、街边摊只收现金，随身备 20–50 欧小额纸钞。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      德国是「<strong>历史、童话与啤酒</strong>」三位一体的目的地——柏林的沉重历史、罗滕堡封存的中世纪、慕尼黑的啤酒与阿尔卑斯、莱茵河谷的 40 座城堡，15 天刚好串成一条北进南收的环线。唯一的硬门槛是申根签证，办好签证、订好 ICE 特价票与新天鹅堡预约，剩下就是跟着高铁慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#dd0000",
+    "d": 3,
+    "n": "主线 · 柏林→德累斯顿→法兰克福→罗滕堡→慕尼黑→海德堡→莱茵河谷",
+    "pts": [
+      [
+        52.52,
+        13.405
+      ],
+      [
+        51.0504,
+        13.7373
+      ],
+      [
+        50.1109,
+        8.6821
+      ],
+      [
+        49.3932,
+        10.1803
+      ],
+      [
+        48.135,
+        11.582
+      ],
+      [
+        49.4106,
+        8.7154
+      ],
+      [
+        50.1503,
+        7.7167
+      ]
+    ]
+  },
+  {
+    "c": "#d4a017",
+    "d": 3,
+    "n": "阿尔卑斯支线 · 慕尼黑→新天鹅堡→国王湖",
+    "pts": [
+      [
+        48.135,
+        11.582
+      ],
+      [
+        47.557,
+        10.749
+      ],
+      [
+        47.5575,
+        12.9778
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 52.5163,
+    "lng": 13.3777,
+    "name": "柏林·勃兰登堡门",
+    "t": "D1–D2 · 1h",
+    "fee": "免费",
+    "note": "巴黎广场、胜利女神像"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 52.5053,
+    "lng": 13.4395,
+    "name": "柏林·东边画廊",
+    "t": "D3 上午 · 1.5h",
+    "fee": "免费",
+    "note": "兄弟之吻涂鸦、柏林墙遗址"
+  },
+  {
+    "num": 3,
+    "prio": "nice",
+    "lat": 51.0521,
+    "lng": 13.7413,
+    "name": "德累斯顿·圣母教堂",
+    "t": "D5 上午 · 1.5h",
+    "fee": "免费（登顶 8 欧）",
+    "note": "巴洛克穹顶、易北河谷"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 49.3932,
+    "lng": 10.1803,
+    "name": "罗滕堡·老城",
+    "t": "D7–D8 · 1.5 天",
+    "fee": "免费",
+    "note": "Plönlein、城墙栈道、守夜人"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 48.1374,
+    "lng": 11.5755,
+    "name": "慕尼黑·玛丽安广场",
+    "t": "D9 下午 · 2h",
+    "fee": "免费",
+    "note": "新市政厅钟楼、HB 啤酒馆"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 47.557,
+    "lng": 10.749,
+    "name": "新天鹅堡",
+    "t": "D10 全天 · 3–4h",
+    "fee": "21 欧+订票费",
+    "note": "玛丽安桥、童话城堡"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 47.5575,
+    "lng": 12.9778,
+    "name": "国王湖",
+    "t": "D11 全天 · 半天",
+    "fee": "游船 29.8 欧",
+    "note": "洋葱教堂、Obersee 徒步"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 49.4106,
+    "lng": 8.7154,
+    "name": "海德堡·城堡",
+    "t": "D13 中午 · 2.5h",
+    "fee": "联票约 24 欧",
+    "note": "废墟城堡、大酒桶、哲学家小径"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[47.2, 6.5], [55.0, 15.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#dd0000\"></span>主线（柏林→莱茵河谷）<br><span class=\"sw\" style=\"background:#d4a017\"></span>阿尔卑斯支线（慕尼黑→国王湖）<br><span class=\"sw dash\"></span>慕尼黑—海德堡段为 ICE 高铁</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

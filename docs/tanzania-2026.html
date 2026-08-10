@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 坦桑尼亚 12 天全景攻略 · 塞伦盖蒂桑给巴尔</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #8a6a3d;
+    --red-light: #a6843f;
+    --gold: #d4a017;
+    --ink: #332b22;
+    --muted: #8d7f6d;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e0d2;
+    --blue: #1e9fd0;
+    --cover1: #4a3418;
+    --ov1: rgba(74,52,24,.88);
+    --ov2: rgba(138,106,61,.72);
+    --ov3: rgba(30,159,208,.38);
+    --ov4: rgba(212,160,23,.20);
+    --key-bg: #fdf3dc;
+    --info-bg: #f1eee6;
+    --head-bg: rgba(138,106,61,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/tanzania/tanzania-cover.jpg" alt="坦桑尼亚旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 12 天环线 · 火山口 + 赤道雪峰 + 海岛</div>
+      <h1>坦桑尼亚 12 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 达累斯萨拉姆 · 塞伦盖蒂迁徙 · 恩戈罗火山口 · 乞力马扎罗 · 桑给巴尔</div>
+      <div class="meta">
+        <span>🛫 行程链：达累斯萨拉姆 → 阿鲁沙 → 塞伦盖蒂 → 恩戈罗 → 乞力马扎罗 → 桑给巴尔</span>
+        <span>📅 时间窗口：12 天 11 晚（6–10 月旱季）</span>
+        <span>✈️ 北京⇄达累斯萨拉姆 经亚的斯亚贝巴转机约 16 小时</span>
+        <span>🛂 签证：落地签 $50 或 在线电子签（停留最长 30 天）</span>
+        <span>🕐 时差 -5 小时 · 🔌 电压 230V D/G 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 12 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 12 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">达累斯萨拉姆</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">阿鲁沙</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">塞伦盖蒂</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">恩戈罗恩戈罗</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">乞力马扎罗</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">桑给巴尔</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 12 天怎么安排最合理</span>
+      坦桑尼亚是把「<strong>地球奇观</strong>」一网打尽的国家：塞伦盖蒂看地球上最大规模的动物迁徙，恩戈罗恩戈罗是 260km² 的天然动物剧场，乞力马扎罗是赤道线上的雪峰，桑给巴尔是印度洋的香料群岛。12 天按「<strong>北线草原 → 火山口 → 雪峰 → 海岛</strong>」推进，7 天 Safari + 2 天山脚 + 3 天海岛，是坦桑经典的「草原+海滩」组合。最佳窗口是 <strong>6–10 月旱季</strong>，其中 7–10 月大迁徙集中在塞伦盖蒂北部。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证</td>
+<td>中国护照可<strong>落地签 $50</strong>（约 350 元，停留最长 30 天），或出发前在线申请电子签 visa.immigration.go.tz；入境备好返程机票</td>
+</tr>
+<tr>
+<td>黄皮书（硬性）</td>
+<td>经亚的斯亚贝巴转机即涉黄热病流行区，须持<strong>小黄本</strong>（国际疫苗接种证书），出发前≥10 天接种</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>达累斯萨拉姆 → 阿鲁沙 → 塞伦盖蒂 → 恩戈罗 → 莫希/乞力马扎罗 → 桑给巴尔，12 天草原+火山+海岛</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>桑给巴尔/达累经亚的斯亚贝巴转机回京（全程约 16h）；桑给巴尔→达累国内段约 1h</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 20000–30000 ／ 标准 40000–60000 ／ 舒适 80000–120000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 电子签或落地签材料 ② 订 Safari 越野车与营地（旺季提前 3–6 个月）③ 备美元现金付门票</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>6–10 月旱季最佳（塞伦盖蒂北部大迁徙）；4–5 月长雨季不推荐；12–2 月桑给巴尔海滩最舒服</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>美元现金为主（门票/小费），信用卡大额可用；当地 M-Pesa/Airtel Money 移动支付</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>恩戈罗恩戈罗下坑费按车收</strong>：火山口车辆费 <strong>$295/车/次</strong>，2 人拼车和 4 人拼车收费相同——拼满 6 人人均才约 $49，别独自成行。② <strong>乞力马扎罗登顶 ≠ 山脚打卡</strong>：登顶需 6–8 天完整档期 + 专业团队（$1700–3000/人），本 12 天行程只安排山脚徒步与咖啡园，想登顶需单独预留时间。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 12 天版</h2>
+
+    <p>以下为 12 天 11 晚的推荐节奏：北线 Safari 按「阿鲁沙出发环线」推进，最后飞桑给巴尔海岛收尾。每日主景点 ≤2 个，Safari 全程 4×4 越野车 + 司机兼向导。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵达累</td>
+<td>北京✈亚的斯亚贝巴✈达累斯萨拉姆（约 16h），海滨休整</td>
+<td>达累斯萨拉姆</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>达累✈阿鲁沙（1h），市集 + 咖啡庄园</td>
+<td>阿鲁沙</td>
+<td>Safari 之都</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>阿鲁沙一日：阿鲁沙国家公园（火烈鸟/长颈鹿）+ 文化博物馆</td>
+<td>阿鲁沙</td>
+<td>城市探秘</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>阿鲁沙→塞伦盖蒂（约 6h），黄昏日落游猎</td>
+<td>塞伦盖蒂</td>
+<td>转场+初猎</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>塞伦盖蒂全天：中央平原五大兽</td>
+<td>塞伦盖蒂</td>
+<td>游猎日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>塞伦盖蒂北部：格鲁梅蒂河大迁徙</td>
+<td>塞伦盖蒂</td>
+<td>大迁徙日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>塞伦盖蒂→恩戈罗恩戈罗（约 3h），火山口边缘全景</td>
+<td>恩戈罗</td>
+<td>转场日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>恩戈罗恩戈罗火山口全天（含下坑 $295/车）</td>
+<td>恩戈罗</td>
+<td>火山口日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>恩戈罗→莫希（约 4h），乞力马扎罗山脚咖啡园</td>
+<td>莫希</td>
+<td>雪山初见</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>乞力马扎罗山脚一日：马兰古线徒步 + 温泉</td>
+<td>莫希</td>
+<td>山脚徒步</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>莫希（JRO）✈桑给巴尔，下午石头城</td>
+<td>桑给巴尔</td>
+<td>石头城日</td>
+</tr>
+<tr>
+<td>D12 返程</td>
+<td>努恩圭海滩上午 → 桑给巴尔✈达累✈亚的斯✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      想给桑给巴尔加满 3 天，可把阿鲁沙缩为 1 天或将总行程延到 13–14 天；带娃家庭建议砍掉 D10 山脚徒步改半天咖啡园；摄影/动物发烧友可在塞伦盖蒂加 1 天去马拉河北部蹲守角马过河。坦桑门票是硬成本，4–6 人拼车最划算。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 12 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达达累斯萨拉姆</span>
+          <span class="d-desc">转机 16 小时，印度洋海滨</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">00:10–07:15</td><td class="t-what">北京✈亚的斯亚贝巴（ET605 约 11.5h）</td></tr>
+          <tr><td class="t-time">09:00–13:00</td><td class="t-what">亚的斯亚贝巴✈达累斯萨拉姆（约 4h），入境：落地签 $50（或电子签）+ 黄皮书 + 指纹</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">换汇（1 元≈330 TZS）+ 办电话卡 + 入住 Oyster Bay 海滨酒店</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">Msasani 半岛海滨大道漫步，印度洋日落</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">海鲜晚餐（烤鱼/龙虾）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">落地签窗口可能排队 1h+，建议出发前在线申请电子签（visa.immigration.go.tz）省时间；带好返程机票订单。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 达累斯萨拉姆 → 阿鲁沙</span>
+          <span class="d-desc">飞往 Safari 之都</span>
+          <span class="d-tag ">✈️ 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">国内航班：达累斯萨拉姆✈阿鲁沙（约 1h，Precision Air/坦桑尼亚航空 $120–180）</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">抵达阿鲁沙机场，接机入住酒店</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">阿鲁沙镇漫步：Maasai 市集、独立大道咖啡店</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐（斯瓦希里菜）</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">梅鲁山脚咖啡种植园参观 + 咖啡品鉴</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住庄园酒店，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿鲁沙海拔约 1400m 气候凉爽，是坦桑 Safari 门户；也可从达累坐夜班大巴（约 9h）但建议坐飞机。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 阿鲁沙一日</span>
+          <span class="d-desc">阿鲁沙国家公园</span>
+          <span class="d-tag ">🌋 城市探秘日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what"><b>阿鲁沙国家公园</b>（门票 $45）：火烈鸟、长颈鹿、黑脸长尾猴，梅鲁山雪峰背景</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">公园野餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">返回镇区：文化遗产中心 / 坦桑尼亚国家博物馆（可选）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">市集购物：坦桑蓝宝石、木雕、咖啡豆</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：尼亚玛乔马炭烤烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿鲁沙国家公园是能徒步看到黑脸长尾猴和火烈鸟的公园；不想进园可换咖啡庄园 + 文化半日。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 阿鲁沙 → 塞伦盖蒂</span>
+          <span class="d-desc">6 小时进入大草原</span>
+          <span class="d-tag ">🚙 转场+初猎</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–12:00</td><td class="t-what">阿鲁沙→塞伦盖蒂（约 6h，经恩戈罗恩戈罗高地，途经纳比门）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">塞伦盖蒂 Gate 买票（$83/人/天），入园</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what">入住营地（塞罗内拉中央平原），午餐</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">日落 Game Drive：狮子、象群、长颈鹿</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">营地晚餐，草原星空</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">塞伦盖蒂面积约 1.5 万 km²（马赛马拉的 10 倍），动物密度高；途中观景台可远眺恩戈罗恩戈罗火山口。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 塞伦盖蒂全天</span>
+          <span class="d-desc">中央平原五大兽</span>
+          <span class="d-tag alt">🦁 游猎日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–10:00</td><td class="t-what">清晨 Game Drive：狮子、花豹、猎豹，捕猎黄金时间</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">营地早餐休息</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">中央平原游猎：角马 + 斑马大群，秃鹳</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">下午 Game Drive：河马池、鳄鱼、水牛群</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">营地晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">塞伦盖蒂的五大兽（狮子/花豹/大象/水牛/犀牛）均能见到；犀牛多在偏远地区，恩戈罗火山口更容易看到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 塞伦盖蒂北部</span>
+          <span class="d-desc">格鲁梅蒂河大迁徙</span>
+          <span class="d-tag ">🐃 大迁徙日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30</td><td class="t-what">打包野餐盒，出发前往北部（格鲁梅蒂河/马拉河，约 3h 车程）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">大迁徙观察：7–10 月角马过河最壮观</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">河边野餐</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">北部平原游猎：秃鹫聚集地附近常有狮群</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返回营地，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大迁徙 7–10 月集中在塞伦盖蒂北部与肯尼亚马赛马拉之间，具体位置每天变化，跟随向导的无线电情报判断。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 塞伦盖蒂 → 恩戈罗恩戈罗</span>
+          <span class="d-desc">火山口边缘全景</span>
+          <span class="d-tag ">🌋 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:30</td><td class="t-what">早餐后退房</td></tr>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what">塞伦盖蒂→恩戈罗恩戈罗保护区（约 3h，过纳比门）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">入住火山口边缘酒店（海拔约 2300m），午餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">火山口边缘观景台：俯瞰 2600m 深的天然剧场</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">恩戈罗游客中心：野生动物历史展</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">酒店晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">火山口边缘夜间较凉（约 10°C），带件外套；恩戈罗门票 $82/人/天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 恩戈罗恩戈罗火山口全天</span>
+          <span class="d-desc">天然动物剧场</span>
+          <span class="d-tag alt">🐘 火山口日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–08:00</td><td class="t-what">下火山口（<b>车辆费 $295/车/次</b>，按车不分人数），600m 陡坡盘山</td></tr>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what">火山口底部 Game Drive：黑犀牛、大象、狮子、角马</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">马加迪湖畔野餐（火烈鸟）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what">继续游猎：河马池、水牛群、豺狼</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">出火山口，返回酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">火山口直径约 20km、底部约 260km²，黑犀牛观察密度非洲第一；下坑必须高底盘 4×4，需提前确认车辆许可。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 恩戈罗 → 莫希</span>
+          <span class="d-desc">仰望乞力马扎罗</span>
+          <span class="d-tag ">🏔 雪山初见</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:30</td><td class="t-what">早餐后退房</td></tr>
+          <tr><td class="t-time">08:30–12:30</td><td class="t-what">恩戈罗→莫希（约 4h，穿过卡拉图镇）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">莫希午餐</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">乞力马扎罗山脚 Arabica 咖啡园参观 + 品鉴</td></tr>
+          <tr><td class="t-time">16:30–17:30</td><td class="t-what">马兰古线入口（Marangu Gate）仰望雪峰</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住莫希酒店，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">莫希海拔约 900m 气候宜人；乞力马扎罗雪顶在清晨最清晰，日出时远眺最佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 乞力马扎罗山脚一日</span>
+          <span class="d-desc">马兰古线徒步 + 温泉</span>
+          <span class="d-tag ">🥾 山脚徒步日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–12:00</td><td class="t-what">马兰古线半日徒步（雨林段，约 4h，海拔 1800–2300m），向导陪同</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">野餐</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what">奇尼瀑布（Kikuletwa Springs）温泉游泳，咖啡品鉴</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返回莫希，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">想登顶乌呼鲁峰（5895m）需 6–8 天 + 专业登山团队（$1770–2840/人），12 天行程只安排山脚体验；登山季避开 4–5 月。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 莫希 → 桑给巴尔</span>
+          <span class="d-desc">石头城半日</span>
+          <span class="d-tag ">🏘 石头城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">莫希→乞力马扎罗国际机场（JRO，约 1h 车程）</td></tr>
+          <tr><td class="t-time">10:00–11:15</td><td class="t-what">JRO✈桑给巴尔（约 1h15m，$120–180）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">石头城午餐（海鲜 + 椰子饭）</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">石头城漫步：老城堡、奇迹屋、香料市场、鱼市，可请向导（$15–25/2h）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">Forodhani 夜市小吃 + 滨海日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">石头城是世界遗产，阿拉伯-斯瓦希里混血建筑；周五清真寺祈祷期间部分店铺午休。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 桑给巴尔海滩 → 返程</span>
+          <span class="d-desc">努恩圭白沙滩 + 转机回京</span>
+          <span class="d-tag return">🏖 收尾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">出发前往北岸努恩圭海滩（约 1h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what">白沙滩漫步 + 浮潜（Mnemba 珊瑚礁可选约 $50）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">海鲜午餐，最后血拼当地香料/工艺品</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what">回石头城机场</td></tr>
+          <tr><td class="t-time">16:30–17:30</td><td class="t-what">桑给巴尔✈达累斯萨拉姆（约 1h）</td></tr>
+          <tr><td class="t-time">18:30–次日</td><td class="t-what">达累✈亚的斯亚贝巴✈北京，次日抵京</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">想玩满 3 天桑岛可把总行程延到 13–14 天：加 1 天努恩圭/帕杰海滩或监狱岛 + 海豚湾。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-cover.jpg" alt="塞伦盖蒂·草原之狮" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塞伦盖蒂·草原之狮 <small>$83/人/天</small></div>
+          <div class="sc-feat">塞伦盖蒂是<b>狮子密度最高</b>的国家公园之一，母狮群常在金合欢树下。</div>
+          <div class="sc-meta">📅 6–10 月 · ⏱ 3 天 · 🚙 阿鲁沙驱车 6h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-1.jpg" alt="塞伦盖蒂·角马大迁徙" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塞伦盖蒂·角马大迁徙 <small>$83/人/天</small></div>
+          <div class="sc-feat"><b>百万角马跨河</b>，地球上规模最大的动物迁徙现场。</div>
+          <div class="sc-meta">📅 7–10 月 · ⏱ 1–2 天 · 📍 北部格鲁梅蒂/马拉河</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-2.jpg" alt="恩戈罗恩戈罗·火山口" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">恩戈罗恩戈罗·火山口 <small>$82 + 下坑 $295/车</small></div>
+          <div class="sc-feat">世界最大完整火山口，<b>260km² 天然动物剧场</b>，黑犀牛之家。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚙 塞伦盖蒂驱车 3h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-3.jpg" alt="乞力马扎罗·赤道雪峰" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乞力马扎罗·赤道雪峰 <small>山脚免费</small></div>
+          <div class="sc-feat">非洲最高峰 <b>5895m</b>，赤道线上的雪山奇观，清晨最清晰。</div>
+          <div class="sc-meta">📅 日出最佳 · ⏱ 1–2 天 · 📍 莫希/马兰古门</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-4.jpg" alt="桑给巴尔·石头城" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">桑给巴尔·石头城 <small>免费</small></div>
+          <div class="sc-feat">世界遗产老城，<b>阿拉伯-斯瓦希里混血建筑</b>与香料市场。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚁 JRO 飞 1h15m</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-5.jpg" alt="桑给巴尔·海岛度假" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">桑给巴尔·海岛度假 <small>免费</small></div>
+          <div class="sc-feat"><b>努恩圭/帕杰白沙滩</b>，印度洋薄荷色海水与日出帆船。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3 天 · 📍 北岸努恩圭</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-6.jpg" alt="乞力马扎罗·登顶之路" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乞力马扎罗·登顶之路 <small>登顶 $1700+</small></div>
+          <div class="sc-feat">马兰古/马切姆路线通往 <b>Uhuru 峰</b>，需 6–8 天专业攀登。</div>
+          <div class="sc-meta">📅 全年 · ⏱ 6–8 天 · ⛰ 专业团队 + 挑夫</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tanzania/tanzania-7.jpg" alt="恩戈罗·草原母狮" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">恩戈罗·草原母狮 <small>含在门票</small></div>
+          <div class="sc-feat">火山口底部的狮群，<b>捕猎成功率极高</b>的「狮口现场」。</div>
+          <div class="sc-meta">📅 清晨最佳 · ⏱ 2h · 📍 火山口底部</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（塞伦盖蒂狮子与角马、恩戈罗火山口、乞力马扎罗雪峰、桑给巴尔石头城与海滩均为坦桑尼亚实景），用于页面配图。更多免费景点：达累斯萨拉姆国家博物馆、阿鲁沙文化遗产中心、桑给巴尔监狱岛。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 330 坦桑先令（TZS）估算。Safari 越野车与营地按<strong>2 人拼车</strong>计算，下坑费 $295/车按 2 人分摊。往返机票按淡季 6000–8000 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（20000–30000）</th>
+<th>标准（40000–60000）</th>
+<th>舒适（80000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机 6000–8000</td>
+<td>转机 9000–13000</td>
+<td>商务/灵活 18000–25000</td>
+</tr>
+<tr>
+<td>住宿（11 晚）</td>
+<td>城市经济酒店 + 基础营地 5000–7000</td>
+<td>中档营地 + 度假村 13000–19000</td>
+<td>奢华营地 + 海岛酒店 36000–60000</td>
+</tr>
+<tr>
+<td>Safari 车与司机（6 天）</td>
+<td>拼车 6000–9000</td>
+<td>2–3 人包车 12000–18000</td>
+<td>包车 + 飞入营地 28000–45000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>公园门票约 3000–4500</td>
+<td>含热气球 5000–7000</td>
+<td>多次游猎 + 下坑 10000–15000</td>
+</tr>
+<tr>
+<td>餐饮（12 天）</td>
+<td>营地含餐 + 城市简餐 3000–4000</td>
+<td>正常用餐 6000–8000</td>
+<td>全包度假村 11000–18000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 50000 元）</span>
+      往返机票 11000 + 住宿 11 晚 16000 + Safari 越野车与司机 15000 + 门票 6500（塞伦盖蒂 $83×3 + 恩戈罗 $82×2 + 下坑 $295 分摊）+ 餐饮 6500 + 签证/保险/小费 4500 ≈ <strong>46000–54000 元</strong>。坦桑门票与车辆费是硬成本，拼满 6 人车能显著摊薄。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>12.1 组合版 · 加塔兰吉雷/曼雅拉</h3>
+
+
+    <p>在阿鲁沙与塞伦盖蒂之间插入塔兰吉雷（$59/天）或曼雅拉湖（$59/天）各 1 天，看猴面包树象群和会爬树的狮子，总行程延至 14 天。北线经典「5 园连走」。</p>
+
+    <h3>12.2 登山版 · 只去乞力马扎罗</h3>
+
+
+    <p>登顶党直接安排 6–8 天马兰古/马切姆线（$1770–2840/人），下撤后桑给巴尔 3 天休整。需整体 12–14 天，且务必留 1–2 天适应海拔；登山季避开 4–5 月雨季。</p>
+
+    <h3>12.3 奢华版 · 飞入营地</h3>
+
+
+    <p>塞伦盖蒂改为乘内陆小飞机直接降落营地（约 $250–400/段），省去 6h 颠簸公路；住奢华帐篷（$1200+/晚一价全包），Safari 用车升级为全开放 Land Cruiser。人均预算 80000–120000 元档。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>13.1 北京 ⇄ 坦桑尼亚 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（推荐）</td>
+<td>北京→达累斯萨拉姆 总约 16h（ET605 约 11.5h + 亚的斯亚贝巴中转 + 达累段约 4h）</td>
+<td>往返 6000–13000 元</td>
+<td>埃塞俄比亚航空经亚的斯亚贝巴；也可经迪拜（阿联酋航空）</td>
+</tr>
+<tr>
+<td>转机（经迪拜）</td>
+<td>总约 18–20h</td>
+<td>10000–18000 元</td>
+<td>中转体验更好，价格更高</td>
+</tr>
+<tr>
+<td>内陆衔接</td>
+<td>达累✈阿鲁沙约 1h / 莫希✈桑给巴尔约 1h15m</td>
+<td>单程 $120–180</td>
+<td>Precision Air、坦桑尼亚航空</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 坦桑尼亚境内交通核心提醒</span>
+      Safari 全程<strong>只能 4×4 高底盘越野车</strong>进入国家公园（包车约 $250–350/天/车，含司机兼向导）；阿鲁沙→塞伦盖蒂约 6h 公路颠簸，想省时可在塞伦盖蒂内部营地间飞小飞机；桑给巴尔岛内以出租车/突突车为主，包车半日约 $40–60。
+    </div>
+
+    <h3>13.2 坦桑尼亚境内交通</h3>
+    <ul>
+      <li><strong>内陆航班</strong>：达累斯萨拉姆⇄阿鲁沙/乞力马扎罗约 1h，Precision Air/坦桑尼亚航空 $120–180</li>
+      <li><strong>Safari 越野车</strong>：4×4 陆巡可开顶，约 $250–350/天/车（含司机兼向导）</li>
+      <li><strong>长途大巴</strong>：达累→阿鲁沙约 9h（约 $15–20），便宜但颠簸，不推荐带老人小孩</li>
+      <li><strong>桑给巴尔快船</strong>：达累斯萨拉姆⇄石头城约 2h，$35–50 单程；飞机 1h 更舒适</li>
+      <li><strong>市内交通</strong>：达累/阿鲁沙用 Uber/Bolt；桑给巴尔打车或乘突突车（Bajaj）</li>
+      <li><strong>塞伦盖蒂/恩戈罗转场</strong>：公路约 3–6h，营地间靠向导车衔接；长途段可选小飞机</li>
+    </ul>
+
+    <h3>13.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>达累斯萨拉姆（1 晚）</td>
+<td>经济 300–500 / 标准 500–900 元</td>
+<td>Oyster Bay 海滨，过渡舒适</td>
+<td>市中心交通拥堵</td>
+</tr>
+<tr>
+<td>阿鲁沙（2 晚）</td>
+<td>经济 350–600 / 标准 700–1200 元</td>
+<td>咖啡庄园/镇中心，Safari 集合地</td>
+<td>旺季房源紧张</td>
+</tr>
+<tr>
+<td>塞伦盖蒂营地（3 晚）</td>
+<td>帐篷营地 2000–3500 / 中档 4000–8000 / 奢华 12000–25000 元</td>
+<td>一价全包含三餐，观兽零距离</td>
+<td>旺季一床难求</td>
+</tr>
+<tr>
+<td>恩戈罗恩戈罗（2 晚）</td>
+<td>火山口边缘酒店 2500–4500 / 中档 5000–9000 元</td>
+<td>俯瞰火山口，星空绝美</td>
+<td>海拔 2300m 夜间凉</td>
+</tr>
+<tr>
+<td>莫希/乞力马扎罗（2 晚）</td>
+<td>经济 300–500 / 标准 600–1000 元</td>
+<td>登山门户，气候宜人</td>
+<td>旺季登山队占房</td>
+</tr>
+<tr>
+<td>桑给巴尔（2 晚）</td>
+<td>经济 400–800 / 标准 900–1800 / 奢华 4000–10000 元</td>
+<td>努恩圭/帕杰海滩酒店</td>
+<td>北部旺季贵且需提前订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍖 必吃经典</h3>
+        <ul>
+          <li>尼亚玛乔马（Nyama Choma）炭烤烤肉</li>
+          <li>乌加里 Ugali 玉米糊 + 苏库玛维基</li>
+          <li>桑给巴尔海鲜烧烤（龙虾/鱿鱼/椰子饭）</li>
+          <li>斯瓦希里比尔亚尼炒饭</li>
+        </ul>
+        <h3>🍹 岛上必试</h3>
+        <ul>
+          <li>桑给巴尔披萨（街头煎饼，鸡蛋芝士馅）</li>
+          <li>香料茶 Chai + 丁香</li>
+          <li>鲜榨芒果汁/椰子水</li>
+          <li>阿鲁沙 AA 咖啡（梅鲁山脚庄园）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥘 斯瓦希里风味</h3>
+        <ul>
+          <li>椰子咖喱炖肉（Mchuzi）</li>
+          <li>查帕提烙饼配炖豆</li>
+          <li>桑给巴尔香料炖菜</li>
+          <li>新鲜鲨鱼/金枪鱼排（沿海）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>阿鲁沙咖啡庄园品鉴</li>
+          <li>塞伦盖蒂/恩戈罗营地三餐（含餐）</li>
+          <li>桑给巴尔 Forodhani 夜市</li>
+          <li>达累斯萨拉姆 Oyster Bay 海鲜街</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 石头城夜市小吃摊位多，选排队长的摊位（食材周转快更新鲜）；② 生水和冰块谨慎，只喝瓶装水；③ 营地「含餐」以三道式西餐为主，吃不惯可带方便面与零食；④ 桑给巴尔周五部分老店午后休息，觅食避开祈祷时间。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 落地签 $50（或提前在线电子签）</li>
+        <li>黄皮书（黄热病疫苗，出发前≥10 天接种）</li>
+        <li>防疟疾药 + 驱蚊液（DEET 30%+）</li>
+        <li>美元现金（门票/小费，小额 $1/$5 必备）</li>
+      </ul>
+      <ul>
+        <li>充电转接头（230V D/G 型英标）+ 插线板</li>
+        <li>长焦镜头（Safari 必备 70–200mm+）</li>
+        <li>抓绒/薄羽绒（清晨 Game Drive 冷）+ 防晒</li>
+        <li>下载 Google 离线地图 + 打印行程确认单</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>恩戈罗下坑费按车收</strong>：$295/车/次不分人数，拼满 6 人最划算；② <strong>旺季别临时订</strong>：塞伦盖蒂 7–10 月营地提前 3–6 个月订，4–5 月雨季路况差且门票低；③ <strong>桑给巴尔防晒</strong>：赤道紫外线极强，浮潜用长袖水母衣；④ <strong>登顶需要整块时间</strong>：乞力马扎罗登山 6–8 天别硬塞进 12 天行程。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      坦桑尼亚是「<strong>把地球奇观串成一条线</strong>」的国家——塞伦盖蒂的百万角马、恩戈罗恩戈罗的天然剧场、乞力马扎罗的赤道雪峰、桑给巴尔的白沙碧海。签证便宜、门槛清晰（落地签+黄皮书），提前锁定 Safari 车辆与营地，剩下的交给火山口和印度洋。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#8a6a3d",
+    "d": 3,
+    "n": "主线 · 达累斯萨拉姆→阿鲁沙→塞伦盖蒂→恩戈罗→莫希→桑给巴尔",
+    "pts": [
+      [
+        -6.792,
+        39.208
+      ],
+      [
+        -3.386,
+        36.683
+      ],
+      [
+        -2.333,
+        34.833
+      ],
+      [
+        -3.213,
+        35.466
+      ],
+      [
+        -3.335,
+        37.34
+      ],
+      [
+        -6.165,
+        39.199
+      ]
+    ]
+  },
+  {
+    "c": "#d4a017",
+    "d": 3,
+    "n": "塞伦盖蒂北迁观察区（7–10 月角马过河）",
+    "pts": [
+      [
+        -2.333,
+        34.833
+      ],
+      [
+        -1.35,
+        34.88
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "nice",
+    "lat": -6.792,
+    "lng": 39.208,
+    "name": "达累斯萨拉姆·滨海",
+    "t": "D1 · 半天",
+    "fee": "免费",
+    "note": "Oyster Bay 海滨漫步、海鲜晚餐"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -3.386,
+    "lng": 36.683,
+    "name": "阿鲁沙·咖啡与市集",
+    "t": "D2–D3 · 2 天",
+    "fee": "咖啡园约 $15",
+    "note": "坦桑 Safari 之都、梅鲁山脚咖啡"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -2.333,
+    "lng": 34.833,
+    "name": "塞伦盖蒂·中央平原",
+    "t": "D4–D6 · 3 天",
+    "fee": "$83/人/天",
+    "note": "五大兽、角马大群"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -1.35,
+    "lng": 34.88,
+    "name": "塞伦盖蒂·马拉河",
+    "t": "D6 · 全天",
+    "fee": "$83/人/天",
+    "note": "7–10 月角马过河"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -3.213,
+    "lng": 35.466,
+    "name": "恩戈罗恩戈罗·火山口",
+    "t": "D7–D8 · 2 天",
+    "fee": "$82 + 下坑 $295/车",
+    "note": "黑犀牛、260km² 火山口"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": -3.067,
+    "lng": 37.35,
+    "name": "乞力马扎罗·马兰古线",
+    "t": "D9–D10 · 2 天",
+    "fee": "登山 $1700+（山脚免费）",
+    "note": "赤道雪峰、咖啡园"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": -6.165,
+    "lng": 39.199,
+    "name": "桑给巴尔·石头城",
+    "t": "D11 · 半天",
+    "fee": "免费（向导 $15–25）",
+    "note": "世界遗产老城、香料市场"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": -5.718,
+    "lng": 39.296,
+    "name": "桑给巴尔·努恩圭海滩",
+    "t": "D12 · 上午",
+    "fee": "免费",
+    "note": "白沙滩、浮潜、日落帆船"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-7.8, 33.8], [-0.6, 40.2]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#8a6a3d\"></span>主线（达累斯萨拉姆→阿鲁沙→塞伦盖蒂→恩戈罗→莫希→桑给巴尔）<br><span class=\"sw\" style=\"background:#d4a017\"></span>塞伦盖蒂北迁观察区（角马过河）<br><span class=\"sw dash\"></span>达累—阿鲁沙与莫希—桑给巴尔为内陆航班</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

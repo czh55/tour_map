@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 文莱 5 天全景攻略 · 清真寺水上村与雨林</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #d4a017;
+    --red-light: #e0b83b;
+    --gold: #d4a017;
+    --ink: #222222;
+    --muted: #8a8578;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e0d0;
+    --blue: #2e6b46;
+    --cover1: #1f1f1f;
+    --ov1: rgba(45,45,45,.88);
+    --ov2: rgba(212,160,23,.72);
+    --ov3: rgba(46,107,70,.38);
+    --ov4: rgba(212,160,23,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #eef6f1;
+    --head-bg: rgba(212,160,23,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/brunei/brunei-cover.jpg" alt="文莱旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 5 天 · 斯里巴加湾市 ⇄ 水上村 ⇄ 乌鲁淡布隆</div>
+      <h1>文莱 5 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 斯里巴加湾市 · 金色清真寺 · 东方威尼斯水上村 · 婆罗洲雨林</div>
+      <div class="meta">
+        <span>🛫 行程链：斯里巴加湾市 → 水上村 → 乌鲁淡布隆国家公园 → 返程</span>
+        <span>📅 时间窗口：5 天 4 晚（全年皆宜，11 月–次年 3 月雨少）</span>
+        <span>✈️ 北京⇄斯里巴加湾市 约 6 小时（经吉隆坡/新加坡/香港转机）</span>
+        <span>🛂 签证：中国护照落地签 14 天（B$20）· 需在线登记电子入境卡</span>
+        <span>🕐 时差 0 小时（与北京同）· 🔌 电压 240V G 型插座（英标三脚）</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 5 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 5 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">斯里巴加湾市</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">水上村</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">乌鲁淡布隆</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 5 天怎么安排最合理</span>
+      文莱是「<strong>小而富的安静小国</strong>」：斯里巴加湾市两座金顶清真寺与水上村浓缩了城市精华，乌鲁淡布隆国家公园则是婆罗洲雨林的门面，60 米树冠吊桥看云海。5 天刚好把「<strong>清真寺—水上村—雨林</strong>」三块走完，节奏宽松：城市 2 天、水上村+雨林 2 天、返程 1 天。文莱物价不高、治安好、几乎无堵车，是东南亚最省心的小国之一。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>落地签 14 天（B$20）</strong>，单次入境；同时入境前 72 小时内须在文莱移民局官网完成<strong>电子入境卡（E-Arrival Card）</strong>登记</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>斯里巴加湾市 2 天 → 水上村&乌鲁淡布隆 2 天 → 返程 1 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 5 天从斯里巴加湾国际机场（BSB）返京；机场距市区约 10 分钟车程</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>斯里巴加湾市 → 甘榜亚逸水上村 → 乌鲁淡布隆国家公园</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 8000–12000 ／ 标准 15000–22000 ／ 舒适 35000–55000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 在线登记电子入境卡 ② 提前订乌鲁淡布隆一日游（需跟团）③ 备文莱元/新加坡元现金</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>全年炎热多雨；11 月–次年 3 月相对少雨，雨林吊桥开放率最高</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>文莱元（B$）与新加坡元 1:1 通用，大型商场可刷卡；夜市与水上村需现金</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>乌鲁淡布隆必须跟团</strong>：国家公园位于被砂拉越分隔的淡布隆县，只能通过旅行社一日游进入（Freme Travel / Borneo Adventure 等，费用 B$115–180，含长舟+徒步+树冠吊桥），出发前 1 周预订，出行前确认含接送与餐食。② <strong>文莱禁酒</strong>：公共场合与入境一律禁止酒精，机场免税不卖酒，也别带酒入境，违反会重罚。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 5 天版</h2>
+
+    <p>以下为 5 天 4 晚的推荐节奏：前 2 天把城市核心走完，第 3–4 天水上村与雨林，第 5 天返程。文莱城区小，DART 打车 + 水上出租车即可覆盖；淡布隆日为全天跟团。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵斯里巴加湾市</td>
+<td>北京✈斯里巴加湾市（约 6h 转机），入住市中心，傍晚奥马尔清真寺看倒影</td>
+<td>斯里巴加湾市</td>
+<td>抵达+清真寺</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>杰米清真寺 → 皇家礼仪博物馆 → 努鲁尔伊曼皇宫外观 → 加东夜市晚餐</td>
+<td>斯里巴加湾市</td>
+<td>城市核心</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>甘榜亚逸水上村船游 → 红树林长鼻猴 → 河滨步道落日</td>
+<td>斯里巴加湾市</td>
+<td>水上威尼斯</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>乌鲁淡布隆国家公园一日游：长舟+徒步+60m 树冠吊桥</td>
+<td>乌鲁淡布隆</td>
+<td>雨林日</td>
+</tr>
+<tr>
+<td>D5 返程</td>
+<td>穆阿拉海滩晨光 → 市集采购手信 → 返京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可把 D3 水上村压缩到半天并与 D2 合并，留 1 天给穆阿拉海滩+都东；带娃家庭建议雨林改走「树冠吊桥+浅溪徒步」轻量版。若想顺游婆罗洲，可在文莱前后接美里（砂拉越）或沙巴，走陆路+快艇跨境。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 5 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达斯里巴加湾市</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–15:00</td><td class="t-what">北京✈斯里巴加湾市（经吉隆坡/新加坡/香港转机，约 6h）。入境走落地签通道，交 B$20、按指纹，出示离程机票与酒店订单</td></tr>
+          <tr><td class="t-time">15:30–16:30</td><td class="t-what">机场到市区（DART 打车约 B$10 / 10 分钟），入住市中心酒店</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><strong>奥马尔·阿里·赛福鼎清真寺</strong>（免费）：金色穹顶+人工湖倒影，傍晚光线最美；着长袖长裤，女性提供长袍</td></tr>
+          <tr><td class="t-time">19:00–20:30</td><td class="t-what">晚餐：市中心餐厅椰浆饭/沙嗲，初探文莱慢节奏</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">落地签通道备好护照复印件与离程机票打印件；入境前 72h 完成 E-Arrival Card 在线登记，节省排队时间。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 城市核心</span>
+          <span class="d-desc">杰米清真寺与皇宫</span>
+          <span class="d-tag ">🕌 清真寺日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><strong>杰米·阿山纳柏嘉清真寺</strong>（Jame' Asr Hassanil Bolkiah）：全国最大清真寺，29 座金顶+白色大理石，非祈祷时段可入内参观（着长衣，女性戴头巾）</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what"><strong>皇家礼仪博物馆（Royal Regalia）</strong>（免费）：皇家座驾、登基大典御用金器、巨型皇家仪式展</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：Yayasan 综合市场周边本地餐厅（Nasi Katok 鸡饭+拉茶）</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what"><strong>努鲁尔伊曼皇宫外观</strong>（Istana Nurul Iman，斋月后开斋节开放参观）：世界最大单体皇宫之一，正门拍金顶与旗杆</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">市区散步：文莱河滨步道、历史中心与邮票/手工艺中心</td></tr>
+          <tr><td class="t-time">18:00–20:30</td><td class="t-what"><strong>加东夜市（Gadong Night Market）</strong>：烤串、炸鸡、椰子水、马来糕点一条街，夜市是文莱美食灵魂</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">周五正午祈祷时段清真寺不开放游客，行程避开周五 12:00–14:00；杰米清真寺着装严格，门口备有长袍。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 水上村与长鼻猴</span>
+          <span class="d-desc">东方威尼斯一日</span>
+          <span class="d-tag alt">🛶 水上村日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">市中心码头乘<strong>水上出租车</strong>前往<strong>甘榜亚逸（Kampong Ayer）</strong>：世界最大水上聚落，木栈道连通的彩色高脚屋群</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><strong>水上村徒步</strong>：沿栈道穿行学校/清真寺/商店，水上村茶点铺坐一坐；包船游水道（约 B$20–30，可议价）看高脚屋与红树林</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：市区水上村入口旁餐厅（海鲜+椰浆饭）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><strong>红树林长鼻猴船游</strong>：婆罗洲特有的长鼻猴与猕猴，傍晚河道看日落，半日团约 B$40–60</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">文莱河滨步道散步，晚餐：河畔餐厅烤鱼</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">水上村部分木栈道有缺口，穿防滑鞋；红树林团出发前确认天气，涨潮时段看猴概率最高。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 乌鲁淡布隆雨林</span>
+          <span class="d-desc">长舟+树冠吊桥</span>
+          <span class="d-tag ">🌴 雨林日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:00</td><td class="t-what">跟团集合：旅行社接驳（Freme Travel 等，费用约 B$115–180 含接送、长舟、向导、餐食）</td></tr>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">乘车经<strong>苏丹哈吉奥玛阿里赛夫丁大桥</strong>（东南亚最长跨海桥之一）进入淡布隆县，转乘<strong>长舟</strong>逆流而上</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><strong>树冠吊桥（Canopy Walkway）</strong>：60 米高空吊桥穿梭树冠层，俯瞰无边雨林绿海，运气好遇犀鸟</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">雨林内午餐（简餐/便当）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what"><strong>雨林徒步</strong>：沿河流步道看蕨类与巨树，或在清凉河段戏水</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">长舟返程+过桥回市区，晚餐：加东夜市补一轮</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">雨林蚊虫多，长裤+防蚊液必备；吊桥受天气影响，大雨时可能临时关闭，出行前与旅行社确认备选。全程防晒，带足水。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 返程</span>
+          <span class="d-desc">穆阿拉海滩+返京</span>
+          <span class="d-tag return">🛬 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:30</td><td class="t-what">早起去<strong>穆阿拉海滩（Muara Beach）</strong>：晨光海风+当地早市，或市区买文莱蜂蜜/手工蜡染手信</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">回酒店退房，行李寄存后补购：文莱皇家航空周边/椰糖糕点</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">午餐：最后一顿 Nasi Katok+拉茶</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">赴斯里巴加湾国际机场，办值机（机场距市区约 10 分钟）</td></tr>
+          <tr><td class="t-time">15:00–21:00</td><td class="t-what">转机返京（约 6h），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">文莱出境无离境税；机场免税店酒类禁售，伴手礼选蜂蜜、蜡染布、木雕；转机衔接留足 2.5h。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-cover.jpg" alt="斯里巴加湾市·奥马尔清真寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">斯里巴加湾市·奥马尔清真寺 <small>免费</small></div>
+          <div class="sc-feat">文莱地标。<b>金顶穹窿+人工湖倒影</b>，日落时分最上镜。</div>
+          <div class="sc-meta">📅 8:30–12:00/14:00–17:00 · ⏱ 1h · 🚶 市中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-1.jpg" alt="斯里巴加湾市·杰米清真寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">斯里巴加湾市·杰米清真寺 <small>免费</small></div>
+          <div class="sc-feat">全国最大清真寺。<b>29 座金顶+白色大理石</b>，庄严肃穆。</div>
+          <div class="sc-meta">📅 非祈祷时段 · ⏱ 1h · 🚕 DART 10min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-2.jpg" alt="甘榜亚逸水上村" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">甘榜亚逸水上村 <small>免费（船游另计）</small></div>
+          <div class="sc-feat">东方威尼斯。<b>世界最大水上聚落</b>，高脚屋+栈道+水上学校。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚤 水上出租车 B$1–2</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-3.jpg" alt="乌鲁淡布隆国家公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乌鲁淡布隆国家公园 <small>一日游 B$115–180</small></div>
+          <div class="sc-feat">婆罗洲雨林。<b>60 米树冠吊桥+长舟逆流</b>，原始生态。</div>
+          <div class="sc-meta">📅 全天跟团 · ⏱ 1 天 · 🚤 需旅行社</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-4.jpg" alt="红树林·长鼻猴船游" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">红树林·长鼻猴船游 <small>约 B$40–60</small></div>
+          <div class="sc-feat">婆罗洲明星。<b>长鼻猴+猕猴+河岸生态</b>，涨潮时段最佳。</div>
+          <div class="sc-meta">📅 半日团 · ⏱ 3h · 🚤 河滨码头</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-5.jpg" alt="加东夜市" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">加东夜市 <small>免费</small></div>
+          <div class="sc-feat">文莱美食灵魂。<b>烤串+炸鸡+椰子水</b>，夜市烟火气。</div>
+          <div class="sc-meta">📅 17:00–22:00 · ⏱ 1.5h · 🚕 DART 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-6.jpg" alt="努鲁尔伊曼皇宫" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">努鲁尔伊曼皇宫 <small>外观免费</small></div>
+          <div class="sc-feat">世界最大单体皇宫。<b>金顶+园林正门</b>，开斋节开放参观。</div>
+          <div class="sc-meta">📅 外观全天 · ⏱ 30min · 🚕 DART 10min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/brunei/brunei-7.jpg" alt="穆阿拉海滩" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">穆阿拉海滩 <small>免费</small></div>
+          <div class="sc-feat">首都近郊海滩。<b>晨光+椰林</b>，返程前放松点。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚕 市区 30min</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（奥马尔清真寺、杰米清真寺、水上村、雨林树冠、加东夜市等均为文莱实景或婆罗洲同类主题图），用于页面配图。更多免费景点：Yayasan 综合市场、文莱河滨步道、历史中心、皇家礼仪博物馆（免费）。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 0.19 文莱元（B$）估算。往返机票按转机往返 3000–4000 元计，乌鲁淡布隆一日游按 B$140（约 740 元）计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（8000–12000）</th>
+<th>标准（15000–22000）</th>
+<th>舒适（35000–55000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机往返 3000–4000</td>
+<td>直飞/短转 4500–6000</td>
+<td>商务舱/灵活时段 12000–20000</td>
+</tr>
+<tr>
+<td>住宿（4 晚）</td>
+<td>青旅/民宿 150–250/晚</td>
+<td>四星酒店 350–600/晚</td>
+<td>帝国酒店/度假村 1000–2500/晚</td>
+</tr>
+<tr>
+<td>交通</td>
+<td>DART+水上出租 300–500</td>
+<td>DART+包车一日 800–1500</td>
+<td>全程专车/直升机观光 4000–8000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>清真寺免费+船游 200–300</td>
+<td>含长鼻猴团+博物馆 800–1200</td>
+<td>含全部项目+私团 2500–4000</td>
+</tr>
+<tr>
+<td>餐饮（5 天）</td>
+<td>夜市+本地餐 400–700</td>
+<td>正常下馆子 1200–2000</td>
+<td>酒店餐厅+河畔晚餐 4000–7000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 16000 元）</span>
+      往返机票 5000 + 住宿 4 晚 1800（平均 450/晚）+ DART/包车 900 + 乌鲁淡布隆一日游 740 + 长鼻猴船游 250 + 餐饮 1500 + 落地签 105 + 杂费 500 ≈ <strong>11000–13000 元</strong>。若升级帝国酒店住 1–2 晚则逼近 16000–22000 元。文莱活动类开销占比高，机票与酒店是大头。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>5.1 亲子/轻松版调整</h3>
+
+
+    <p>雨林改走「浅溪徒步+树冠吊桥」轻量一日游（部分旅行社提供短程版）；水上村半天+红树林半天合并为 1 天，节奏放缓；皇宫外观与皇家博物馆对儿童友好。整体不赶路。</p>
+
+    <h3>5.2 婆罗洲连线版（8–10 天）</h3>
+
+
+    <ul>
+
+      <li>文莱 3 天 → 陆路/快艇进美里（砂拉越）看姆鲁国家公园岩洞</li>
+
+      <li>或北上沙巴亚庇：海岛+神山</li>
+
+      <li>文莱被砂拉越分隔，跨境交通需预留半天</li>
+
+      <li>适合想把婆罗洲一次玩透的深度旅行者</li>
+
+    </ul>
+
+    <h3>5.3 都东/诗里亚延伸版（6–7 天）</h3>
+
+
+    <p>多 1–2 天去都东（Tutong）河游与诗里亚（Seria）油田区：文莱石油经济打卡、油井纪念碑与沙滩；或加一天帝国酒店下午茶+高尔夫体验，享受文莱的「慢奢侈」。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>10.1 北京 ⇄ 文莱 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（推荐）</td>
+<td>北京→斯里巴加湾约 6h</td>
+<td>往返 3000–4000 元</td>
+<td>经吉隆坡/新加坡/香港转机</td>
+</tr>
+<tr>
+<td>直飞</td>
+<td>极少班次</td>
+<td>—</td>
+<td>文莱皇家航空线路有限，多数需中转</td>
+</tr>
+<tr>
+<td>跨境陆路</td>
+<td>美里/林梦→斯里巴加湾 1–2h</td>
+<td>约 100–200 元</td>
+<td>从砂拉越（马来西亚）陆路/快艇入境</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 文莱境内交通核心提醒</span>
+      市区首选 <strong>DART App 叫车</strong>（类似 Uber，价格透明，机场到市区约 B$10）；出租车数量少且贵（起步 B$3.5），临时难拦。去水上村必须坐<strong>水上出租车</strong>（单程 B$1–2）；乌鲁淡布隆只能跟团。公交便宜（约 B$1）但班次稀疏，不推荐当主力。
+    </div>
+
+    <h3>10.2 文莱境内交通</h3>
+    <ul>
+      <li><strong>DART 网约车</strong>：首选，机场–市区约 B$10，市内短途 B$3–8</li>
+      <li><strong>水上出租车</strong>：市中心↔水上村 B$1–2，包船游水道 B$20–30</li>
+      <li><strong>出租车</strong>：起步 B$3.5，数量少，多需预约</li>
+      <li><strong>公交车</strong>：约 B$1/趟，6:30–18:00，班次稀疏</li>
+      <li><strong>租车自驾</strong>：日租 B$60–80，靠左行驶，适合去穆阿拉/都东</li>
+      <li><strong>长途快艇/大桥</strong>：首都↔淡布隆经苏丹哈吉奥玛大桥约 1h，跟团最省事</li>
+    </ul>
+
+    <h3>10.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>斯里巴加湾·市中心</td>
+<td>经济 150–250 / 标准 350–600</td>
+<td>清真寺与码头步行可达</td>
+<td>晚间餐厅选择少</td>
+</tr>
+<tr>
+<td>斯里巴加湾·河滨/加东</td>
+<td>标准 400–700</td>
+<td>夜市与河景兼顾</td>
+<td>离机场略远</td>
+</tr>
+<tr>
+<td>帝国酒店等度假村</td>
+<td>舒适 1000–2500</td>
+<td>奢华海滩度假体验</td>
+<td>远离市区，价格高</td>
+</tr>
+<tr>
+<td>淡布隆·邦亚镇</td>
+<td>经济 200–400</td>
+<td>雨林行程前夜基地</td>
+<td>设施简单</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍜 必吃经典</h3>
+        <ul>
+          <li>Nasi Katok 鸡饭：文莱国民快餐，辣酱+烤鸡</li>
+          <li>Ambuyat 西米蘸酱：文莱国菜，配 10+ 种蘸料</li>
+          <li>沙嗲烤串（Satay）：夜市人气王</li>
+          <li>椰浆饭 Nasi Lemak：香料椰奶饭</li>
+        </ul>
+        <h3>🥢 在地名物</h3>
+        <ul>
+          <li>文莱蜂蜜（森林蜂蜜特色伴手礼）</li>
+          <li>手工蜡染布与木雕手信</li>
+          <li>拉茶（Teh Tarik）与冰奶咖啡</li>
+          <li>水上村茶点铺的斑斓点心</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>加东夜市烤鸡翅、炸香蕉</li>
+          <li>Roti Canai 印度飞饼+咖喱蘸酱</li>
+          <li>椰子水与椰子煎饼</li>
+          <li>马来糕点 Kueh：斑斓椰香糯米糕</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>加东夜市（最集中）</li>
+          <li>Yayasan 综合市场周边</li>
+          <li>水上村口餐厅（海鲜）</li>
+          <li>市中心酒店餐厅（融合菜）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 文莱禁酒，别带酒也别点酒；② 夜市摊位多为穆斯林清真饮食，勿自带猪肉入店；③ 沙嗲烤串选现烤的摊，凉了口感差；④ 周五 12:00–14:00 祈祷时段许多餐厅暂停营业；⑤ 多数餐厅收现金，备足文莱元。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上）+ 落地签费 B$20 现金</li>
+        <li>E-Arrival Card 在线登记二维码（入境前 72h）</li>
+        <li>离程机票与酒店订单打印件</li>
+        <li>文莱元/新加坡元现金（1 元 ≈ 0.19 B$）</li>
+      </ul>
+      <ul>
+        <li>乌鲁淡布隆一日游提前 1 周预订</li>
+        <li>DART App 注册（国内可提前装好）</li>
+        <li>长袖长裤+防蚊液（雨林必备）</li>
+        <li>查天气：雨林吊桥开放受降雨影响</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>禁酒法规严格</strong>：入境携带酒精会重罚甚至拒签记录，公共场合饮酒违法；② 清真寺着装与时段：周五祈祷时段闭门、女性进寺戴头巾，拍照别对着祈祷者；③ 雨林一日游旺季（学校假期）一位难求，至少提前 1 周订；④ 文莱整体安全但路面车速快，过马路走斑马线。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      文莱是「<strong>小而富的慢生活样本</strong>」——奥马尔清真寺的金顶倒影、甘榜亚逸水上村的水上威尼斯、乌鲁淡布隆 60 米树冠吊桥下的雨林绿海，5 天刚好把城市、水乡与原始森林一次看够。落地签 14 天 + 电子入境卡，出发前订好雨林一日游，剩下的就是慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#d4a017",
+    "d": 3,
+    "n": "主线 · 斯里巴加湾市→水上村→乌鲁淡布隆（长舟+大桥）",
+    "pts": [
+      [
+        4.903,
+        114.94
+      ],
+      [
+        4.886,
+        114.935
+      ],
+      [
+        4.548,
+        115.144
+      ]
+    ]
+  },
+  {
+    "c": "#2e6b46",
+    "d": 2,
+    "n": "返程 · 乌鲁淡布隆→斯里巴加湾市",
+    "pts": [
+      [
+        4.548,
+        115.144
+      ],
+      [
+        4.903,
+        114.94
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 4.8897,
+    "lng": 114.9396,
+    "name": "斯里巴加湾市·奥马尔清真寺",
+    "t": "D1 傍晚 · 1h",
+    "fee": "免费",
+    "note": "金顶穹窿+人工湖倒影"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 4.8858,
+    "lng": 114.9309,
+    "name": "斯里巴加湾市·杰米清真寺",
+    "t": "D2 上午 · 1h",
+    "fee": "免费",
+    "note": "全国最大、29 座金顶"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 4.886,
+    "lng": 114.935,
+    "name": "甘榜亚逸水上村",
+    "t": "D3 上午 · 2–3h",
+    "fee": "免费（船游另计）",
+    "note": "世界最大水上聚落"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 4.548,
+    "lng": 115.144,
+    "name": "乌鲁淡布隆国家公园",
+    "t": "D4 全天 · 1 天",
+    "fee": "一日游 B$115–180",
+    "note": "60m 树冠吊桥、长舟"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 4.903,
+    "lng": 114.94,
+    "name": "文莱河·长鼻猴船游",
+    "t": "D3 下午 · 3h",
+    "fee": "约 B$40–60",
+    "note": "红树林长鼻猴"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 4.9044,
+    "lng": 114.9302,
+    "name": "加东夜市",
+    "t": "D2 晚上 · 1.5h",
+    "fee": "免费",
+    "note": "烤串、炸鸡、椰子水"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 4.887,
+    "lng": 114.921,
+    "name": "努鲁尔伊曼皇宫",
+    "t": "D2 下午 · 30min",
+    "fee": "外观免费",
+    "note": "世界最大单体皇宫"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 4.9792,
+    "lng": 115.0676,
+    "name": "穆阿拉海滩",
+    "t": "D5 清晨 · 1–2h",
+    "fee": "免费",
+    "note": "晨光椰林海风"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[4.3, 114.55], [5.25, 115.35]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#d4a017\"></span>主线（斯里巴加湾市→水上村→乌鲁淡布隆）<br><span class=\"sw\" style=\"background:#2e6b46\"></span>返程（长舟+公路回首都）<br><span class=\"sw dash\"></span>北京⇄斯里巴加湾市为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

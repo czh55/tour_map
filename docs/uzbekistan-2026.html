@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 乌兹别克斯坦 11 天全景攻略 · 丝路心脏</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #1e6fb5;
+    --red-light: #2a9d8f;
+    --gold: #d4a017;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f4ec;
+    --card: #ffffff;
+    --line: #e5dcc8;
+    --blue: #1e6fb5;
+    --cover1: #0f3f5f;
+    --ov1: rgba(15,63,95,.88);
+    --ov2: rgba(30,111,181,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(42,157,143,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f1f5f7;
+    --head-bg: rgba(30,111,181,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/uzbekistan/uzbekistan-cover.jpg" alt="乌兹别克斯坦旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 11 天环线 · 塔什干 + 撒马尔罕 + 布哈拉 + 希瓦</div>
+      <h1>乌兹别克斯坦 11 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 塔什干 · 雷吉斯坦广场 · 帖木儿帝国 · 千年汗国 · 花剌子模古城</div>
+      <div class="meta">
+        <span>🛫 行程链：北京✈塔什干 → 撒马尔罕 → 布哈拉 → 希瓦 → 塔什干 → 返程</span>
+        <span>📅 时间窗口：11 天 10 晚</span>
+        <span>✈️ 北京⇄塔什干 直飞约 6.5–7 小时</span>
+        <span>🛂 签证：中乌互免签证协定已生效，中国护照免签 30 天（11 天全覆盖）</span>
+        <span>🕐 时差 -3 小时 · 🔌 电压 220V C/F 型插座（两圆脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 11 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 11 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">塔什干</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">撒马尔罕</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">布哈拉</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">希瓦</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 11 天怎么安排最合理</span>
+      乌兹别克斯坦是「<strong>丝路蓝金四城记</strong>」：塔什干做门户，撒马尔罕看帖木儿帝国的蓝金马赛克，布哈拉读千年汗国的商业传奇，希瓦钻进花剌子模的沙漠古城。节奏上<strong>塔什干 2 天 + 撒马尔罕 3 天 + 布哈拉 3 天 + 希瓦 2 天</strong>，城际靠高铁与夜班火车衔接，每段不赶。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最省心）</td>
+<td>中乌互免签证协定 2025-06-01 生效：中国普通护照<strong>免签 30 天</strong>，11 天行程完全覆盖，无需电子签</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>塔什干 2 天 → 撒马尔罕 3 天 → 布哈拉 3 天 → 希瓦 2 天，城际靠高铁+夜车</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 11 天从希瓦经乌尔根奇✈塔什干转机返京，航班衔接至少留 4h</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 塔什干 → 撒马尔罕 → 布哈拉 → 希瓦 → 塔什干 → 北京</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 6000–9000 ／ 标准 11000–16000 ／ 舒适 25000–35000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 高铁票提前 45 天开抢 ② 布哈拉/希瓦古宅民宿提前 2–3 周 ③ 换汇带美元现金+银联卡</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>4–5 月与 9–10 月最佳；6–8 月沙漠酷热（希瓦可达 40°C+）；冬季干冷但游客少</td>
+</tr>
+<tr>
+<td>货币/支付</td>
+<td>1 元 ≈ 1750 索姆；现金为主，景区门票、民宿多收现金，打车用 Yandex Go</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>高铁票比想象中难买</strong>：Afrosiyob 高铁在发车前 45 天于 eticket.railway.uz / Uzrailway App 开售，热门班次几小时内售罄，务必开票当天抢，备选 Sharq 快车或包车。② <strong>希瓦的交通很特殊</strong>：布哈拉→希瓦约 470km 无直达高铁，夜火车约 7–8 小时或包车穿越沙漠，去希瓦一般飞乌尔根奇机场（UGC）进出，行程最后一天务必留足转机时间。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 11 天版</h2>
+
+    <p>以下为 11 天 10 晚的推荐节奏：塔什干做门户，一路向西走撒马尔罕 → 布哈拉 → 希瓦，最后经乌尔根奇飞回塔什干转机返京。每日主景点 ≤2 个，城际交通以高铁 Afrosiyob + 夜班火车为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵塔什干</td>
+<td>北京✈塔什干（直飞约 6.5–7h），入住市区，独立广场夜景</td>
+<td>塔什干</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>独立广场 → 塔什干地铁（太空人站）→ 帖木儿历史博物馆 → 哈兹拉提·伊玛目老城</td>
+<td>塔什干</td>
+<td>首都一日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Afrosiyob 高铁到撒马尔罕（2h10min），午后雷吉斯坦广场 → 夏伊辛达日落</td>
+<td>撒马尔罕</td>
+<td>高铁+初见</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>古尔埃米尔陵墓 → 雷吉斯坦晨拍 → 阿夫拉西阿卜博物馆 → 乌鲁伯格天文台</td>
+<td>撒马尔罕</td>
+<td>帖木儿帝国</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>比比哈努姆清真寺 → 手工蓝陶工坊 → 锡亚布巴扎 → 雷吉斯坦夜景</td>
+<td>撒马尔罕</td>
+<td>蓝金之城</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>高铁到布哈拉（1.5h），波依卡扬建筑群 → 卡龙宣礼塔 → 商业圆顶市场</td>
+<td>布哈拉</td>
+<td>布哈拉初见</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>雅克城堡 → 四塔清真寺 → 伊斯梅尔·萨曼陵墓 → 拉比豪兹广场</td>
+<td>布哈拉</td>
+<td>布哈拉深度</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>埃米尔夏宫 → 老城小巷漫步 → 夜火车赴希瓦</td>
+<td>布哈拉</td>
+<td>布哈拉收尾</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>清晨抵希瓦，伊钦卡拉内城：卡尔塔米纳塔 → 朱玛清真寺 → 城墙日落</td>
+<td>希瓦</td>
+<td>进希瓦</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>伊斯兰霍贾宣礼塔登顶 → 塔什豪里宫 → 帕赫拉万陵墓 → 民宿屋顶晚餐</td>
+<td>希瓦</td>
+<td>希瓦内城</td>
+</tr>
+<tr>
+<td>D11 返程</td>
+<td>包车到乌尔根奇（35km）→ 乌尔根奇✈塔什干 → 转机返京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍希瓦（D9–D10 压成 1 天）或布哈拉（压到 2 天），高铁城市段全程可伸缩；想加深度可多留 2–3 天北上努库斯（萨维茨基博物馆，被称为「沙漠中的卢浮宫」）与咸海岸边的穆伊纳克船坟场。夏季 6–8 月建议把希瓦段放在 4–5 月或 9–10 月，避开 40°C 以上的沙漠酷热。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 11 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达塔什干</span>
+          <span class="d-desc">入住市区</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">15:45–19:40</td><td class="t-what">北京✈塔什干（国航 CA777 或乌航 HY506，直飞约 6h15min–6h55min），塔什干比北京晚 3 小时</td></tr>
+          <tr><td class="t-time">20:00–21:30</td><td class="t-what">机场换小额索姆现金 + 打车入住市区酒店（机场到独立广场约 15–20 分钟车程）</td></tr>
+          <tr><td class="t-time">21:30–22:30</td><td class="t-what">独立广场散步看夜景，便利店备点零食，早休息倒时差（时差仅 -3h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">塔什干机场打车建议用 Yandex Go，到市区约 5–8 美元；机场换汇汇率一般，小额换够当晚即可，白天到市区换更划算。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 塔什干首都一日</span>
+          <span class="d-desc">独立广场 + 地下宫殿地铁</span>
+          <span class="d-tag ">🏛 首都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>独立广场</b>（免费）：独立纪念碑、永恒之火、国家会议中心，苏联风格的宽大中轴线</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>塔什干地铁</b>（单程约 1700–3000 索姆）：中亚第一条地铁（1977 年通车），重点打卡太空人站 Kosmonavtlar、诗人站 Alisher Navoiy</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：手抓饭中心（Plov Centre，中亚最大，人均约 30–50 元）或乔尔苏巴扎</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>帖木儿历史博物馆</b>（成人 40000 索姆）：帖木儿帝国文物，蓝顶建筑本身就很出片（国家历史博物馆翻新中，以帖木儿馆替代）</td></tr>
+          <tr><td class="t-time">16:30–19:00</td><td class="t-what"><b>哈兹拉提·伊玛目老城</b>（免费）：奥斯曼古兰经、巴拉克汗经学院、库克达什经学院，日落前光线最好</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">塔什干地铁 2018 年起才开放拍照，站台人少时（清晨/夜间）最好拍；一张票只能进站一次，出站再进需另购。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 高铁到撒马尔罕</span>
+          <span class="d-desc">初见雷吉斯坦</span>
+          <span class="d-tag ">🚄 高铁日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:40</td><td class="t-what"><b>Afrosiyob 高铁</b>：塔什干→撒马尔罕约 2h10min，经济舱约 311000 索姆（约 180 元人民币）</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">入住撒马尔罕老城民宿（雷吉斯坦周边，步行可达），放行李休整</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：撒马尔罕烤包子（Samsa）或手抓饭</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><b>雷吉斯坦广场</b>（成人约 60000–80000 索姆，含三座经学院）：乌鲁伯格、舍尔-多尔、季里雅-卡里，蓝金马赛克穹顶</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what"><b>夏伊辛达陵墓群</b>（30000 索姆）：蓝绿瓷砖长廊如永生之路，日落时分光影最美</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">雷吉斯坦联票比单买省约 20%；傍晚有灯光秀（另购约 60000 索姆），清晨游客最少适合拍照。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 帖木儿帝国日</span>
+          <span class="d-desc">古尔埃米尔 + 阿夫拉西阿卜</span>
+          <span class="d-tag ">🕌 帖木儿日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what"><b>古尔埃米尔陵墓</b>（30000–40000 索姆）：帖木儿长眠之地，金叶穹顶与墨绿玉石棺，泰姬陵的灵感来源</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what">雷吉斯坦广场晨拍 + 三座经学院内部参观（早到人少）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：锡亚布巴扎（Siyob Bazaar）现榨石榴汁、干果、烤包子</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>阿夫拉西阿卜遗址 + 博物馆</b>（约 30000 索姆）：粟特时期壁画，玄奘笔下的康居国</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>乌鲁伯格天文台</b>（25000 索姆）：15 世纪巨型六分仪遗址 + 天文博物馆</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">古尔埃米尔内部禁止拍照；阿夫拉西阿卜遗址很大，重点看博物馆里的粟特壁画与唐朝来使壁画。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 蓝金之城收尾</span>
+          <span class="d-desc">比比哈努姆 + 蓝陶工坊</span>
+          <span class="d-tag alt">💙 蓝陶日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>比比哈努姆清真寺</b>（50000–75000 索姆）：帖木儿为爱妻所建的巨型清真寺，庭院里有巨型古兰经台</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>手工蓝陶工坊</b>（免费参观，可付费体验）：撒马尔罕蓝陶工艺，看师傅拉坯上釉</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">午餐：雷吉斯坦景观餐厅或老城茶馆</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">自由安排：雷吉斯坦咖啡馆下午茶，或老城小巷拍人像</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">雷吉斯坦夜景灯光秀（如开放），返民宿打包行李</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">撒马尔罕蓝陶与丝毯是经典伴手礼，市场砍价空间约 30–50%；工坊里买比景区店便宜不少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 高铁到布哈拉</span>
+          <span class="d-desc">布哈拉初见</span>
+          <span class="d-tag ">🚄 高铁日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>Afrosiyob 高铁</b>：撒马尔罕→布哈拉约 1.5h，经济舱约 214000 索姆（约 120 元人民币）</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">入住布哈拉古宅民宿（老城改造，庭院氛围绝佳）</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：布哈拉烤肉（Shashlik）+ 拉格曼拉面</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>波依卡扬建筑群</b>：卡龙宣礼塔（47 米，1127 年建成，连成吉思汗都惊叹未拆）+ 卡隆清真寺（25000 索姆）+ 米尔阿拉伯经学院外观</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>商业圆顶市场 Trading Domes</b>（免费）：银器穹顶、织物穹顶，砍价买手信</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卡龙宣礼塔一般不能登塔，广场 + 外观是最佳机位；布哈拉古宅民宿多含早餐，庭院喝茶是灵魂体验。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 布哈拉深度</span>
+          <span class="d-desc">雅克城堡 + 四塔清真寺</span>
+          <span class="d-tag ">🏰 汗国日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>雅克城堡 Ark</b>（约 60000 索姆）：千年王城 + 城堡博物馆，从城上俯瞰布哈拉老城最佳视角</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：波依卡扬附近茶馆抓饭</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what"><b>四塔清真寺 Chor Minor</b>（免费）：四根小塔的独特清真寺，孤独星球中亚封面取景地</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>伊斯梅尔·萨曼陵墓</b>（25000 索姆）：10 世纪砖砌陵墓，中亚最古老的伊斯兰建筑之一</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what"><b>拉比豪兹广场</b>（免费）：水池 + 老茶馆，布哈拉最文艺的角落，喝一壶茶看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">雅克城堡在 1920 年苏军进攻中被炸毁大半，现存为修复部分；拉比豪兹广场的老茶馆（茶约 1–3 元/壶）值得坐一下午。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 布哈拉收尾 + 夜车</span>
+          <span class="d-desc">埃米尔夏宫 + 夜火车赴希瓦</span>
+          <span class="d-tag ">🚂 夜车日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>埃米尔夏宫 Sitorai Mokhi-Khosa</b>（约 30000 索姆）：布哈拉埃米尔的夏日宫殿，白蓝相间的外墙</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：布哈拉烤鱼 + 馕坑烤肉（Tandyr）</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">老城自由漫步：经学院补拍、古宅喝茶、买丝毯手信</td></tr>
+          <tr><td class="t-time">19:00–次日</td><td class="t-what"><b>夜火车赴希瓦</b>（约 7–8h，卧铺约 80000 索姆起），车上睡一觉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">布哈拉→希瓦约 470km 无直达高铁，夜火车是性价比之选但票也紧张，务必提前订；买不到票可包车（约 60–80 美元/车）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 希瓦伊钦卡拉</span>
+          <span class="d-desc">花剌子模古城</span>
+          <span class="d-tag ">🏜 希瓦日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–08:00</td><td class="t-what">清晨抵希瓦，入住伊钦卡拉内城民宿（老宅改造，先寄存行李）</td></tr>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>伊钦卡拉内城</b>（西门 Ata Darvaza 买通票 100000–250000 索姆）：<b>卡尔塔米纳塔</b>（未完工的蓝塔，希瓦象征）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>朱玛清真寺</b>：218 根木柱支撑的大厅，天然天窗采光；<b>穆罕默德·阿明汗经学院</b>（现为酒店，庭院可参观）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：希瓦名菜<b>希维特奥什</b>（莳萝绿面条配肉汁）</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">内城小巷漫步：阿拉库里汗经学院、商队旅馆、手工艺作坊</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what"><b>城墙看日落</b>（登城墙约 40000 索姆另付）或民宿屋顶看宣礼塔剪影</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">希瓦通票分基础/全览两档，2 天内有效；内城街道免费，进博物馆才查票。清晨 6 点与傍晚 17 点后游客最少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 希瓦内城深度</span>
+          <span class="d-desc">宣礼塔登顶 + 宫殿</span>
+          <span class="d-tag ">🗼 塔楼日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what"><b>伊斯兰霍贾宣礼塔登顶</b>（登塔约 100000 索姆，不包含在通票内）：45 米俯瞰全城，日出光线最佳</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>塔什豪里宫</b>：花剌子模可汗宫殿，蓝白马赛克与精美木雕</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：图洪巴拉克（蛋馅饺子）或茶馆抓饭</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>帕赫拉万·马赫穆德陵墓</b>（另行购票）+ 库纳·阿克城堡观景台</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what">手工艺体验（木雕/陶艺，约 5–10 美元）或内城咖啡馆，民宿屋顶晚餐收尾</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">希瓦物价是四城里最低的，民宿家常晚餐（人均约 10–20 元）比景区餐厅好吃；登塔票在塔下窗口另买。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 返程</span>
+          <span class="d-desc">经乌尔根奇飞回塔什干转机</span>
+          <span class="d-tag return">🛫 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–07:30</td><td class="t-what">早餐后退房，包车/打车去乌尔根奇机场（UGC，35km，约 40 分钟，约 5–7 美元）</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">乌尔根奇✈塔什干（约 1.5h，提前订单程约 30–50 美元）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">塔什干机场午餐，或市区最后补货（机场可寄存行李）</td></tr>
+          <tr><td class="t-time">15:00–21:00</td><td class="t-what">塔什干✈北京（直飞约 6.5–7h），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程务必留足转机时间（建议 4h+）；乌尔根奇→塔什干航班每天约 2–3 班，提前 2 周订。也可选塔什干始发的 18h 夜火车省机票钱，但不推荐赶行程。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-1.jpg" alt="撒马尔罕·雷吉斯坦广场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">撒马尔罕·雷吉斯坦广场 <small>约 60000–80000 索姆</small></div>
+          <div class="sc-feat">撒马尔罕之心。三座经学院合围的蓝金广场，<b>乌鲁伯格经学院 + 夜景灯光秀</b>双绝。</div>
+          <div class="sc-meta">📅 8:00–20:00（夏）· ⏱ 半天 · 🚌 老城步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-3.jpg" alt="撒马尔罕·古尔埃米尔陵墓" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">撒马尔罕·古尔埃米尔陵墓 <small>30000–40000 索姆</small></div>
+          <div class="sc-feat">帖木儿长眠之地，<b>金叶穹顶 + 墨绿玉石棺</b>，泰姬陵的灵感来源。</div>
+          <div class="sc-meta">📅 8:00–18:30 · ⏱ 1.5h · 🚶 雷吉斯坦步行 10min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-2.jpg" alt="撒马尔罕·夏伊辛达陵墓群" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">撒马尔罕·夏伊辛达陵墓群 <small>30000 索姆</small></div>
+          <div class="sc-feat">蓝绿瓷砖铺成的「<b>永生之路</b>」，11–19 世纪 40 余座圣徒陵墓，日落最出片。</div>
+          <div class="sc-meta">📅 9:00–18:00 · ⏱ 1.5–2h · 🚶 老城北缘</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-4.jpg" alt="布哈拉·波依卡扬（卡龙宣礼塔）" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布哈拉·波依卡扬（卡龙宣礼塔） <small>清真寺 25000 索姆</small></div>
+          <div class="sc-feat">47 米砖砌宣礼塔（1127 年），<b>成吉思汗都惊叹未拆</b>，布哈拉名片。</div>
+          <div class="sc-meta">📅 8:00–20:00 · ⏱ 2h · 🚶 老城中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-5.jpg" alt="希瓦·伊钦卡拉内城" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">希瓦·伊钦卡拉内城 <small>通票 100000 索姆起</small></div>
+          <div class="sc-feat">花剌子模沙漠古城，<b>卡尔塔米纳塔 + 土坯城墙</b>，唯一完整保留的中世纪城市。</div>
+          <div class="sc-meta">📅 通票 2 天有效 · ⏱ 1.5–2 天 · 🚶 城墙内</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-6.jpg" alt="塔什干·地下宫殿地铁" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塔什干·地下宫殿地铁 <small>单程约 1700–3000 索姆</small></div>
+          <div class="sc-feat">中亚第一条地铁（1977 年），<b>太空人站/诗人站</b>苏联美学天花板。</div>
+          <div class="sc-meta">📅 5:00–0:00 · ⏱ 2h · 🚇 任一站进站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-cover.jpg" alt="塔什干·哈兹拉提·伊玛目老城" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塔什干·哈兹拉提·伊玛目老城 <small>免费</small></div>
+          <div class="sc-feat">存放<b>奥斯曼古兰经</b>的老城中心，经学院 + 宣礼塔建筑群，日落光影绝佳。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚌 老城</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uzbekistan/uzbekistan-7.jpg" alt="撒马尔罕·蓝陶工坊" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">撒马尔罕·蓝陶工坊 <small>参观免费（体验另付）</small></div>
+          <div class="sc-feat">撒马尔罕蓝陶工艺，<b>看师傅拉坯上釉</b>，现场买比景区店便宜。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 1.5h · 🚶 老城工坊</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（雷吉斯坦、古尔埃米尔、夏伊辛达、布哈拉卡龙宣礼塔、希瓦伊钦卡拉、塔什干建筑、撒马尔罕蓝陶等均为乌兹别克实景），用于页面配图。更多免费景点：独立广场、锡亚布巴扎、拉比豪兹广场、商业圆顶市场、哈兹拉提·伊玛目老城。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 1750 索姆估算，美元换汇更稳定。往返机票按淡季直飞 3200–4200 元计，旺季（4–5 月/9–10 月）会明显上浮。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（6000–9000）</th>
+<th>标准（11000–16000）</th>
+<th>舒适（25000–35000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄塔什干 3200–3800</td>
+<td>含乌尔根奇段 4200–5200</td>
+<td>直飞商务/灵活 9000–13000</td>
+</tr>
+<tr>
+<td>住宿（10 晚）</td>
+<td>青旅/民宿 70–120/晚</td>
+<td>古宅民宿/精品 250–500/晚</td>
+<td>五星/精品 1200–2000/晚</td>
+</tr>
+<tr>
+<td>城际交通</td>
+<td>高铁+夜火车 800–1200</td>
+<td>高铁+夜火车+包车 1800–2800</td>
+<td>包车+国内航班 5000–8000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点 300–500</td>
+<td>含灯光秀/通票 600–900</td>
+<td>全含+体验课 1500–2500</td>
+</tr>
+<tr>
+<td>餐饮（11 天）</td>
+<td>茶馆+市场 900–1500</td>
+<td>正常下馆子 2000–3000</td>
+<td>景观餐厅+民俗餐 6000–9000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 13500 元）</span>
+      往返机票 4600 + 住宿 10 晚 3500（平均 350/晚）+ 城际交通 2200 + 门票 700 + 餐饮 2500 + 杂费（换汇/打车/SIM）500 ≈ <strong>13000–15000 元</strong>。机票是大头，提前 2–3 个月订能省 1000–1500 元；希瓦与布哈拉的住宿是价值洼地，同价位换欧洲只能住青旅。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>8.1 7–8 天精华版</h3>
+
+
+    <p>砍掉希瓦：塔什干 2 天 + 撒马尔罕 3 天 + 布哈拉 3 天，全程高铁衔接，8 天最从容；若只有 7 天，把布哈拉压到 2 天即可。返回塔什干直接转机，不折腾乌尔根奇段。</p>
+
+    <h3>8.2 亲子/避暑版</h3>
+
+
+    <ul>
+
+      <li>避开 6–8 月酷热，选 4–5 月或 9–10 月出行</li>
+
+      <li>减少换乘：布哈拉→希瓦改包车（约 60–80 美元/车，门到门）</li>
+
+      <li>塔什干→撒马尔罕优先抢高铁票，买不到再包车（约 120 美元/车）</li>
+
+      <li>希瓦内城住 1 晚体验即可，不必停留 2 晚</li>
+
+    </ul>
+
+    <h3>8.3 加努库斯/咸海的深度版</h3>
+
+
+    <p>多留 2–3 天北上：努库斯的萨维茨基博物馆（收藏被苏联查禁的前卫艺术，被称为「沙漠中的卢浮宫」）与咸海岸边的穆伊纳克船坟场，是小众但极震撼的一程，适合对苏联史、艺术与失落文明有兴趣的旅行者。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>9.1 北京 ⇄ 乌兹别克斯坦 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→塔什干约 6.5–7h</td>
+<td>往返 3200–4200 元</td>
+<td>国航 CA777 每周 3 班；乌航 HY506（大兴机场）787 执飞</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>8–12h</td>
+<td>2500–3800 元</td>
+<td>经乌鲁木齐/伊斯坦布尔/阿拉木图，便宜但耗时长</td>
+</tr>
+<tr>
+<td>国内段衔接</td>
+<td>乌尔根奇✈塔什干约 1.5h</td>
+<td>单程 30–50 美元</td>
+<td>去希瓦必经乌尔根奇机场（UGC），提前 2 周订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 乌兹别克斯坦境内交通核心提醒</span>
+      城际靠<strong>高铁 Afrosiyob + 夜班火车</strong>：塔什干—撒马尔罕 2h10min、撒马尔罕—布哈拉 1.5h；布哈拉→希瓦无高铁，夜火车约 7–8h 或包车。高铁票在 <strong>eticket.railway.uz / Uzrailway App 提前 45 天开售</strong>，热门班次当天售罄，务必开抢即订；买不到可改 Sharq 快车或包车。
+    </div>
+
+    <h3>9.2 乌兹别克斯坦境内交通</h3>
+    <ul>
+      <li><strong>Afrosiyob 高铁</strong>：塔什干—撒马尔罕 2h10min、撒马尔罕—布哈拉 1.5h，时速 250km，性价比高</li>
+      <li><strong>夜班火车</strong>：布哈拉—希瓦约 7–8h（卧铺约 80000 索姆起），省一晚住宿</li>
+      <li><strong>Sharq 快车</strong>：高铁没票时的备选，塔什干—撒马尔罕约 3h，价格更低</li>
+      <li><strong>国内航班</strong>：乌尔根奇（UGC）✈塔什干约 1.5h，单程 30–50 美元</li>
+      <li><strong>包车/拼车</strong>：布哈拉—希瓦约 60–80 美元/车，撒马尔罕周边一日游约 80–100 美元</li>
+      <li><strong>市内打车</strong>：Yandex Go（类似滴滴）市区 2–5 美元，务必 App 叫车，别坐不打表黑车</li>
+    </ul>
+
+    <h3>9.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>塔什干·独立广场/市中心</td>
+<td>经济 150–250 / 标准 300–500</td>
+<td>地标集中、离机场近、商圈齐全</td>
+<td>旺季涨价快</td>
+</tr>
+<tr>
+<td>撒马尔罕·老城民宿</td>
+<td>经济 120–220 / 标准 250–450</td>
+<td>步行到雷吉斯坦，庭院氛围绝佳</td>
+<td>老宅隔音一般</td>
+</tr>
+<tr>
+<td>布哈拉·老城古宅民宿</td>
+<td>经济 70–150 / 标准 300–450</td>
+<td>住进千年古宅，早餐含庭院</td>
+<td>老宅设施偏基础</td>
+</tr>
+<tr>
+<td>希瓦·伊钦卡拉内城</td>
+<td>民宿 110–145 / 精品 290–435</td>
+<td>住进古城墙内，屋顶日出日落</td>
+<td>房间偏小、夏季闷热</td>
+</tr>
+<tr>
+<td>希瓦·外城</td>
+<td>经济 73–110</td>
+<td>便宜、本地生活气息浓</td>
+<td>离内城需步行 10–20 分钟</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍚 必吃经典</h3>
+        <ul>
+          <li>手抓饭 Plov：撒马尔罕/塔什干 Plov Centre，羊肉胡萝卜焖饭</li>
+          <li>烤包子 Samsa：馕坑现烤，肉/南瓜馅</li>
+          <li>烤肉 Shashlik + 拉格曼拉面：布哈拉与撒马尔罕街头最佳</li>
+          <li>馕 Non：现烤热馕配酸奶（Katyk）</li>
+        </ul>
+        <h3>🍇 街头与市场</h3>
+        <ul>
+          <li>锡亚布巴扎（撒马尔罕）：现榨石榴汁、葡萄、干果</li>
+          <li>乔尔苏巴扎（塔什干）：奶酪、蜂蜜、香料</li>
+          <li>商业圆顶市场（布哈拉）：银器、织品、坚果</li>
+          <li>奶茶 Chai：老茶馆一壶茶配馕，本地社交标配</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥟 希瓦花剌子模风味</h3>
+        <ul>
+          <li>希维特奥什 shivit osh：莳萝绿面条，希瓦名片菜</li>
+          <li>图洪巴拉克 tukhum barak：蛋馅饺子配酸奶</li>
+          <li>花剌子模烤鱼 + 馕坑羊肉（Tandyr）</li>
+          <li>古玛 gumma：南瓜肉馅蒸包</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>塔什干：手抓饭中心、乔尔苏巴扎</li>
+          <li>撒马尔罕：锡亚布巴扎、雷吉斯坦茶馆</li>
+          <li>布哈拉：拉比豪兹广场老茶馆、老城烤肉店</li>
+          <li>希瓦：伊钦卡拉内城茶馆、民宿家常菜</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 景点门口餐厅贵且一般，往里走一条街价格能便宜一半；② 手抓饭按份点，别让店家「顺手加肉」多收费；③ 市场对半砍价，尤其旅游区纪念品标价虚高 2–3 倍；④ 沙漠地区高温干燥，随身带 2L 水别只靠果汁；⑤ 斋月期间部分餐厅白天不营业，行程尽量避开斋月。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（免签 30 天，确认有效期 6 个月以上）</li>
+        <li>美元现金（新钞汇率更好）+ 银联卡（部分 ATM 可取现）</li>
+        <li>转换插头（C/F 型两圆脚，220V）+ 充电宝</li>
+        <li>离线地图（Maps.me 覆盖很好）+ Yandex Go 打车 App</li>
+      </ul>
+      <ul>
+        <li>Afrosiyob 高铁票（提前 45 天开抢，先订车票再订酒店）</li>
+        <li>希瓦/布哈拉古宅民宿（提前 2–3 周，旺季更早）</li>
+        <li>防晒：SPF50+、宽檐帽、墨镜（6–8 月沙漠强紫外线）</li>
+        <li>水壶（希瓦沙漠干热，随身 2L 水）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>高铁票是最大变量</strong>：Afrosiyob 提前 45 天放票，热门班次当天售罄，先抢票再定行程，买不到备选 Sharq 快车或包车；② <strong>希瓦交通最远</strong>：无高铁直达，夜火车/包车/飞机三选一，返程别把衔接卡太死；③ 现金为主：景区门票、民宿、市场基本只收索姆，先换够现金再出发；④ 宗教礼仪：清真寺脱鞋、女士穿长袖长裤并带头巾，陵墓内部一般禁止拍照。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      乌兹别克斯坦是「<strong>一条高铁串起的丝路蓝金四城记</strong>」——塔什干的门户烟火、撒马尔罕的帖木儿帝国马赛克、布哈拉的千年汗国商道、希瓦的花剌子模沙漠古城，11 天把中亚最华丽的建筑史读了一遍。物价低、免签 30 天、人民热情，是中国护照性价比最高的出境目的地之一，唯一的功课就是提前 45 天抢高铁票。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fb5",
+    "d": 3,
+    "n": "主线 · 塔什干→撒马尔罕→布哈拉→希瓦（高铁+夜火车）",
+    "pts": [
+      [
+        41.311,
+        69.279
+      ],
+      [
+        39.654,
+        66.975
+      ],
+      [
+        39.774,
+        64.428
+      ],
+      [
+        41.378,
+        60.364
+      ]
+    ]
+  },
+  {
+    "c": "#d4a017",
+    "d": 3,
+    "n": "返程 · 希瓦→乌尔根奇→塔什干（国内航班）",
+    "pts": [
+      [
+        41.378,
+        60.364
+      ],
+      [
+        41.54,
+        60.632
+      ],
+      [
+        41.311,
+        69.279
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 41.311,
+    "lng": 69.279,
+    "name": "塔什干·独立广场/地铁",
+    "t": "D2 全天 · 半天",
+    "fee": "地铁约 3000 索姆",
+    "note": "独立广场、太空人站、帖木儿博物馆"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 39.654,
+    "lng": 66.975,
+    "name": "撒马尔罕·雷吉斯坦",
+    "t": "D3/D5 · 半天",
+    "fee": "约 60000–80000 索姆",
+    "note": "三座经学院、夜景灯光秀"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 39.663,
+    "lng": 66.945,
+    "name": "撒马尔罕·古尔埃米尔陵墓",
+    "t": "D4 上午 · 1.5h",
+    "fee": "30000–40000 索姆",
+    "note": "帖木儿墓、金叶穹顶"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 39.661,
+    "lng": 66.987,
+    "name": "撒马尔罕·夏伊辛达",
+    "t": "D3 傍晚 · 1.5h",
+    "fee": "30000 索姆",
+    "note": "蓝绿瓷砖陵墓群"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 39.775,
+    "lng": 64.415,
+    "name": "布哈拉·波依卡扬/卡龙塔",
+    "t": "D6 下午 · 2h",
+    "fee": "清真寺 25000 索姆",
+    "note": "47 米宣礼塔、蓝穹顶"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 39.778,
+    "lng": 64.414,
+    "name": "布哈拉·雅克城堡",
+    "t": "D7 上午 · 3h",
+    "fee": "约 60000 索姆",
+    "note": "千年王城、城上俯瞰"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 41.378,
+    "lng": 60.364,
+    "name": "希瓦·伊钦卡拉内城",
+    "t": "D9–D10 · 1.5 天",
+    "fee": "通票 100000 索姆起",
+    "note": "卡尔塔米纳塔、朱玛清真寺"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 41.33,
+    "lng": 69.241,
+    "name": "塔什干·哈兹拉提·伊玛目",
+    "t": "D2 傍晚 · 2h",
+    "fee": "免费",
+    "note": "奥斯曼古兰经、经学院建筑群"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[39.0, 59.0], [42.5, 70.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fb5\"></span>主线（塔什干→希瓦）高铁+夜车<br><span class=\"sw\" style=\"background:#d4a017\"></span>返程（希瓦→塔什干）国内航班<br><span class=\"sw dash\"></span>乌尔根奇机场为希瓦门户（35km 车程）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

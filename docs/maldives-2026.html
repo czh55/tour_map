@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 马尔代夫 7 天全景攻略 · 居民岛与水屋双体验</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #20b2aa;
+    --red-light: #38c3bb;
+    --gold: #e0b870;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e4e8e0;
+    --blue: #1f7a8c;
+    --cover1: #0b5f5a;
+    --ov1: rgba(11,95,90,.88);
+    --ov2: rgba(32,178,170,.72);
+    --ov3: rgba(232,160,160,.38);
+    --ov4: rgba(224,184,112,.20);
+    --key-bg: #eaf6f2;
+    --info-bg: #f0f7f7;
+    --head-bg: rgba(32,178,170,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/maldives/maldives-cover.jpg" alt="马尔代夫旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 7 天 6 晚 · 居民岛 + 度假岛水屋双体验</div>
+      <h1>马尔代夫 7 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 马累 · 马富施居民岛 · 度假岛水屋 · 玻璃海浮潜</div>
+      <div class="meta">
+        <span>🛫 行程链：马累 → 马富施居民岛 → 度假岛水屋 → 返程</span>
+        <span>📅 时间窗口：7 天 6 晚（11 月–次年 4 月旱季最佳）</span>
+        <span>✈️ 北京大兴⇄马累 直飞约 8 小时 40 分</span>
+        <span>🛂 签证：中国护照免签落地 30 天 · 行前填 IMUGA 电子入境表</span>
+        <span>🕐 时差 -3 小时 · 🔌 电压 230V C/D/G/J/K 插座</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 7 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 7 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">马累</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">马富施</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">度假岛·水屋</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 7 天怎么安排最合理</span>
+      马尔代夫是「<strong>一岛一世界</strong>」的印度洋度假之国，但真正会玩的人只把度假村当一半。7 天主线把<strong>居民岛的真实生活</strong>与<strong>度假岛的水屋奢华</strong>各体验一半：先在马富施用低成本把出海浮潜、沙洲、海豚玩透，再上度假岛躺平看玻璃海。免签 30 天 + 北京直飞，马尔代夫是门槛最低的高端海岛。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>免签落地 30 天</strong>：护照有效期 6 个月以上 + 返程机票 + 酒店确认单；行前 96 小时内在线填好 IMUGA 电子入境表，通关 10 分钟</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>7 天：马累 1 天 → 马富施居民岛 2 天 → 度假岛水屋 3 天 → 返程 1 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>首航 JD456 每周三五日 14:45 从马累起飞，返程当天退房后直奔机场，提前 3 小时到</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>马累 → 马富施 → 度假岛（水屋）→ 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 12000–18000 ／ 标准 25000–38000 ／ 舒适 60000–120000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 订首航直飞机票 ② 提前订度假岛水屋并确认接驳方式 ③ 行前填 IMUGA 电子入境表</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11 月–次年 4 月旱季风浪小最佳；5–10 月雨季水屋便宜 30–50%，浮潜能见度略降</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>美元几乎通行 + 拉菲亚小额找零（1 美元≈7.2 元）；居民岛小店收现金，度假岛刷卡</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>水上飞机只白天飞</strong>（约 6:00–16:00）且每人限重 20kg 托运 + 5kg 手提，晚班机落地几乎必在机场岛多住一晚；选度假村前先确认快艇可达还是需水飞。② 马尔代夫是伊斯兰国家，<strong>海关严禁带酒和猪肉制品入境</strong>，违者没收罚款；度假岛内部有酒，但居民岛公共区域禁酒，沙滩着装也要收敛。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 7 天版</h2>
+
+    <p>以下为 7 天 6 晚的推荐节奏：前半段居民岛「玩海」，后半段度假岛「躺平」。每日主景点 ≤2 个，出海项目集中在上午风浪小的时候。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵马累</td>
+<td>北京✈马累（直飞约 8h40m），快艇/轮渡到马累或机场岛，傍晚鱼市场+海滨步道</td>
+<td>马累/机场岛</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>快艇上马富施居民岛（约 45min），比基尼海滩浮潜，环岛闲逛+日落沙滩</td>
+<td>马富施</td>
+<td>居民岛初体验</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>出海一日游：无人沙洲+鲨鱼湾浮潜+海豚巡航（约 60–80 美元含浮潜装备）</td>
+<td>马富施</td>
+<td>出海日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>快艇/水飞上度假岛，入住水屋，泳池+屋外珊瑚礁浮潜</td>
+<td>度假岛</td>
+<td>水屋日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>珊瑚礁浮潜/深潜体验，玻璃船看海底，傍晚日落巡航追海豚</td>
+<td>度假岛</td>
+<td>浮潜日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>SPA 放松 + 水下餐厅/半潜艇 + 环礁摄影</td>
+<td>度假岛</td>
+<td>休闲日</td>
+</tr>
+<tr>
+<td>D7 返程</td>
+<td>快艇回马累机场，免税店补货，✈北京（JD456 14:45 起飞）</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      预算紧可把度假岛缩为 1 晚（水屋体验即可），省下的钱全在房费；蜜月党可把度假岛拉满 4–5 晚。淡季（5–10 月）水屋常打 5–7 折，是性价比最高的窗口。带娃家庭建议选快艇可达的近环礁度假村，避免水飞折腾。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 7 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达马累</span>
+          <span class="d-desc">直飞落地 · 马累市区预热</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:10–12:50</td><td class="t-what">北京大兴✈马累（首航 JD455，A330 宽体机，约 8h40m）。时差 -3 小时，机上填入境卡或行前在线填 IMUGA 电子入境表</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">出关后到酒店/船公司柜台集合，快艇或公共轮渡前往马累/机场岛 Hulhumale 入住</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what"><b>马累市区</b>（免费）：鱼市场+星期五清真寺+海滨大道，感受世界上最小的首都</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：马累本地餐厅（马尔代夫咖喱、烤鱼、金枪鱼小吃）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">JD455 每周三/五/日执飞；若订转机航班落地晚，直接宿机场岛，次日再上岛。马累城区小，步行即可逛完。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 马富施居民岛</span>
+          <span class="d-desc">比基尼海滩 + 环岛漫步</span>
+          <span class="d-tag ">🏖 居民岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">快艇马累→马富施（共享快艇约 20–25 美元，45 分钟），入住居民岛民宿</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>比基尼海滩 Bikini Beach</b>（免费）：马尔代夫唯一允许穿比基尼的公共沙滩，下水浮潜</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：本地餐馆 kottu / 马尔代夫咖喱鱼汤（Garudhiya）</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what">环岛漫步 + 租自行车（约 3–5 美元/小时），日落沙滩看夕阳</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">夜钓体验（约 20–30 美元）或海边酒吧听浪</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">居民岛非指定区域禁比基尼，着装保守一些是对当地文化的尊重；岛上没有水上飞机，接驳全靠快艇。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 出海一日游</span>
+          <span class="d-desc">无人沙洲 + 鲨鱼湾 + 海豚</span>
+          <span class="d-tag alt">🐬 出海日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>出海一日游</b>（约 60–80 美元，含浮潜装备+简餐）：第一站无人沙洲 Sandbank，果冻海拍照</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">船上简餐 + 浮潜休息</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>鲨鱼湾 Shark Bay 浮潜</b>（免费）：护士鲨、海龟、珊瑚礁，全程救生衣+向导</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>海豚巡航</b>：成群海豚追着船头跳跃</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">回岛晚餐，整理行李准备明天上度假岛</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">晕船药务必提前吃，鲨鱼湾会在海上停留 1 小时+，风浪大时半船人都晕；一日游可砍价，深潜/航拍等另付费。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 上度假岛</span>
+          <span class="d-desc">入住水屋 · 初见玻璃海</span>
+          <span class="d-tag ">🌊 水屋日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">快艇马富施→马累机场（约 45min），再转接驳上度假岛；近环礁（北马累环礁）快艇 20–40 分钟即到</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">度假村入住 + 午餐，确认水屋位置与餐饮计划（含早/半食宿/全食宿）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>水屋体验</b>：甲板躺椅、直接下水浮潜，泳池与泻湖拍照</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">水屋露台看日落，晚餐度假村主餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">远环礁（阿里环礁/拉环礁等）需水上飞机 25–75 分钟，仅白天运营；下单前务必问清接驳是快艇还是水飞、往返是否含在房价。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 浮潜日</span>
+          <span class="d-desc">珊瑚礁浮潜 + 玻璃船 + 日落巡航</span>
+          <span class="d-tag alt">🤿 浮潜日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>House Reef 珊瑚礁浮潜</b>（免费，装备可在潜店租）：出门就能下海看珊瑚和热带鱼</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐 + 午休</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>玻璃船/半潜艇</b>（约 30–60 美元）：不下水也能看海底珊瑚与鱼群</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>日落巡航追海豚</b>（约 40–80 美元）：海上日落+香槟（可选）</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：度假村主题餐厅（海鲜之夜/亚洲之夜）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">首次深潜体验约 100–150 美元（含 1 小时理论课+教练）；务必用珊瑚友好防晒霜，避免伤害珊瑚礁。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 休闲日</span>
+          <span class="d-desc">水下餐厅 + SPA 收尾</span>
+          <span class="d-tag ">💆 度假日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">晨泳 + 水屋甲板晒太阳，收拾拍照</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>水下餐厅/水下酒吧</b>（约 150–300 美元）：边用餐边看鱼群环绕，需提前 1 个月预订</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>马尔代夫式 SPA</b>（约 120–250 美元）：椰子精油按摩放松</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">环礁摄影 + 无人机航拍（先确认度假村政策，帕罗机场周边禁飞同理会查）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">告别晚餐，整理行李</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">水下餐厅一票难求，旺季至少提前 4–6 周订；SPA 提前预约避开人流。所有消费记房账，退房时一并结算。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 返程</span>
+          <span class="d-desc">马累✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">退房，快艇返马累机场（度假村会按航班时间安排船班）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">机场免税店补货：斯里兰卡茶、马尔代夫手工艺品、免税酒（带出海关即可）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">机场午餐 + 值机</td></tr>
+          <tr><td class="t-time">14:45–次日 01:50</td><td class="t-what">马累✈北京大兴（JD456），落地入境回家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">JD456 每周三五日 14:45 起飞，务必提前 3 小时到机场；酒店送机船班需在前一晚确认，别误了返程。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-cover.jpg" alt="度假岛·水屋" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">度假岛·水屋 <small>2000 元/晚起</small></div>
+          <div class="sc-feat">马尔代夫名片。<b>悬于泻湖之上的水屋</b>，甲板直接下海浮潜。</div>
+          <div class="sc-meta">📅 4–11 月可住 · ⏱ 3 晚 · 🚤 快艇 20–40min / 水飞 25–75min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-1.jpg" alt="马富施·比基尼海滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马富施·比基尼海滩 <small>免费</small></div>
+          <div class="sc-feat">居民岛灵魂。<b>玻璃海 + 奶粉沙</b>，公共浮潜点水质极佳。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚤 马累快艇 45min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-2.jpg" alt="水下餐厅体验" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">水下餐厅体验 <small>150–300 美元</small></div>
+          <div class="sc-feat">全球罕见。<b>海底 5–8m 的餐厅</b>，鱼群环绕用餐，需提前预订。</div>
+          <div class="sc-meta">📅 午餐/晚餐 · ⏱ 1.5h · 📍 部分度假岛</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-3.jpg" alt="马富施·居民岛" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马富施·居民岛 <small>免费</small></div>
+          <div class="sc-feat">最便宜的马尔代夫。<b>本地生活 + 出海项目集散地</b>，预算党必住。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚤 共享快艇 20–25 美元</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-4.jpg" alt="无人沙洲" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">无人沙洲 <small>含在一日游</small></div>
+          <div class="sc-feat">一岛一人的浪漫。<b>白色沙洲浮在海中</b>，航拍大片机位。</div>
+          <div class="sc-meta">📅 上午 · ⏱ 1–2h · 🚤 出海一日游 60–80 美元</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-5.jpg" alt="珊瑚礁浮潜" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">珊瑚礁浮潜 <small>免费（装备另租）</small></div>
+          <div class="sc-feat">印度洋水族馆。<b>护士鲨、海龟、珊瑚鱼群</b>，House Reef 出门即潜。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–3h · 🤿 潜店租装备</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-6.jpg" alt="海豚巡航" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">海豚巡航 <small>40–80 美元</small></div>
+          <div class="sc-feat">黄昏仪式。<b>上百只海豚追船跳跃</b>，日落海面镀金。</div>
+          <div class="sc-meta">📅 傍晚 · ⏱ 1.5h · 🐬 马富施/度假岛出发</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/maldives/maldives-7.jpg" alt="马累·星期五清真寺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马累·星期五清真寺 <small>免费</small></div>
+          <div class="sc-feat">珊瑚石古寺。<b>世界遗产老清真寺</b>+鱼市场，首都漫步。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 1–2h · 🚶 马累市区步行</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（水屋、比基尼海滩、水下餐厅、居民岛、无人沙洲、珊瑚浮潜、海豚、马累清真寺均为马尔代夫实景），用于页面配图。更多免费体验：马累鱼市场、环岛骑行、日出晨泳。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 美元 ≈ 7.2 元（拉菲亚与美元挂钩）。往返机票按首航直飞淡季 5000–6500 元计，旺季（12–4 月）上浮明显。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（12000–18000）</th>
+<th>标准（25000–38000）</th>
+<th>舒适（60000–120000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>首航直飞 5000–6500</td>
+<td>旺季/灵活 7000–10000</td>
+<td>商务舱/转机豪华 15000–25000</td>
+</tr>
+<tr>
+<td>住宿（6 晚）</td>
+<td>机场岛+马富施民宿 300–600/晚</td>
+<td>马富施+4 星度假村水屋 1500–4000/晚</td>
+<td>顶奢水屋 8000–30000/晚</td>
+</tr>
+<tr>
+<td>交通（快艇/水飞）</td>
+<td>全程快艇 300–500</td>
+<td>快艇+水飞往返 1000–2000</td>
+<td>水飞+专属快艇+内陆机 4000–8000</td>
+</tr>
+<tr>
+<td>餐饮</td>
+<td>居民岛为主 300–500/天</td>
+<td>度假村半食宿 600–1000/天</td>
+<td>全包/米其林级 1500–4000/天</td>
+</tr>
+<tr>
+<td>活动/杂费</td>
+<td>出海浮潜 300–600</td>
+<td>潜水+海豚巡航+水下餐厅 1200–2500</td>
+<td>深潜课程+SPA+水下餐厅+航拍 5000–12000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 30000 元）</span>
+      机票 8000 + 住宿 6 晚（机场岛 800 + 马富施 2 晚 1600 + 4 星水屋 3 晚 10000）+ 交通（快艇+水飞）1500 + 餐饮 3000 + 活动 2000 ≈ <strong>26000–30000 元</strong>。大头是水屋房费，淡季（5–10 月）订水屋常打 5–7 折，是控制预算的关键窗口。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 纯居民岛慢游版（预算型）</h3>
+
+
+    <ul>
+
+      <li>马累 1 晚 + 马富施 4 晚 + 周边居民岛（Gulhi/Thulusdhoo）1 晚</li>
+
+      <li>全程快艇接驳，无水屋体验</li>
+
+      <li>总预算可压到 12000–15000 元，出海项目照样玩满</li>
+
+      <li>适合预算敏感、以浮潜和出海为主的人</li>
+
+    </ul>
+
+    <h3>7.2 蜜月升级版</h3>
+
+
+    <p>把度假岛拉到 4–5 晚，选带私人泳池的水屋（Anantara、Six Senses 档），加订水下餐厅、落日巡航与双人 SPA。预算整体上浮到 60000 元以上；蜜月套餐通常含鲜花布置、香槟与小礼物，预订时主动向酒店要。</p>
+
+    <h3>7.3 亲子版调整</h3>
+
+
+    <p>选快艇可达的近环礁度假村（免水飞折腾），优先带儿童俱乐部（Kids Club）与浅滩泻湖的岛；居民岛段可砍掉或减为 1 晚。孩子对沙洲、浮潜、海豚的兴趣远大于水下餐厅，行程以「下海+沙滩」为主即可。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>6.1 北京 ⇄ 马尔代夫 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京大兴✈马累约 8h40m</td>
+<td>往返 5000–7000 元</td>
+<td>首都航空 JD455/JD456，每周三五日，A330 宽体机</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>9–13h</td>
+<td>4000–9000 元</td>
+<td>经上海/广州/新加坡/吉隆坡，新航/亚航/马航，价格浮动大</td>
+</tr>
+<tr>
+<td>其他</td>
+<td>—</td>
+<td>—</td>
+<td>国际邮轮可停靠马累，班次极少，行程定制性差</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 马尔代夫交通核心提醒</span>
+      跳岛全靠<strong>快艇 + 水上飞机</strong>：近环礁快艇 20–45 分钟（共享 20–50 美元/人，夜间也开）；远环礁水飞 25–75 分钟（单程 250–600 美元），<strong>水飞只在白天 6:00–16:00 运营且限重 20kg+5kg</strong>。晚班机落地、行李超重、台风季停飞，是三大常见意外，预订时先跟度假村确认接驳时间表。
+    </div>
+
+    <h3>6.2 马尔代夫境内交通（跳岛核心）</h3>
+    <ul>
+      <li><strong>快艇 Speedboat</strong>：机场到附近环礁 15–45 分钟，共享 20–50 美元/人，夜间照常运营</li>
+      <li><strong>水上飞机 Seaplane</strong>：80–400km 环礁 25–75 分钟，单程 250–600 美元，仅白天 + 限重</li>
+      <li><strong>内陆航班+快艇</strong>：极远环礁（拉环礁等），国内航班约 1h + 快艇 15–30 分钟，合计 150–400 美元</li>
+      <li><strong>公共渡轮</strong>：居民岛之间 1–2 美元，班次少且天气差会取消，只适合时间灵活的慢游</li>
+      <li><strong>度假村接驳</strong>：一岛一酒店全包接送，下单前务必确认往返交通是否含在房价内</li>
+      <li><strong>马累本地交通</strong>：岛内步行 + 出租车；机场岛到马累公共轮渡约 0.5 美元</li>
+    </ul>
+
+    <h3>6.3 住宿区域推荐（7 天 6 晚）</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>马累/机场岛 Hulhumale</td>
+<td>经济 300–600 / 标准 800–1500</td>
+<td>落地第一晚方便，转机/晚班机过渡</td>
+<td>非度假体验，海滩一般</td>
+</tr>
+<tr>
+<td>居民岛·马富施</td>
+<td>经济 300–600 / 标准 700–1200</td>
+<td>价格低、出海项目便宜、本地生活</td>
+<td>无水屋，公共区域禁酒</td>
+</tr>
+<tr>
+<td>度假岛·水屋（近环礁）</td>
+<td>经济 2000–4000 / 标准 6000–12000</td>
+<td>快艇可达，甲板直接浮潜</td>
+<td>餐食另计，旺季翻倍</td>
+</tr>
+<tr>
+<td>度假岛·水屋（远环礁）</td>
+<td>标准 8000–15000 / 舒适 20000+</td>
+<td>顶级珊瑚与私密性，水飞体验</td>
+<td>需水飞、白天限时，接驳贵</td>
+</tr>
+<tr>
+<td>顶奢（索尼娃/白马等）</td>
+<td>舒适 30000–90000/晚</td>
+<td>滑梯水屋、管家服务、一价全包</td>
+<td>预算爆炸，提前半年订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🐟 马尔代夫必吃</h3>
+        <ul>
+          <li>Garudhiya 咖喱鱼汤（国汤）</li>
+          <li>Mas Huni 金枪鱼椰子早餐</li>
+          <li>Hedhikaa 本地小吃拼盘（椰子/金枪鱼炸物）</li>
+          <li>烤金枪鱼串、椰子饭</li>
+        </ul>
+        <h3>🥥 街头与居民岛</h3>
+        <ul>
+          <li>椰子水与椰子冰淇淋</li>
+          <li>Kottu 炒饼（本地餐馆）</li>
+          <li>比萨/意面（游客店多）</li>
+          <li>鲜榨果汁冰沙</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍤 海鲜盛宴</h3>
+        <ul>
+          <li>度假村海鲜自助（龙虾/生蚝/烤全鱼）</li>
+          <li>夜钓渔获现场料理</li>
+          <li>金枪鱼刺身、马鲛鱼排</li>
+          <li>海鲜之夜主题晚餐</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>马累鱼市场周边本地馆子</li>
+          <li>马富施：Sunbeach/Hot Bite/Navio 等</li>
+          <li>度假村主餐厅+主题晚餐之夜</li>
+          <li>岛上一价全包（含三餐）最省心</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 居民岛餐馆菜单常标美元，结账确认是否含 10% 服务费+12% GST；② 马尔代夫菜普遍偏辣偏咸，怕辣先说明；③ 度假村酒水与瓶装水很贵，全食宿/全包套餐更划算；④ 自来水不可直饮，岛上都要喝瓶装水。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上）+ 返程机票 + 酒店确认单</li>
+        <li>IMUGA 电子入境表（行前 96h 内在线填写）</li>
+        <li>美元现金（居民岛小店只收现金）+ 信用卡</li>
+        <li>浮潜装备（面镜/呼吸管/水母衣）+ 珊瑚友好防晒霜</li>
+      </ul>
+      <ul>
+        <li>拖鞋/防晒/墨镜/帽子 海岛三件套</li>
+        <li>晕船药（出海必备）+ 常用药品</li>
+        <li>转换插头（230V C/D/G/J/K 五合一）</li>
+        <li>开通漫游或买当地 eSIM，下载离线地图</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>别带酒入境</strong>——伊斯兰国家海关严查酒类与猪肉制品，违者没收罚款（度假岛内部可饮酒）；② <strong>水飞只白天飞且限重</strong>，晚班机落地大概率要在机场岛多住一晚，行李超重每公斤约 5 美元；③ 居民岛着装收敛：公共沙滩禁比基尼，仅指定沙滩可穿，尊重周五祈祷日；④ 报价水分大：同岛不同渠道价差明显，出海/水飞提前比价，旺季（12–4 月）比淡季贵 30–50%。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      马尔代夫是「<strong>一岛一世界</strong>」的印度洋度假之国——水屋、泻湖与珊瑚礁是绝对主角。7 天主线把居民岛的真实生活与度假岛的奢华体验一次串起：先在马富施用低成本玩透出海，再上水屋躺平看海。免签 30 天 + 北京直飞，它是说走就走里最梦幻的一个。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1f7a8c",
+    "d": 3,
+    "n": "主线 · 马累→马富施→度假岛水屋",
+    "pts": [
+      [
+        4.175,
+        73.509
+      ],
+      [
+        3.909,
+        73.476
+      ],
+      [
+        4.42,
+        73.55
+      ]
+    ]
+  },
+  {
+    "c": "#c26a7a",
+    "d": 3,
+    "n": "出海支线 · 马富施→无人沙洲→海豚巡航",
+    "pts": [
+      [
+        3.909,
+        73.476
+      ],
+      [
+        3.8,
+        73.6
+      ],
+      [
+        3.87,
+        73.45
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 4.175,
+    "lng": 73.51,
+    "name": "马累·鱼市场",
+    "t": "D1 下午 · 2h",
+    "fee": "免费",
+    "note": "金枪鱼拍卖、海滨大道"
+  },
+  {
+    "num": 2,
+    "prio": "nice",
+    "lat": 4.178,
+    "lng": 73.509,
+    "name": "马累·星期五清真寺",
+    "t": "D1 傍晚 · 1h",
+    "fee": "免费",
+    "note": "珊瑚石世界遗产古寺"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 3.909,
+    "lng": 73.476,
+    "name": "马富施·比基尼海滩",
+    "t": "D2 上午 · 2h",
+    "fee": "免费",
+    "note": "玻璃海浮潜、日落沙滩"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 3.8,
+    "lng": 73.6,
+    "name": "马富施·无人沙洲",
+    "t": "D3 上午 · 1.5h",
+    "fee": "含一日游",
+    "note": "出海一日游 60–80 美元"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 3.87,
+    "lng": 73.45,
+    "name": "鲨鱼湾浮潜点",
+    "t": "D3 下午 · 2h",
+    "fee": "含一日游",
+    "note": "护士鲨、海龟、珊瑚"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 4.42,
+    "lng": 73.55,
+    "name": "度假岛·水屋",
+    "t": "D4–D6 · 3 晚",
+    "fee": "2000 元/晚起",
+    "note": "甲板下海、日落巡航"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 4.36,
+    "lng": 73.59,
+    "name": "水下餐厅",
+    "t": "D6 中午 · 1.5h",
+    "fee": "150–300 美元",
+    "note": "海底 5–8m 鱼群环绕用餐"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 4.28,
+    "lng": 73.53,
+    "name": "度假村 SPA",
+    "t": "D6 下午 · 2h",
+    "fee": "120–250 美元",
+    "note": "椰子精油马尔代夫式按摩"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[3.65, 73.05], [4.85, 74.15]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1f7a8c\"></span>主线（马累→马富施→度假岛水屋）<br><span class=\"sw\" style=\"background:#c26a7a\"></span>出海支线（沙洲→鲨鱼湾→海豚区）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

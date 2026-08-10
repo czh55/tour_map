@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 蒙古 10 天全景攻略 · 草原戈壁</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #3a7bd5;
+    --red-light: #5a9bd8;
+    --gold: #d4a017;
+    --ink: #2b3648;
+    --muted: #7d8a99;
+    --bg: #f7f4ec;
+    --card: #ffffff;
+    --line: #e4dfd0;
+    --blue: #5a8f3c;
+    --cover1: #1d4e89;
+    --ov1: rgba(29,78,137,.88);
+    --ov2: rgba(58,123,213,.72);
+    --ov3: rgba(90,143,60,.38);
+    --ov4: rgba(212,160,23,.20);
+    --key-bg: #fdf6e3;
+    --info-bg: #eef4e6;
+    --head-bg: rgba(58,123,213,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/mongolia/mongolia-cover.jpg" alt="蒙古旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 乌兰巴托 + 草原戈壁</div>
+      <h1>蒙古 10 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 乌兰巴托 · 特勒吉草原 · 哈拉和林 · 南戈壁</div>
+      <div class="meta">
+        <span>🛫 行程链：乌兰巴托 → 特勒吉 → 哈拉和林 → 戈壁（巴彦扎格/洪格尔）→ 返乌兰巴托</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>✈️ 北京⇄乌兰巴托 直飞约 2.5 小时（国航 C919 / 蒙古航空）</span>
+        <span>🛂 签证：中国护照需办蒙古签证，可电子签 evisa.mn（约 51 美元）</span>
+        <span>🕐 时差 0 小时 · 🔌 电压 230V C/E 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">乌兰巴托</span>
+      <span class="arrow">→</span>
+      <span class="node">特勒吉</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">哈拉和林</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">戈壁</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      蒙古是「<strong>一城与无垠大地</strong>」的目的地：乌兰巴托承载历史与都市，向北向东是草原丘陵（特勒吉），向西是蒙古帝国故都哈拉和林，再往南则是被称为「地球上最后秘境」的戈壁。10 天刚好把<strong>城市、草原、古都、沙漠</strong>四段走完：前 4 天熟悉城市与草原，第 5–6 天转场古都，第 7–9 天深入戈壁，最后 1 天返程购物，节奏不赶、土路分段化解。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国普通护照需办理蒙古签证；可在线申请<strong>电子签（evisa.mn，旅游 K2 类）</strong>，单次入境最长 30 天，费用约 51 美元，3–5 个工作日出签，出发前 2 周办理最稳</td>
+</tr>
+<tr>
+<td>时差</td>
+<td><strong>0 小时</strong>（北京与乌兰巴托同时区），落地即玩，无倒时差负担</td>
+</tr>
+<tr>
+<td>电源</td>
+<td><strong>230V，C 型/欧标 E 型插座</strong>（两圆脚），需带转换插头；蒙古包营地供电有限，带足充电宝</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>乌兰巴托 2 天 → 特勒吉 2 天 → 哈拉和林 2 天 → 南戈壁 3 天 → 返乌兰巴托 1 天</td>
+</tr>
+<tr>
+<td>出行窗口</td>
+<td>最佳 6–9 月（草原葱绿 + 7/11 那达慕大会）；4–5 月与 10 月昼夜温差大；冬季极寒不建议首次前往</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 7000–10000 ／ 标准 12000–18000 ／ 舒适 25000–35000（人民币）</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>蒙古图格里克（MNT），1 元 ≈ 480 图格里克；城市刷卡/微信部分可用，草原戈壁<strong>只认现金</strong></td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证必须提前办</strong>：蒙古对中国护照不免签，电子签虽方便但需 3–5 个工作日，且出签前别订不可退的机票酒店；如从陆路口岸（二连浩特—扎门乌德）入境建议走使馆纸质签。② <strong>草原与戈壁几乎没有 ATM 和刷卡</strong>：按行程天数备足蒙古图格里克现金，包车费用也多按美元/人民币与司机结算，提前谈妥。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏：乌兰巴托「城市段」打头，特勒吉「草原段」过渡，哈拉和林「古都段」回望帝国，南戈壁「沙漠段」收尾。每日主景点 ≤2 个，转场车程较长，安排弹性。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵乌兰巴托</td>
+<td>北京✈乌兰巴托（约 2.5h），入住市中心，傍晚成吉思汗广场看夜景</td>
+<td>乌兰巴托</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>甘丹寺 → 蒙古国家博物馆 → 博格达汗宫 → 翟山纪念碑日落</td>
+<td>乌兰巴托</td>
+<td>城市人文</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>成吉思汗骑马雕像（54km）→ 特勒吉国家公园，宿蒙古包营地</td>
+<td>特勒吉</td>
+<td>草原+雕像</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>特勒吉：乌龟石 → 骑马/徒步 → 草原日落与星空</td>
+<td>特勒吉</td>
+<td>草原徒步</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>特勒吉→哈拉和林（车程约 5h），途中牧民家访，宿哈拉和林营地</td>
+<td>哈拉和林</td>
+<td>古都前奏</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>哈拉和林：额尔德尼召寺 → 蒙古帝国旧都遗址 → 草原日落</td>
+<td>哈拉和林</td>
+<td>帝国故都</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>哈拉和林→巴彦扎格火燎崖（车程约 7h），看红色砂岩与星空</td>
+<td>巴彦扎格</td>
+<td>进入戈壁</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>洪格尔沙丘：鸣沙山徒步 → 骆驼骑行 → 沙丘日落</td>
+<td>洪格尔</td>
+<td>沙漠体验</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>南戈壁：约林峡谷（鹰之谷）徒步 → 达兰扎德嘎德市集</td>
+<td>达兰扎德嘎德</td>
+<td>戈壁收尾</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>内陆航班或包车返乌兰巴托，国营百货购物，✈北京（约 2.5h）</td>
+<td>乌兰巴托</td>
+<td>购物返程</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      戈壁段若时间紧，可砍 D9 约林峡谷，D8 结束后直接从洪格尔返乌兰巴托；乌兰巴托想多留一天可把 D2 拆分。全程长途土路较多，包车强烈建议 4 人拼一台丰田陆地巡洋舰级别四驱车，人均更划算也舒服。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达乌兰巴托</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–17:15</td><td class="t-what">北京✈乌兰巴托（成吉思汗国际机场，约 2.5h，国航/蒙古航空每日班）。机场距市区约 50km</td></tr>
+          <tr><td class="t-time">17:15–19:00</td><td class="t-what">机场巴士 X19 至成吉思汗广场（15000 MNT，约 1h）或打车（约 100000–250000 MNT）；入住市中心酒店</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what"><b>成吉思汗广场</b>（免费）：国家宫、成吉思汗坐像与苏赫巴托雕像，广场夜景与喷泉</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">晚餐：广场周边烤串/蒙式西餐，提前换些图格里克现金</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌兰巴托出租车无计价器，上车前必须谈好价；晚间注意保暖，8 月夜晚也降到 12℃ 左右。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 乌兰巴托城市</span>
+          <span class="d-desc">甘丹寺 + 博物馆 + 博格达汗宫</span>
+          <span class="d-tag ">🏛 城市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>甘丹寺</b>（主殿约 5000 MNT）：蒙古最大藏传佛教寺院，26.5 米高的镀金章冉泽大佛，早课诵经声最震撼</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>蒙古国家博物馆</b>（约 10000 MNT）：从匈奴到蒙古帝国的文物，成吉思汗历史与游牧文化速成</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：博物馆附近蒙餐（包子 Buuz + 奶茶）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>博格达汗宫博物馆</b>（约 5000–10000 MNT）：末代活佛冬宫，蒙藏汉融合建筑，豹皮蒙古包馆藏</td></tr>
+          <tr><td class="t-time">17:00–19:30</td><td class="t-what"><b>翟山纪念碑</b>（免费）：城南高台俯瞰图拉河与城市全景，等一场日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国家博物馆周一部分闭馆，尽量安排周二到周日；甘丹寺内部分殿堂不可拍照。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 成吉思汗雕像 + 特勒吉</span>
+          <span class="d-desc">世界最高骑马雕像</span>
+          <span class="d-tag alt">🐎 草原日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">包车/拼团出发，沿图拉河东行 54km 前往成吉思汗雕像</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>成吉思汗骑马雕像</b>（20000 MNT，10:00 开放）：40 米不锈钢巨像，乘电梯登马头观景台俯瞰草原</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">雕像园区午餐，可看蒙古传统弓箭/训鹰表演（另付费）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">继续东行约 30km 进入<b>特勒吉国家公园</b></td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">入住<b>蒙古包营地</b>，营地周边草原漫步，参观牧民家庭，喝奶茶吃奶皮</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what">营地晚餐（手把肉/石头烤肉），草原落日与篝火</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">雕像门票记得用现金；特勒吉营地旺季（7–8 月）要提前 1 个月订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 特勒吉草原</span>
+          <span class="d-desc">乌龟石 + 骑马</span>
+          <span class="d-tag ">🏔 草原徒步日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">营地早餐后出发，特瑞勒吉河畔晨雾</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>乌龟石</b>（免费）：花岗岩风化成的龟形巨岩，徒步环线约 2h，登上附近山坡看全景</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：营地或山脚餐馆，蒙式炖羊肉</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>骑马体验</b>（约 2h，视营地报价 300–600 元）：牵马漫行山谷，牧民带路</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what">回营地休整，<b>草原日落与银河</b>：8 月天黑后银河清晰，带三脚架可拍星轨</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">骑马穿长裤与闭口鞋，听从牧民口令；草原昼夜温差大，傍晚加厚外套。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 特勒吉→哈拉和林</span>
+          <span class="d-desc">穿越中央草原</span>
+          <span class="d-tag alt">🚐 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">营地早餐，退房装车</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what">西行穿越中央省草原，途中随手都是桌面级风景，路过牧民点可停车拍照</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">途中小镇午餐（蒙式简餐）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">继续西行，车程约 5h 后抵<b>哈拉和林</b></td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><b>牧民家访</b>：挤奶、制作奶豆腐体验（视包车行程安排），感受游牧日常</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住哈拉和林蒙古包营地，晚餐后草原散步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌兰巴托—哈拉和林约 365km，为双向单车道国道，转场日别排太满；晕车药提前吃。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 哈拉和林</span>
+          <span class="d-desc">蒙古帝国旧都</span>
+          <span class="d-tag ">🏛 古都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">早餐后前往<b>额尔德尼召寺</b>（主殿 20000 MNT，大门免费）：1586 年用旧都废墟石材所建，108 座白塔绕寺一周</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">寺内主殿参观 + 世界文化遗产「鄂尔浑峡谷文化景观」资料馆，爬上寺南小山坡俯瞰白塔全景</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：哈拉和林镇，蒙古面片汤/烤包子</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>哈拉和林博物馆</b>（约 10000 MNT）：蒙古帝国旧都（窝阔台汗时期世界中心）出土文物与复原模型</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">旧都宫城遗址（万安宫遗址）草地漫步，看鄂尔浑河与草原</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what">营地周边<b>草原日落</b>，晚餐石头烤肉（Khorkhog）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">额尔德尼召寺内需顺时针绕行、尊重佛堂礼仪；博物馆与主殿都收现金。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 哈拉和林→巴彦扎格</span>
+          <span class="d-desc">进入南戈壁</span>
+          <span class="d-tag alt">🏜 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">营地早餐，提早出发</td></tr>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what">沿土路南行，穿越荒漠草原，途中可见骆驼群与野生动物（旱獭、黄羊）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">途中简餐（干粮/营地盒饭）</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what">继续南行，路面渐变为戈壁碎石路，颠簸路段放慢车速</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what">抵达<b>巴彦扎格火燎崖</b>（Bayanzag，免费）：红色砂岩断崖，「火焰崖」因落日如燃烧得名，恐龙化石埋藏地</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what">崖壁徒步与日落摄影，宿巴彦扎格附近蒙古包营地</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">戈壁星空：光污染几乎为零，肉眼可见银河</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">本日车程约 7h 且多为土路，是全程最累的一天；备足水、零食与充电宝，途中加油站稀少。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 洪格尔沙丘</span>
+          <span class="d-desc">鸣沙山 + 骆驼</span>
+          <span class="d-tag ">🐫 沙漠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">营地早餐，车程约 1h 前往<b>洪格尔沙丘</b>（Khongoryn Els，免费）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>鸣沙山徒步</b>：180km 长的世界最高沙丘带之一，登顶约 40 分钟，沙鸣如引擎轰鸣</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">沙丘脚下牧民家午餐，喝驼奶</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>双峰骆驼骑行</b>（约 1h，营地或牧民报价 300–500 元）：沿沙丘脊线慢行，戈壁最经典画面</td></tr>
+          <tr><td class="t-time">16:30–19:00</td><td class="t-what">沙丘守日落，赤足走沙，光线最柔的时刻</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">返营地晚餐；若天气好可再上沙丘拍星空</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">沙丘徒步很耗体力，正午暴晒，安排在上午或傍晚；骆驼性子倔，上下骆驼听牧民口令。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 南戈壁</span>
+          <span class="d-desc">约林峡谷 + 达兰扎德嘎德</span>
+          <span class="d-tag alt">🏔 戈壁收尾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">营地早餐，退房南行</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>约林峡谷（鹰之谷，Yolyn Am）</b>：戈壁古尔班赛汗国家公园内的花岗岩峡谷，盛夏谷底仍结冰，徒步往返约 2h</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">峡谷口午餐（盒饭/蒙餐）</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">前往南戈壁省会<b>达兰扎德嘎德</b>，逛本地市集，买戈壁纪念品（骆驼毛、戈壁玉）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">入住达兰扎德嘎德，休息整顿，晚餐当地烤羊肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">若选择次日内陆航班返乌兰巴托，今晚宿达兰扎德嘎德最方便；机场在城郊，次日早班机约 1.5h 到乌兰巴托。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">购物 + 飞回北京</span>
+          <span class="d-tag return">🛍 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:30</td><td class="t-what">达兰扎德嘎德✈乌兰巴托（内陆航班约 1.5h，单程约 1000–1600 元）或包车返程（约 8–10h）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>国营百货商店</b>购物：羊绒（蒙古羊绒全球顶级）、戈壁玉、银饰、奶茶与奶酪伴手礼</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：乌兰巴托蒙餐收官（石头烤肉/手把肉）</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what">前往成吉思汗国际机场，退税（如适用）</td></tr>
+          <tr><td class="t-time">18:30–20:35</td><td class="t-what">乌兰巴托✈北京（约 2.5h，国航 C919），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">回程航班多在傍晚，白天足够购物；羊绒制品认准 Gobi / EVSEG 等正规门店，避免景区高价。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-cover.jpg" alt="蒙古草原·蒙古包营地" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒙古草原·蒙古包营地 <small>200–800 元/晚</small></div>
+          <div class="sc-feat">一晚毡帐即一段游牧人生。<b>草原落日、奶茶篝火、肉眼银河</b>是蒙古旅行灵魂。</div>
+          <div class="sc-meta">📅 夏季营地 · ⏱ 1–2 晚 · 📍 特勒吉/哈拉和林均有</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-1.jpg" alt="成吉思汗骑马雕像" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">成吉思汗骑马雕像 <small>20000 MNT</small></div>
+          <div class="sc-feat">世界最高骑马雕像（40m 不锈钢）。<b>登马头观景台</b>俯瞰无垠草原。</div>
+          <div class="sc-meta">📅 10:00–18:00 · ⏱ 1.5h · 🚗 乌兰巴托东 54km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-2.jpg" alt="乌兰巴托·成吉思汗广场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">乌兰巴托·成吉思汗广场 <small>免费</small></div>
+          <div class="sc-feat">首都心脏。<b>国家宫 + 成吉思汗坐像</b>，环广场使馆、百货与剧院。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 市中心步行可达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-3.jpg" alt="特勒吉国家公园·乌龟石" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">特勒吉国家公园·乌龟石 <small>免费（骑马另计）</small></div>
+          <div class="sc-feat">草原中<b>风化花岗岩奇岩</b>，骑蒙古马慢行山谷，最疗愈的一天。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3–4h · 🚗 乌兰巴托东 80km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-4.jpg" alt="哈拉和林·额尔德尼召寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">哈拉和林·额尔德尼召寺 <small>主殿 20000 MNT</small></div>
+          <div class="sc-feat">蒙古帝国旧都废墟上的<b>108 座白塔</b>，鄂尔浑峡谷世界遗产。</div>
+          <div class="sc-meta">📅 9:00–18:00 · ⏱ 2h · 📍 乌兰巴托西 365km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-5.jpg" alt="戈壁·巴彦扎格火燎崖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">戈壁·巴彦扎格火燎崖 <small>免费</small></div>
+          <div class="sc-feat">红色砂岩断崖，<b>恐龙化石埋藏地</b>，夕阳把崖壁照成燃烧的火。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 📍 哈拉和林西南，土路</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-6.jpg" alt="戈壁·洪格尔沙丘" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">戈壁·洪格尔沙丘 <small>免费（骆驼另计）</small></div>
+          <div class="sc-feat">“鸣沙山”<b>洪格尔沙丘</b>，世界最高沙丘带之一，沙鸣如引擎。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3h · 📍 南戈壁，营地出发约 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mongolia/mongolia-7.jpg" alt="戈壁·骆驼骑行" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">戈壁·骆驼骑行 <small>约 300–500 元/h</small></div>
+          <div class="sc-feat">乘<b>双峰骆驼</b>沿沙丘脊线缓行，戈壁游牧体验之最。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 洪格尔沙丘脚下</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（蒙古草原、成吉思汗雕像、乌兰巴托、特勒吉、蒙古包营地、戈壁沙丘与骆驼等均为蒙古主题实景），用于页面配图。更多免费/低价看点：国家博物馆、翟山纪念碑、哈拉和林博物馆、成吉思汗广场、特瑞勒吉河。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 480 蒙古图格里克（MNT）估算。往返机票按直飞淡旺季 2000–4000 元计；戈壁段若选内陆航班往返（达兰扎德嘎德）另加约 2000–3200 元。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（7000–10000）</th>
+<th>标准（12000–18000）</th>
+<th>舒适（25000–35000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄乌兰巴托直飞 2000–2800</td>
+<td>含返程灵活 3000–4200</td>
+<td>商务舱/灵活 6000–12000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>蒙古包营地+青旅 2500–3800</td>
+<td>舒适营地+商务酒店 5000–7500</td>
+<td>野奢营地+四星 10000–16000</td>
+</tr>
+<tr>
+<td>交通（包车/吉普）</td>
+<td>拼团/大巴 1200–1800</td>
+<td>4 人包吉普分摊 2500–4000</td>
+<td>专车+英文向导 7000–11000</td>
+</tr>
+<tr>
+<td>门票与活动</td>
+<td>景点+骑马 400–700</td>
+<td>含骆驼/骑马 1000–1500</td>
+<td>全含+深度体验 2500–4000</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>营地餐+市集 1200–1800</td>
+<td>正常下馆子 2500–3500</td>
+<td>烤全羊/特色宴 5000–8000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 15000 元）</span>
+      往返机票 3500 + 住宿 9 晚 6000（平均 670/晚）+ 包车 4 人分摊 3000 + 门票活动 1200 + 餐饮 3000 + 签证/保险杂费 800 ≈ <strong>15500 元</strong>。最大开销是住宿与包车：凑满 4 人拼一台丰田巡洋舰能把人均车费压到 3000 元内，是预算与体验的最佳平衡点。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>10.1 只看草原古都的 7 天版</h3>
+
+
+    <ul>
+
+      <li>D1 北京✈乌兰巴托，成吉思汗广场</li>
+
+      <li>D2 甘丹寺+国家博物馆+博格达汗宫</li>
+
+      <li>D3 成吉思汗雕像+特勒吉（宿营地）</li>
+
+      <li>D4 特勒吉草原骑马徒步</li>
+
+      <li>D5 特勒吉→哈拉和林（牧民家访）</li>
+
+      <li>D6 额尔德尼召寺+旧都遗址</li>
+
+      <li>D7 返乌兰巴托✈北京</li>
+
+    </ul>
+
+    <h3>10.2 亲子版调整</h3>
+
+
+    <p>砍掉颠簸最久的 D7 长转场，戈壁段改为乌兰巴托✈达兰扎德嘎德进出（单程 1.5h），把巴彦扎格与洪格尔各安排半天；蒙古包营地选带独立卫浴的舒适型，提醒孩子草原蚊虫与温差，备好防蚊液与厚外套。蒙古对儿童大多免费/半价。</p>
+
+    <h3>10.3 那达慕节限定版（7 月中）</h3>
+
+
+    <p>那达慕大会（7 月 11–15 日）期间乌兰巴托有赛马、摔跤、射箭与开闭幕式，7 月 11 日上午国家体育场开幕式门票需提前 2–3 周预订；把 D2/D10 调到 7/11 前后，乌兰巴托酒店价格会上浮 30–50%，尽早锁定。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 蒙古 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→乌兰巴托约 2.5h</td>
+<td>往返 2000–4000 元</td>
+<td>国航（2026 年 8 月起 C919 执飞）/蒙古航空，每日 1–2 班</td>
+</tr>
+<tr>
+<td>国际列车 K23</td>
+<td>约 31h（隔日抵）</td>
+<td>硬卧约 900–1100 元，软卧约 1750–1900 元</td>
+<td>每周二/六北京站 07:27 发车，经二连浩特换轮，体验派首选</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>5–9h</td>
+<td>2500–4000 元</td>
+<td>经呼和浩特/首尔/伊尔库茨克，旺季机票紧张时备用</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 蒙古境内交通核心提醒</span>
+      草原戈壁段<strong>没有班车、没有路牌</strong>，几乎只能靠包车（吉普/丰田巡洋舰）。包车按天计价，3–4 人拼车最划算（约 100–150 美元/天含司机与油）。乌兰巴托—戈壁往返建议走<strong>内陆航班</strong>（达兰扎德嘎德，单程约 1.5h）或一次包车长途分段走，全程土路颠簸，务必选四驱车。
+    </div>
+
+    <h3>8.2 蒙古境内交通</h3>
+    <ul>
+      <li><strong>机场→市区</strong>：新成吉思汗国际机场距市中心约 50km；机场巴士 X19（至成吉思汗广场）15000 MNT、X20 10000 MNT；打车 100000–250000 MNT（约 210–520 元）</li>
+      <li><strong>市内公交</strong>：一票制约 500 MNT（约 1 元），覆盖主要景点；上车备零钱</li>
+      <li><strong>出租车/网约车</strong>：无计价器，上车前议价，市区短途约 8000–15000 MNT；UBCab、inDrive 可先定价</li>
+      <li><strong>包车（草原戈壁主力）</strong>：丰田陆地巡洋舰+当地司机按天计费约 100–150 美元/天，4 人分摊性价比最高</li>
+      <li><strong>内陆航班</strong>：乌兰巴托✈达兰扎德嘎德（南戈壁省会）约 1.5h，单程约 1000–1600 元，省 2 天土路</li>
+      <li><strong>火车</strong>：乌兰巴托站有南线/西线列车，适合短途体验；长途转场以包车为主</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>乌兰巴托·成吉思汗广场周边</td>
+<td>经济 300–500 / 标准 500–900</td>
+<td>景点集中、餐饮齐全、步行可达</td>
+<td>旺季（7 月那达慕）上浮大</td>
+</tr>
+<tr>
+<td>乌兰巴托·图拉河南岸</td>
+<td>标准 600–1000</td>
+<td>安静、视野好，近翟山</td>
+<td>离核心区需打车</td>
+</tr>
+<tr>
+<td>特勒吉·蒙古包营地</td>
+<td>200–800（含早）</td>
+<td>草原景观、骑马方便</td>
+<td>公共卫浴为主，夏季蚊虫多</td>
+</tr>
+<tr>
+<td>哈拉和林·蒙古包营地</td>
+<td>200–600</td>
+<td>古都氛围、近额尔德尼召寺</td>
+<td>条件简朴，供电与热水有限</td>
+</tr>
+<tr>
+<td>戈壁·蒙古包营地</td>
+<td>300–800</td>
+<td>沙漠日落、星空绝佳</td>
+<td>偏远地区信号弱、水资源紧张</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🥩 必吃经典</h3>
+        <ul>
+          <li>石头烤肉（Khorkhog）：石烧羊肉+土豆胡萝卜，节日硬菜</li>
+          <li>手把肉（Shuulen）：清水炖带骨羊肉，配盐与蒜</li>
+          <li>烤全羊：营地/宴请场合的大菜，人多才划算</li>
+          <li>蒙古奶茶（Suutei Tsai）：咸奶茶，餐餐必备</li>
+        </ul>
+        <h3>🐪 戈壁风味</h3>
+        <ul>
+          <li>驼奶：洪格尔沙丘牧民家现挤</li>
+          <li>马奶酒（Airag）：那达慕季节限定，后劲足</li>
+          <li>戈壁羊肉汤：风干肉炖煮，暖胃</li>
+          <li>戈壁玉与沙葱：本地市集特色伴手礼</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥟 街头小吃</h3>
+        <ul>
+          <li>Buuz 蒙古包子：羊肉蒸饺，全国标配</li>
+          <li>Khuushuur 炸肉饼：出游/转场路上的干粮</li>
+          <li>奶皮子/奶豆腐：牧民自制乳品</li>
+          <li>酸奶与奶酪：戈壁驼奶酸奶更浓郁</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>乌兰巴托成吉思汗广场周边蒙餐馆</li>
+          <li>国营百货美食层：一站尝遍蒙式简餐</li>
+          <li>哈拉和林镇小馆：面片汤+烤包子</li>
+          <li>蒙古包营地餐厅：晚宴石头烤肉、早餐奶茶奶皮</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 蒙古饮食<strong>肉类与乳制品为主、蔬菜稀少</strong>，连吃几天易上火，随身带果蔬片或维生素；② 马奶酒后劲大，别当饮料猛喝；③ 牧区水多为井水/矿泉，<strong>生水不要直接喝</strong>；④ 景区/机场的骆驼骑乘与「正宗烤全羊」报价虚高，营地或牧民家预订更实惠。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 蒙古电子签证（evisa.mn，打印批准函随身带）</li>
+        <li>现金（图格里克，草原戈壁只认现金，按天数备足）</li>
+        <li>转换插头（230V C/E 型两圆脚）+ 大容量充电宝</li>
+        <li>防晒霜/墨镜/遮阳帽 + 早晚厚外套（昼夜温差大）</li>
+      </ul>
+      <ul>
+        <li>肠胃药/感冒药/晕车药（戈壁土路颠簸必备）</li>
+        <li>离线地图提前缓存（草原戈壁信号弱）</li>
+        <li>骑马/骆驼穿长裤与闭口鞋</li>
+        <li>旺季（7–8 月）提前 1 个月订营地与包车</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证别拖</strong>：电子签 3–5 个工作日，出签前勿订不可退票；从陆路口岸入境的旅行者建议直接办纸质签。② <strong>现金为王</strong>：偏远地区几乎无 ATM 与刷卡，按每日 300–600 元等值图格里克备足；包车费用提前与司机谈好结算币种。③ 戈壁土路颠簸，<strong>晕车药与颈枕必备</strong>，包车务必选四驱（丰田巡洋舰级别），避免面包车硬扛长途。④ <strong>尊重游牧文化</strong>：进蒙古包先征得同意、不要指点佛像与长者、递来的奶茶要接住并喝完表示尊重。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      蒙古是「<strong>辽阔与自由</strong>」的目的地——乌兰巴托的历史、特勒吉的草原、哈拉和林的帝国回响、戈壁的星辰与沙鸣，10 天刚好把这四种风景串成一条南北纵贯线。签证上官网办张电子签，包一台四驱车，剩下的就是朝着地平线一路开下去。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#3a7bd5",
+    "d": 3,
+    "n": "主线 · 乌兰巴托→特勒吉→哈拉和林→巴彦扎格→洪格尔沙丘",
+    "pts": [
+      [
+        47.886,
+        106.905
+      ],
+      [
+        47.98,
+        107.2
+      ],
+      [
+        47.96,
+        107.4
+      ],
+      [
+        47.2,
+        102.8
+      ],
+      [
+        44.1,
+        103.7
+      ],
+      [
+        43.55,
+        104.0
+      ]
+    ]
+  },
+  {
+    "c": "#5a8f3c",
+    "d": 2,
+    "n": "戈壁收尾 · 洪格尔沙丘→约林峡谷→达兰扎德嘎德",
+    "pts": [
+      [
+        43.55,
+        104.0
+      ],
+      [
+        43.6,
+        104.05
+      ],
+      [
+        43.57,
+        104.43
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 47.886,
+    "lng": 106.905,
+    "name": "乌兰巴托·成吉思汗广场",
+    "t": "D1 傍晚 · 1h",
+    "fee": "免费",
+    "note": "国家宫、成吉思汗坐像、喷泉夜景"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 47.921,
+    "lng": 106.894,
+    "name": "乌兰巴托·甘丹寺",
+    "t": "D2 上午 · 1.5h",
+    "fee": "主殿 5000 MNT",
+    "note": "蒙古最大寺院、26.5m 章冉泽大佛"
+  },
+  {
+    "num": 3,
+    "prio": "nice",
+    "lat": 47.897,
+    "lng": 106.908,
+    "name": "乌兰巴托·博格达汗宫",
+    "t": "D2 下午 · 1.5h",
+    "fee": "5000–10000 MNT",
+    "note": "末代活佛冬宫、蒙藏汉建筑"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 47.98,
+    "lng": 107.2,
+    "name": "成吉思汗骑马雕像",
+    "t": "D3 上午 · 1.5h",
+    "fee": "20000 MNT",
+    "note": "40m 世界最高骑马雕像、马头观景台"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 47.96,
+    "lng": 107.4,
+    "name": "特勒吉·乌龟石",
+    "t": "D4 上午 · 2h",
+    "fee": "免费",
+    "note": "龟形巨岩、草原骑马"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 47.2,
+    "lng": 102.8,
+    "name": "哈拉和林·额尔德尼召寺",
+    "t": "D6 全天 · 2h",
+    "fee": "主殿 20000 MNT",
+    "note": "108 白塔、蒙古帝国旧都"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 44.1,
+    "lng": 103.7,
+    "name": "戈壁·巴彦扎格火燎崖",
+    "t": "D7 傍晚 · 2h",
+    "fee": "免费",
+    "note": "红色砂岩崖、恐龙化石地"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 43.55,
+    "lng": 104.0,
+    "name": "戈壁·洪格尔沙丘",
+    "t": "D8 全天 · 3h",
+    "fee": "免费（骆驼另计）",
+    "note": "鸣沙山、骆驼骑行、沙丘日落"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[43.5, 101.5], [48.5, 108.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#3a7bd5\"></span>主线（乌兰巴托→特勒吉→哈拉和林→戈壁）<br><span class=\"sw\" style=\"background:#5a8f3c\"></span>戈壁收尾段（洪格尔→约林峡谷→达兰扎德嘎德）<br><span class=\"sw dash\"></span>戈壁-返程段可乘内陆航班</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

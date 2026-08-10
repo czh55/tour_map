@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 纳米比亚 10 天全景攻略 · 红沙漠与野生动物</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #c1692e;
+    --red-light: #d0854f;
+    --gold: #e0b870;
+    --ink: #2c2a3a;
+    --muted: #8a8a9a;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e2d6;
+    --blue: #4a4a8a;
+    --cover1: #5a2a14;
+    --ov1: rgba(90,42,20,.88);
+    --ov2: rgba(193,105,46,.72);
+    --ov3: rgba(224,184,112,.38);
+    --ov4: rgba(74,74,138,.20);
+    --key-bg: #faf0e0;
+    --info-bg: #f2f0f7;
+    --head-bg: rgba(193,105,46,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/namibia/namibia-cover.jpg" alt="纳米比亚旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 自驾红沙漠 + 埃托沙</div>
+      <h1>纳米比亚 10 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 温得和克 · 苏丝斯黎红沙漠 · 斯瓦科普蒙德 · 埃托沙国家公园</div>
+      <div class="meta">
+        <span>🛫 行程链：温得和克 → 苏丝斯黎 → 斯瓦科普蒙德 → 鲸湾港 → 埃托沙 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚</span>
+        <span>✈️ 北京⇄温得和克 转机约 20 小时（经亚的斯/约翰内斯堡/迪拜）</span>
+        <span>🛂 签证：中国护照需纳米比亚签证（使馆/电子申请，普通 12 个工作日）</span>
+        <span>🕐 时差 -7h(冬)/-6h(夏) · 🔌 电压 220V D/M 型插座（大南非三脚圆插）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">温得和克</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">苏丝斯黎</span>
+      <span class="arrow">→</span>
+      <span class="node">斯瓦科普蒙德</span>
+      <span class="arrow">→</span>
+      <span class="node">鲸湾港</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">埃托沙</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      纳米比亚是「<strong>非洲最能自驾的国家</strong>」：苏丝斯黎的红沙丘与死亡谷是地球最上镜的沙漠之一，鲸湾港的生蚝与海豚、埃托沙的水坑与大象群则把野生动物的震撼拉到满格。10 天以<strong>温得和克为轴心自驾大环线</strong>：先下红沙漠、再上海滨、最后北上埃托沙，全程约 1800km，路况良好、无需向导，是非洲自驾的黄金入门。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国内地护照<strong>需提前办纳米比亚签证</strong>（驻华使馆受理，普通 12 个工作日、加急 3 个工作日，停留 30 天单次），材料含护照原件/照片/往返机票/酒店订单/保险</td>
+</tr>
+<tr>
+<td>时差与电源</td>
+<td>比北京慢 7 小时（夏令时 6 小时）；电压 220V，插座为 <strong>D/M 型（南非三脚大圆插）</strong>，需带南非制式转换头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>纳米比亚元（NAD），<strong>1 元 ≈ 2.6 纳米比亚元</strong>，与南非兰特 1:1 通用；刷卡普及但偏远加油站要现金</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>10 天自驾大环线：温得和克→苏丝斯黎→斯瓦科普蒙德→鲸湾港→埃托沙</td>
+</tr>
+<tr>
+<td>交通方式</td>
+<td><strong>全程自驾</strong>：4×4 或 SUV（Toyota Hilux 等），苏丝斯黎最后 5km 深沙段需四驱或接驳车</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 18000–26000 ／ 标准 32000–48000 ／ 舒适 65000–95000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办签证（提前 1 个月） ② 订 4×4 与园内营地（nwr.com.na 提前 2–3 个月） ③ 备南非转换插头与现金</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证要提前、不是落地免签</strong>：中国内地护照赴纳必须行前办妥签证（普通 12 个工作日），材料里需要英文往返机票与全程酒店预订单，<strong>签证到手再买机票</strong>更稳妥。② 苏丝斯黎<strong>最后 5 公里是深软沙</strong>：普通轿车进去必陷，租车时确认是否 4×4（带低速四驱），不是四驱就在停车场换 <strong>N$200/人 的接驳车</strong>进死亡谷。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏：以温得和克为轴心走「红沙漠 → 海滨 → 埃托沙」大环线，全程自驾约 1800km。每日车程 ≤5h，景点集中在上午凉爽时段，午后躲太阳。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵温得和克</td>
+<td>转机约 20h 抵达，机场取车，市区国会山+采购补给</td>
+<td>温得和克</td>
+<td>抵达日</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>温得和克→苏丝斯黎（约 4–5h），下午塞斯里姆峡谷日落</td>
+<td>苏丝斯黎</td>
+<td>驶向红沙漠</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>苏丝斯黎全日：Dune 45 日出 + 死亡谷 + 大爸爸沙丘</td>
+<td>苏丝斯黎</td>
+<td>红沙漠全日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>苏丝斯黎→斯瓦科普蒙德（约 5–6h），傍晚海边漫步</td>
+<td>斯瓦科普蒙德</td>
+<td>驶向大西洋</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>鲸湾港全日：泻湖船游海豚海豹 + 生蚝午餐 + 粉红湖火烈鸟</td>
+<td>斯瓦科普蒙德</td>
+<td>大西洋日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>斯瓦科普蒙德沙丘四驱/滑沙（可选），午后北上宿 Outjo</td>
+<td>Outjo</td>
+<td>北上中转</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Outjo→埃托沙入园：自驾游猎 + Okaukuejo 灯光水坑夜观</td>
+<td>埃托沙</td>
+<td>埃托沙第一日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>埃托沙全日：晨游水坑 + 下午 Halali 方向游猎</td>
+<td>埃托沙</td>
+<td>游猎全日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>最后晨游→出园南下回温得和克（约 5–6h），还车前加油</td>
+<td>温得和克</td>
+<td>返首都</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>还车，市区购物，温得和克✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍斯瓦科普蒙德活动（D6 上午）直接北上；喜欢摄影可在苏丝斯黎加 1 天拍星空（纳米比亚是全球最暗夜空之一）；6–9 月旱季动物最集中，11 月–次年 4 月雨季部分地区泥泞，4×4 更保险。埃托沙营地旺季（7 月）提前 3–4 个月在 nwr.com.na 预订。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达温得和克</span>
+          <span class="d-desc">机场取车，市区初探</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">全天</td><td class="t-what">北京✈（经亚的斯/约翰内斯堡/迪拜转机约 20h）✈温得和克，抵达霍齐亚·库塔科国际机场</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">机场取车（提前在租车公司预订 4×4/SUV，确认保险与满油条款）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>市区初探</b>：国会山、独立博物馆（Alte Feste）、Namib Craft Centre 手工艺中心</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">入住+晚餐，超市补给水、零食与干粮</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">温得和克海拔约 1700m，初到别剧烈运动；机场距市区约 42km，租车柜台营业到晚 20 点，晚班航班提前确认。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 驶向苏丝斯黎</span>
+          <span class="d-desc">红沙漠前站</span>
+          <span class="d-tag ">🏜 红沙漠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">温得和克出发（约 300km，4–5h，多为柏油路）</td></tr>
+          <tr><td class="t-time">09:30–10:30</td><td class="t-what">途经 <b>Solitaire 索利泰尔</b>：补给站+著名的苹果派，加满油（后面油站少）</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">抵达 <b>Sesriem 塞斯里姆</b>，入住园内营地/旅舍</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><b>塞斯里姆峡谷</b>徒步（约 1h）：风蚀岩谷+枯河床</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">营地日落晚餐，早睡准备明早入园</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Sesriem 营地是园内唯一过夜点，日出前可提前 1h 进内门，务必提前 2–3 个月在 nwr.com.na 预订；10 点后沙漠酷热，行程都在早晚。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 苏丝斯黎全日</span>
+          <span class="d-desc">Dune 45 + 死亡谷</span>
+          <span class="d-tag alt">🌅 红沙漠全日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30</td><td class="t-what">日出前开门进园（住园内可提前 1h）</td></tr>
+          <tr><td class="t-time">06:30–08:30</td><td class="t-what"><b>Dune 45 沙丘日出</b>：325m 高，登顶约 1–2h，光影红沙最上镜</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>死亡谷 Deadvlei</b>：4×4 过深沙段或换接驳车（N$200/人），枯树白粘土+红沙丘</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">中午前撤出，返回营地避暑</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">自由：沙丘漫步/拍纳秒沙纹/午睡</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">死亡谷的骆驼刺枯树约 600–900 年，是地球上最超现实的景观之一；带足水、头灯与早餐，10 点后暴晒务必撤离。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 驶向大西洋</span>
+          <span class="d-desc">斯瓦科普蒙德</span>
+          <span class="d-tag ">🌊 大西洋日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">苏丝斯黎出发（约 340km，5–6h）</td></tr>
+          <tr><td class="t-time">12:30</td><td class="t-what">途中午餐（牧场小镇）</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">抵达 <b>斯瓦科普蒙德</b>，入住海边酒店</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what">海边漫步：Mol 码头、德式老城区、纳米布沙漠与海相遇的沙海奇观</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">斯瓦科普蒙德是纳米比亚的「海滨度假村」，德国殖民地风情+冲浪小镇气质；大西洋水温低，游泳需防寒。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 鲸湾港全日</span>
+          <span class="d-desc">海豚船游 + 生蚝</span>
+          <span class="d-tag alt">🐬 鲸湾港日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:30</td><td class="t-what">驱车至鲸湾港（约 30km）</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>泻湖船游</b>（约 650–950 纳元/人）：海豚、海豹、鹈鹕，风沙平原与海相连</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：<b>纳米比亚生蚝</b>（世界名产，冷水蚝）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>粉红盐湖 + 火烈鸟</b>：泻湖观鸟，11 月–次年 3 月火烈鸟最多</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返斯瓦科普蒙德</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">鲸湾港泻湖是南部非洲候鸟天堂，火烈鸟群最壮观在早晚；船游提前 1 天在镇上旅行社预订，旺季 2 小时场次很抢手。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 北上 Outjo</span>
+          <span class="d-desc">沙丘活动 + 埃托沙前哨</span>
+          <span class="d-tag ">🚗 中转日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what">可选：<b>沙丘四驱车/滑沙</b>（约 600–1200 纳元/人）或跳伞（约 1900 纳元）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐</td></tr>
+          <tr><td class="t-time">13:30–18:30</td><td class="t-what">北上 <b>Outjo</b>（约 430km，5.5h），入住 Outjo 旅舍，为明早入园做准备</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">斯瓦科普蒙德是户外活动中心，选 1–2 项即可；北上途中在卡里比布（Karibib）/奥奇瓦龙戈加油补给。埃托沙门票明日购。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 埃托沙第一日</span>
+          <span class="d-desc">入园自驾游猎</span>
+          <span class="d-tag ">🦁 埃托沙日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">Outjo→埃托沙 Andersson Gate（约 1h）</td></tr>
+          <tr><td class="t-time">09:30</td><td class="t-what">购票入园（成人约 150 纳元/天 + 车辆约 50 纳元）</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what">自驾游猎：向 <b>Okaukuejo 营地</b>沿途，大象/长颈鹿/斑马</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">入住 Okaukuejo 营地，午餐</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">下午水坑游猎</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what"><b>Okaukuejo 灯光水坑夜观</b>：大象与犀牛夜间来喝水</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Okaukuejo 的灯光水坑是埃托沙招牌，黑犀牛夜间出现的概率不小；入园需保存门票，第二日续园费在营区可续。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 埃托沙全日</span>
+          <span class="d-desc">晨游 + Halali 方向</span>
+          <span class="d-tag alt">🐘 游猎全日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–10:30</td><td class="t-what"><b>晨间游猎</b>：清晨动物密度是中午的 3 倍，水坑巡游（Okondeka/Goas）</td></tr>
+          <tr><td class="t-time">11:00</td><td class="t-what">回营休息/午餐</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">下午游猎：<b>Halali 方向</b>，盐盘边缘看狮子/猎豹踪迹</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐+再访灯光水坑</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">埃托沙盐盘约 4800km²，从太空可见；旱季（5–9 月）动物都聚在水坑，是看「动物集会」的最佳窗口。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 返温得和克</span>
+          <span class="d-desc">最后晨游 + 南下</span>
+          <span class="d-tag return">🚙 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–09:00</td><td class="t-what">最后晨游（Namutoni 方向或再巡 Okaukuejo 水坑）</td></tr>
+          <tr><td class="t-time">10:00</td><td class="t-what">出园（Andersson Gate）</td></tr>
+          <tr><td class="t-time">10:30–17:00</td><td class="t-what">南下回温得和克（约 400km，5–6h，途中午餐）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住温得和克，还车前加满油</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">埃托沙到温得和克约 5–6h 车程，出发前确认还车时间；越野路段尘土大，回城前洗车（租车公司要求）或确认条款。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">还车 ✈ 北京</span>
+          <span class="d-tag ">✈️ 收尾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">还车（满油归还，结算保险与额外里程）</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">市区购物：紫檀木雕、纳米比亚宝石、手工艺品</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">前往机场（约 42km，留足时间）</td></tr>
+          <tr><td class="t-time">14:00–次日</td><td class="t-what">温得和克✈（转机）✈北京，入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程转机联程建议留足 5h 缓冲；机场免税店可补买钻石/宝石与当地红酒。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-cover.jpg" alt="苏丝斯黎·金色沙丘" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">苏丝斯黎·金色沙丘 <small>入园 108–150 纳元/人</small></div>
+          <div class="sc-feat">地球最上镜红沙丘。<b>日出光影 + 沙脊线</b>，纳米比亚名片。</div>
+          <div class="sc-meta">📅 日出开门 · ⏱ 1 天 · 🚙 温得和克自驾 4–5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-1.jpg" alt="苏丝斯黎·沙丘剪影" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">苏丝斯黎·沙丘剪影 <small>入园费含</small></div>
+          <div class="sc-feat"><b>沙脊剪影 + 苍白天空</b>，极简主义机位。</div>
+          <div class="sc-meta">📅 早晚 · ⏱ 1h · 📍 Dune 45 一带</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-2.jpg" alt="苏丝斯黎·死亡谷" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">苏丝斯黎·死亡谷 <small>接驳车 200 纳元/人</small></div>
+          <div class="sc-feat"><b>600 年枯树 + 白色粘土盆地</b>，超现实荒漠景观。</div>
+          <div class="sc-meta">📅 日出后 2h 内 · ⏱ 2–3h · 📍 深沙段需四驱/接驳</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-3.jpg" alt="苏丝斯黎·紫色暮色" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">苏丝斯黎·紫色暮色 <small>入园费含</small></div>
+          <div class="sc-feat"><b>夕阳染紫的沙丘与枯树</b>，纳米比亚限定色。</div>
+          <div class="sc-meta">📅 日落 · ⏱ 1h · 📍 苏丝斯黎盐沼</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-4.jpg" alt="埃托沙·水坑大象" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">埃托沙·水坑大象 <small>成人 150 纳元/天</small></div>
+          <div class="sc-feat"><b>水坑前的大象家庭</b>，旱季动物集会。</div>
+          <div class="sc-meta">📅 清晨/黄昏 · ⏱ 半天 · 📍 各水坑</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-5.jpg" alt="埃托沙·Okaukuejo 水坑" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">埃托沙·Okaukuejo 水坑 <small>营地+门票</small></div>
+          <div class="sc-feat"><b>灯光水坑夜观</b>：大象/犀牛夜间造访，世界级体验。</div>
+          <div class="sc-meta">📅 20:00 后 · ⏱ 2h · 📍 Okaukuejo 营地</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-6.jpg" alt="埃托沙·黄昏象群" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">埃托沙·黄昏象群 <small>门票含</small></div>
+          <div class="sc-feat"><b>黄昏尘土里的象群剪影</b>，游猎日最佳收官。</div>
+          <div class="sc-meta">📅 日落 · ⏱ 1h · 📍 Okaukuejo 水坑</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/namibia/namibia-7.jpg" alt="纳米比亚·星空" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">纳米比亚·星空 <small>免费</small></div>
+          <div class="sc-feat"><b>全球最暗夜空之一</b>，银河肉眼可见（Spitzkoppe 巨石拱门）。</div>
+          <div class="sc-meta">📅 无月夜 · ⏱ 整夜 · 📍 沙漠/营地均可</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（苏丝斯黎红沙丘、死亡谷、埃托沙水坑大象、纳米比亚星空等均为纳米比亚实景），用于页面配图。更多免费景点：温得和克国会山、鲸湾港泻湖、斯瓦科普蒙德沙滩、埃托沙各公共水坑。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 2.6 纳米比亚元、1 美元 ≈ 7.2 元估算。转机往返按淡季 8000–12000 元计，旺季（6–9 月）上浮 3000–5000；自驾按 2 人分摊成本估算。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（18000–26000）</th>
+<th>标准（32000–48000）</th>
+<th>舒适（65000–95000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机往返 8000–12000</td>
+<td>转机直挂 13000–18000</td>
+<td>含内陆段/灵活票 25000–35000</td>
+</tr>
+<tr>
+<td>租车+油费（9 天）</td>
+<td>SUV+接驳车 3500–5500</td>
+<td>4×4 全险 7500–11000</td>
+<td>4×4+随行向导 18000–26000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>营地+背包客 2500–4000</td>
+<td>中档旅馆+园内营地 8000–12000</td>
+<td>豪华旅舍/园内小屋 22000–32000</td>
+</tr>
+<tr>
+<td>门票+活动</td>
+<td>基础门票约 1000–1500</td>
+<td>含船游/滑沙 2500–4000</td>
+<td>含飞行/跳伞等 7000–10000</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>自炊+快餐 1500–2500</td>
+<td>餐厅+自炊结合 3500–5500</td>
+<td>全餐厅+酒水 9000–13000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 38000 元）</span>
+      往返机票 15000 + 租车油费 9000（4×4 两人分摊人均）+ 住宿 9 晚 9500 + 门票与船游 3200 + 餐饮 4500 + 签证与杂费 1500 ≈ <strong>38000–42000 元</strong>。大头是机票与租车，4×4 提前 4–6 个月订能锁旺季价；2 人分摊自驾成本比单人省约 3000–5000。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>10.1 8 天精简版（砍埃托沙）</h3>
+
+
+    <ul>
+
+      <li>D1 温得和克</li>
+
+      <li>D2–D3 苏丝斯黎红沙漠（同主行程）</li>
+
+      <li>D4–D5 斯瓦科普蒙德+鲸湾港（同主行程）</li>
+
+      <li>D6 返温得和克</li>
+
+      <li>D7 温得和克市区+采购</li>
+
+      <li>D8 返程</li>
+
+      <li>适合时间紧或对野生动物兴趣一般</li>
+
+    </ul>
+
+    <h3>10.2 达马拉兰/辛巴部落延伸</h3>
+
+
+    <p>对人文与荒野感兴趣，可在北上埃托沙途中加 2 天达马拉兰（Damaraland）：辛巴红泥族村落、Twyfelfontein 岩画、沙漠象；或在鲸湾港参加 Skeleton Coast 骷髅海岸一日飞行。全程车程相应增加，建议把埃托沙压缩到 2 天。</p>
+
+    <h3>10.3 亲子/度假调整</h3>
+
+
+    <p>带娃推荐：埃托沙砍到 2 天、加哈马哈马野生动物保护区（Okonjima 猎豹基地）半日，看动物+教育两不误；鲸湾港船游 2 小时对儿童友好；全程宿营地（自助厨房+泳池）性价比高。纳米比亚路况好，儿童安全座椅租车时一并订。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 纳米比亚 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（唯一）</td>
+<td>北京→温得和克约 20h</td>
+<td>往返 8000–18000 元</td>
+<td>经亚的斯亚贝巴/约翰内斯堡/迪拜，埃塞俄比亚航空班次多</td>
+</tr>
+<tr>
+<td>直飞</td>
+<td>—</td>
+<td>—</td>
+<td>中纳暂无直航</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>无陆路铁路连接中国，只能飞机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 纳米比亚境内交通核心提醒</span>
+      <strong>自驾是唯一现实的境内方式</strong>：首都以外公共交通极少，Intercape 长途巴士班次稀疏。推荐机场提车（温得和克租车公司集中），<strong>苏丝斯黎深沙段与达马拉兰碎石路建议 4×4</strong>；油价约 23 纳元/升，全程 1800km 预算 2200–3500 纳元油费；偏远加油站只收现金，油箱过半就补。租车必买全险并降低免赔额（约 130 纳元/天）。
+    </div>
+
+    <h3>8.2 纳米比亚境内交通</h3>
+    <ul>
+      <li><strong>自驾（核心）</strong>：柏油路质量好、路标清晰，4×4（Toyota Hilux）约 85–140 美元/天</li>
+      <li><strong>长途巴士</strong>：Intercape 温得和克—斯瓦科普蒙德/吕德里茨，班次少、时间不便</li>
+      <li><strong>园内交通</strong>：埃托沙/苏丝斯黎只能自驾或参加 lodge 提供的导览车</li>
+      <li><strong>苏丝斯黎接驳车</strong>：非四驱车停 2WD 停车场后换 N$200/人 接驳车进死亡谷</li>
+      <li><strong>市内交通</strong>：温得和克出租车需谈价（不打表），小巴拥挤</li>
+      <li><strong>内陆航班</strong>：温得和克—斯瓦科普蒙德/吕德里茨有观光小飞机（奢华线）</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>温得和克·市区</td>
+<td>经济 250–450 / 标准 500–900</td>
+<td>租车公司集中，补给方便</td>
+<td>旺季房源紧</td>
+</tr>
+<tr>
+<td>苏丝斯黎·Sesriem 园内</td>
+<td>营地 200–400 / 旅舍 800–2000</td>
+<td>日出提前入园，位置绝杀</td>
+<td>需提前 2–3 个月订</td>
+</tr>
+<tr>
+<td>斯瓦科普蒙德·海边</td>
+<td>经济 350–600 / 标准 700–1400</td>
+<td>度假氛围，活动中心</td>
+<td>旺季活动爆满</td>
+</tr>
+<tr>
+<td>鲸湾港·泻湖旁</td>
+<td>标准 600–1200</td>
+<td>船游码头近，海鲜餐厅多</td>
+<td>离斯瓦科普蒙德 30km</td>
+</tr>
+<tr>
+<td>Outjo·镇区</td>
+<td>经济 250–450 / 标准 500–900</td>
+<td>埃托沙前哨，补给方便</td>
+<td>镇小选择少</td>
+</tr>
+<tr>
+<td>埃托沙·园内营地</td>
+<td>Okaukuejo/Halali 350–900</td>
+<td>水坑夜观，位置无敌</td>
+<td>住宿简单、要提前订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🦪 必吃经典</h3>
+        <ul>
+          <li>纳米比亚生蚝：冷水蚝，鲸湾港招牌</li>
+          <li>野味烤肉：鸵鸟/跳羚/珍珠鸡（合法农场）</li>
+          <li>德式香肠与猪肘：殖民遗风</li>
+          <li>南非烤肉 braai：营地野餐标配</li>
+        </ul>
+        <h3>🥤 饮品</h3>
+        <ul>
+          <li>纳米比亚啤酒：Windhoek Lager 南非销量王</li>
+          <li>当地红酒（Aubanes 酒庄）</li>
+          <li>鲜榨果汁与奶昔</li>
+          <li>营地理泡茶/咖啡</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 在地风味</h3>
+        <ul>
+          <li>Kapana 街头烤肉（温得和克夜市）</li>
+          <li>Mahangu 小米粥：北部传统主食</li>
+          <li>鹿肉干 biltong：干式熟成肉条</li>
+          <li>红沙戈壁风味的农场羊排</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>温得和克：Joe's Beerhouse（游客首选烤肉）</li>
+          <li>鲸湾港：海边生蚝餐厅</li>
+          <li>斯瓦科普蒙德：德式啤酒屋</li>
+          <li>营地：自助厨房自炊最省钱</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 野味（game meat）务必认准合法农场来源，路边摊来源不明别买；② 生蚝只吃正规餐厅，肠胃敏感者适量；③ 偏远小镇餐饮选择少，出发前在温得和克/斯瓦科普蒙德补足干粮；④ 营地自炊注意防猴防蝇，垃圾密封；⑤ 刷卡普及但偏远油站/集市只收现金，纳元或兰特都通用。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上）+ 纳米比亚签证（提前 1 个月办）</li>
+        <li>英文往返机票 + 全程酒店预订单（办签材料）</li>
+        <li>南非制式转换插头（D/M 型三脚大圆插）</li>
+        <li>防晒霜+帽子+防风外套（沙漠昼夜温差大）</li>
+      </ul>
+      <ul>
+        <li>4×4 租车确认（含全险+降低免赔额）</li>
+        <li>埃托沙/苏丝斯黎营地提前在 nwr.com.na 预订</li>
+        <li>现金（偏远油站）+ 下载离线地图</li>
+        <li>查旱季动物季（5–9 月）与火烈鸟季（11–3 月）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证先行</strong>：中国护照赴纳须办签（普通 12 个工作日），别信「落地免签」；② 苏丝斯黎深沙段轿车必陷，非四驱就坐接驳车；③ 埃托沙园内限速 60km/h、碎石路 40km/h，别为了赶路惹罚单；④ 沙漠昼夜温差可超 20℃，冬季（6–8 月）夜间低至 0℃上下，外套必带；⑤ 加油站稀疏，油箱过半即补，偏远点只收现金。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      纳米比亚是「<strong>自驾者的天堂 + 摄影师的调色盘</strong>」——苏丝斯黎的红沙丘在日出时烧成火焰，死亡谷的枯树在白垩盆地站了一千年，埃托沙的水坑边大象长颈鹿轮流登场，夜晚还有地球上最干净的银河。10 天 1800km 的大环线，路好、人少、野性足，办一张签证、租一台四驱，就能把非洲最上镜的风景收进相机。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c1692e",
+    "d": 3,
+    "n": "大环线 · 温得和克→苏丝斯黎→斯瓦科普蒙德→鲸湾港→埃托沙",
+    "pts": [
+      [
+        -22.56,
+        17.066
+      ],
+      [
+        -24.691,
+        15.306
+      ],
+      [
+        -22.678,
+        14.525
+      ],
+      [
+        -22.947,
+        14.507
+      ],
+      [
+        -18.858,
+        16.321
+      ]
+    ]
+  },
+  {
+    "c": "#4a4a8a",
+    "d": 2,
+    "n": "返程 · 埃托沙→温得和克还车转机回国",
+    "pts": [
+      [
+        -18.858,
+        16.321
+      ],
+      [
+        -22.56,
+        17.066
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -22.56,
+    "lng": 17.066,
+    "name": "温得和克·独立博物馆",
+    "t": "D1 下午 · 2h",
+    "fee": "免费",
+    "note": "国会山、殖民史展"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -24.73,
+    "lng": 15.297,
+    "name": "苏丝斯黎·Dune 45",
+    "t": "D3 清晨 · 2h",
+    "fee": "入园费含",
+    "note": "325m 红沙丘日出"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -24.763,
+    "lng": 15.295,
+    "name": "苏丝斯黎·死亡谷",
+    "t": "D3 上午 · 2.5h",
+    "fee": "接驳车 200 纳元",
+    "note": "枯树+白色粘土盆地"
+  },
+  {
+    "num": 4,
+    "prio": "nice",
+    "lat": -24.52,
+    "lng": 15.803,
+    "name": "苏丝斯黎·塞斯里姆峡谷",
+    "t": "D2 下午 · 1h",
+    "fee": "入园费含",
+    "note": "风蚀岩谷"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -22.947,
+    "lng": 14.507,
+    "name": "鲸湾港·泻湖",
+    "t": "D5 上午 · 3h",
+    "fee": "船游 650–950 纳元",
+    "note": "海豚海豹、火烈鸟"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": -22.678,
+    "lng": 14.525,
+    "name": "斯瓦科普蒙德·沙丘四驱",
+    "t": "D6 上午 · 2.5h",
+    "fee": "600–1200 纳元",
+    "note": "沙海相连、滑沙"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": -19.183,
+    "lng": 15.916,
+    "name": "埃托沙·Okaukuejo 水坑",
+    "t": "D7–D8 晚间 · 2h",
+    "fee": "营地+门票",
+    "note": "灯光水坑夜观犀牛"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": -18.858,
+    "lng": 16.321,
+    "name": "埃托沙·盐盘",
+    "t": "D8 全天 · 视路线",
+    "fee": "门票含",
+    "note": "4800km² 白色盐盘"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-25.8, 13.9], [-17.2, 18.2]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c1692e\"></span>大环线（温得和克→苏丝斯黎→斯瓦科普蒙德→鲸湾港→埃托沙，全程自驾）<br><span class=\"sw\" style=\"background:#4a4a8a\"></span>返程（埃托沙→温得和克还车转机回国）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

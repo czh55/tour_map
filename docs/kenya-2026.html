@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 肯尼亚 12 天全景攻略 · 马赛马拉大迁徙</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #a8322d;
+    --red-light: #c4453a;
+    --gold: #d4a017;
+    --ink: #33281f;
+    --muted: #8a7a6a;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8dfd0;
+    --blue: #2a9d8f;
+    --cover1: #5a1f1b;
+    --ov1: rgba(90,31,27,.88);
+    --ov2: rgba(168,50,45,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(42,157,143,.20);
+    --key-bg: #fdf3dc;
+    --info-bg: #f1efe6;
+    --head-bg: rgba(168,50,45,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/kenya/kenya-cover.jpg" alt="肯尼亚旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 12 天环线 · 草原大迁徙 + 印度洋</div>
+      <h1>肯尼亚 12 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 内罗毕 · 马赛马拉大迁徙 · 纳库鲁火烈鸟 · 安博塞利象群 · 迪亚尼海滩</div>
+      <div class="meta">
+        <span>🛫 行程链：内罗毕 → 马赛马拉 → 纳库鲁湖 → 安博塞利 → 蒙巴萨/迪亚尼</span>
+        <span>📅 时间窗口：12 天 11 晚（7–10 月大迁徙季）</span>
+        <span>✈️ 北京⇄内罗毕 经亚的斯亚贝巴转机约 13–16 小时</span>
+        <span>🛂 签证：电子旅行许可 eTA（约 $34，提前 3 工作日申请）</span>
+        <span>🕐 时差 -5 小时 · 🔌 电压 240V G 型插座（英标三脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 12 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 12 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">内罗毕</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">马赛马拉</span>
+      <span class="arrow">→</span>
+      <span class="node">纳库鲁湖</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">安博塞利</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">内罗毕</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">蒙巴萨/迪亚尼</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 12 天怎么安排最合理</span>
+      肯尼亚是「<strong>草原与海洋双面</strong>」的目的地：马赛马拉看百万角马大迁徙，纳库鲁拍粉色火烈鸟，安博塞利定格雪山象群，最后到迪亚尼海滩度假收尾。12 天刚好走完「<strong>内罗毕出发的经典草原环线 + 印度洋沙滩</strong>」，节奏上 7 天野外 + 3 天海滨 + 2 天都市。最佳窗口是 <strong>7–10 月大迁徙季</strong>（角马过马拉河），但旺季门票翻倍、营地爆满，需提前锁定。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需<strong>电子旅行许可 eTA</strong>：官网 etakenya.go.ke 申请，约 34 美元（含银行手续费），<strong>提前 3 个工作日以上</strong>、旺季建议提前 2 周；有效期 90 天</td>
+</tr>
+<tr>
+<td>黄皮书（硬性）</td>
+<td>行程经亚的斯亚贝巴转机即涉黄热病流行区，须持<strong>国际疫苗接种证书（小黄本）</strong>，出发前≥10 天接种黄热病疫苗</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>内罗毕 → 马赛马拉 → 纳库鲁 → 安博塞利 → 蒙巴萨/迪亚尼，12 天草原+海滩双主题</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>蒙巴萨无直达国际航班，返程经内罗毕转机（国内段约 1h）；7–8 月旺季提前 1 个月订票</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 18000–28000 ／ 标准 35000–50000 ／ 舒适 70000–110000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办 eTA + 打黄热病疫苗 ② 订 Safari 越野车与营地（旺季营地 3–6 个月爆满）③ 订马赛马拉/安博塞利门票</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>最佳 6–10 月（7–10 月角马过马拉河）；11 月–次年 5 月雨季性价比高但路况差；12–3 月迪亚尼海滩最舒服</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>美元现金 + 信用卡（Visa/Mastercard）+ M-Pesa 移动支付；马赛马拉旺季门票 $200/天</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>马赛马拉旺季门票翻倍</strong>：7–12 月非居民门票从 $100 涨到 <strong>$200/人/天</strong>，在保护区玩 3 天就是 $600，预算务必按旺季计；营地住宿同期翻倍且一位难求。② <strong>黄皮书是入境硬门槛</strong>：经亚的斯亚贝巴转机即被认定涉黄热病区，无小黄本可能被拒绝入境，或在机场被强制接种并留观。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 12 天版</h2>
+
+    <p>以下为 12 天 11 晚的推荐节奏：草原段按「内罗毕出发环线」推进，海滨段收尾。每日主景点 ≤2 个，Safari 全程 4×4 越野车 + 司机兼向导。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵内罗毕</td>
+<td>北京✈亚的斯亚贝巴✈内罗毕（约 15h），抵达休整，晚餐百兽宴</td>
+<td>内罗毕</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>内罗毕→马赛马拉（公路约 5h 或威尔逊机场飞机 45min），下午首次游猎</td>
+<td>马赛马拉</td>
+<td>初识大草原</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>马赛马拉全天：热气球日出（可选）+ 角马过河 + 五大兽追踪</td>
+<td>马赛马拉</td>
+<td>大迁徙日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>马赛马拉全天：清晨狮子捕猎 + 马赛村参观（自费）</td>
+<td>马赛马拉</td>
+<td>深度游猎</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>马赛马拉→纳库鲁湖（约 4h），火烈鸟群 + 黑白犀牛</td>
+<td>纳库鲁</td>
+<td>湖泊观鸟</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>纳库鲁→内罗毕（3h）→安博塞利（4h），傍晚象群游猎</td>
+<td>安博塞利</td>
+<td>转场日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>安博塞利全天：Observation Hill + 恩贡罗湿地象群 + 乞力马扎罗雪山</td>
+<td>安博塞利</td>
+<td>雪山象群</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>安博塞利→内罗毕（4h），长颈鹿中心 + 市区晚餐</td>
+<td>内罗毕</td>
+<td>都市休整</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>内罗毕 SGR✈蒙巴萨（约 5.5h），下午迪亚尼海滩</td>
+<td>迪亚尼</td>
+<td>印度洋初遇</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>迪亚尼全天：浮潜玻璃船 + 海鲜午餐 + 风筝冲浪</td>
+<td>迪亚尼</td>
+<td>海岛日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>蒙巴萨老城：耶稣堡 + 石头巷漫步，下午海滩自由</td>
+<td>迪亚尼</td>
+<td>斯瓦希里日</td>
+</tr>
+<tr>
+<td>D12 返程</td>
+<td>迪亚尼→蒙巴萨✈内罗毕✈亚的斯亚贝巴✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍掉迪亚尼 1–2 天（海滨段缩为 2 天），把马赛马拉加至 4 天蹲守迁徙；带娃家庭建议安博塞利缩为 1 天并选带泳池的儿童友好营地。摄影党把热气球预算换成 2 次马拉河清晨蹲守。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 12 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达内罗毕</span>
+          <span class="d-desc">转机 15 小时，百兽宴收尾</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">00:10–07:15</td><td class="t-what">北京✈亚的斯亚贝巴（ET605 约 11.5h），机上过夜</td></tr>
+          <tr><td class="t-time">10:45–13:10</td><td class="t-what">亚的斯亚贝巴✈内罗毕（约 2.5h），入境时出示 eTA + 黄皮书，现场拍照录指纹</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">换汇（1 元≈18 KSh）+ 办 Safaricom 电话卡 + 入住内罗毕（推荐 Westlands/市区）</td></tr>
+          <tr><td class="t-time">17:00–18:00</td><td class="t-what">肯雅塔会展中心、自由广场车览（安全考虑不下车）</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what">晚餐 <b>百兽宴 Carnivore</b>（全球 50 佳烤肉餐厅），回酒店倒时差（比北京慢 5h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">抵达当天只做轻活动。eTA 提前在 etakenya.go.ke 办好并打印，入境时与护照一起出示。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 内罗毕 → 马赛马拉</span>
+          <span class="d-desc">5 小时车程进草原</span>
+          <span class="d-tag ">🚙 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–07:00</td><td class="t-what">酒店早餐，司机兼向导接人，核对 Safari 预订</td></tr>
+          <tr><td class="t-time">07:00–12:00</td><td class="t-what">内罗毕→马赛马拉（约 250km，经纳罗克最后一段土路颠簸约 5h）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">入住帐篷营地，午餐</td></tr>
+          <tr><td class="t-time">14:30–18:00</td><td class="t-what">下午 Game Drive（Mara 东部）：狮子、大象、角马、长颈鹿</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">回营地日落酒会，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">也可以从威尔逊机场（WIL）坐定期小飞机飞入（45–60min，单程 $200–400），省一天车程但每人多花约 2000 元。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 马赛马拉全天</span>
+          <span class="d-desc">热气球 + 角马过河</span>
+          <span class="d-tag ">🎈 大迁徙日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–08:30</td><td class="t-what">热气球日出（可选，$450–480/人含香槟早餐）：俯瞰草原百万角马</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what">上午 Game Drive：马拉河畔等角马过河（7–10 月）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">野餐盒午餐</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">下午 Game Drive：猎豹、花豹、河马</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">篝火晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">热气球必须提前 1–2 天预订，天气不好会取消；大迁徙 7–10 月最壮观，具体过河位置每天变化，听向导判断。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 马赛马拉全天</span>
+          <span class="d-desc">清晨捕猎黄金时间</span>
+          <span class="d-tag alt">🦁 深度游猎日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–10:00</td><td class="t-what">清晨 Game Drive：狮子捕猎黄金时间，金合欢树下角马群</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">回营地早餐休息</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">马赛村参观（自费约 $20–30/人，收入直接支持当地社区）</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">下午 Game Drive：马拉三角洲或保护区南线</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">营地晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">马赛马拉门票每天有效 12 小时（6:00–18:00）；Mara Triangle 区无现金，需 Visa/Mastercard 或 M-Pesa 支付。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 马赛马拉 → 纳库鲁湖</span>
+          <span class="d-desc">火烈鸟与犀牛</span>
+          <span class="d-tag ">🦩 湖泊观鸟日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–07:30</td><td class="t-what">早餐后退房</td></tr>
+          <tr><td class="t-time">07:30–11:30</td><td class="t-what">公路约 4h 到纳库鲁（穿越东非大裂谷）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">入住湖滨酒店，午餐</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what">纳库鲁湖 Game Drive：火烈鸟群 + 黑白犀牛（白犀与黑犀）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">湖滨晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">纳库鲁火烈鸟数量随湖水位波动，2025 年后水位回升，火烈鸟多迁往博格利亚湖，看到多少看运气；犀牛保护成效显著，基本能看到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 纳库鲁 → 内罗毕 → 安博塞利</span>
+          <span class="d-desc">一天双城转场</span>
+          <span class="d-tag ">🚙 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–10:00</td><td class="t-what">纳库鲁→内罗毕（约 3h）</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">内罗毕午餐，短暂补给</td></tr>
+          <tr><td class="t-time">12:00–16:00</td><td class="t-what">内罗毕→安博塞利（约 4h，经 Namanga 边境）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">安博塞利入园：象群 + 乞力马扎罗雪山背景 Game Drive</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">入住营地，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">这天车程约 7h 是全程最长转场，建议中途在奈瓦沙湖观景台休息；乞力马扎罗雪峰清晨最清晰。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 安博塞利全天</span>
+          <span class="d-desc">雪山下的象群</span>
+          <span class="d-tag alt">🐘 雪山象群日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–08:30</td><td class="t-what">清晨 Game Drive：Observation Hill 观景台拍乞力马扎罗日出 + 象群剪影</td></tr>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">回营地早餐</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">恩贡罗湿地（Enkongo Narok Swamp）看象群家族、水牛</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐休息</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">下午 Game Drive：干旱湖床、鬣狗、黑面狷羚</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">营地晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">安博塞利是非洲观象最佳地之一，象群家族常出没在湿地；门票 $90/成人/24h，只能 4×4 车辆进入。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 安博塞利 → 内罗毕</span>
+          <span class="d-desc">长颈鹿中心半日</span>
+          <span class="d-tag ">🦒 都市休整日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–07:30</td><td class="t-what">早餐后退房</td></tr>
+          <tr><td class="t-time">07:30–11:30</td><td class="t-what">安博塞利→内罗毕（约 4h）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">内罗毕午餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>长颈鹿中心</b>（约 KSh1,500）：亲手喂食罗特希尔德长颈鹿</td></tr>
+          <tr><td class="t-time">16:30–17:30</td><td class="t-what">可选：凯伦·布利克森博物馆（《走出非洲》故居）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">内罗毕晚餐（烤肉 / 斯瓦希里菜）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">长颈鹿中心非常亲子，门口有纪念品店；喂食时舌头很灵活，别把食物举太高。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 内罗毕 → 蒙巴萨/迪亚尼</span>
+          <span class="d-desc">SGR 火车 5.5 小时到海边</span>
+          <span class="d-tag ">🚄 印度洋初遇</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30</td><td class="t-what">出发前往内罗毕火车站（Emakhandi 站）</td></tr>
+          <tr><td class="t-time">08:00–13:40</td><td class="t-what"><b>SGR Madaraka Express</b>：内罗毕→蒙巴萨（经济舱 KSh1,000 / 一等 KSh3,000，约 5h40m，全程空调）</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what">蒙巴萨站午餐（斯瓦希里海鲜）</td></tr>
+          <tr><td class="t-time">15:00–16:00</td><td class="t-what">包车/大巴前往迪亚尼海滩（约 1h，30km 海岸线）</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">入住海滩度假村，白沙滩漫步看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">SGR 每天 2 班（早晚），一等舱更宽敞且视野好；迪亚尼是肯尼亚最负盛名的白沙滩，比蒙巴萨市区更安静。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 迪亚尼海滩</span>
+          <span class="d-desc">浮潜与海鲜</span>
+          <span class="d-tag alt">🏖 海岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">慵懒早餐，海边泳池</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what">玻璃船出海 + 浮潜（约 $30–50/人）：珊瑚礁、海龟、五彩热带鱼</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">海鲜午餐（龙虾、烤剑鱼、椰子饭）</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">可选：风筝冲浪、海边骑马、沙滩排球</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">沙滩日落，海鲜晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">迪亚尼 12–3 月旱季最舒适；印度洋水温全年 25–30°C，浮潜用品可现场租借。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 蒙巴萨老城</span>
+          <span class="d-desc">耶稣堡与石头巷</span>
+          <span class="d-tag ">🏰 斯瓦希里日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">迪亚尼→蒙巴萨市区（约 1h）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>耶稣堡 Fort Jesus</b>（世界遗产，门票约 KSh1,200）：16 世纪葡萄牙要塞</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">老城漫步：石头巷、雕刻木门、香料市场</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">斯瓦希里午餐（比尔亚尼炒饭 + 椰子咖喱）</td></tr>
+          <tr><td class="t-time">15:00</td><td class="t-what">返回迪亚尼，海滩自由活动 / 水上运动</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">海边晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">老城建议请本地向导带路并注意随身物品，傍晚前离开；耶稣堡内有小型博物馆讲蒙巴萨 500 年历史。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 返程</span>
+          <span class="d-desc">经内罗毕转机回京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">早餐后收拾，迪亚尼→蒙巴萨（约 1h）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">蒙巴萨✈内罗毕（国内航班约 1h）</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">内罗毕转机，机场购物/退税</td></tr>
+          <tr><td class="t-time">17:40–次日</td><td class="t-what">内罗毕✈亚的斯亚贝巴✈北京（ET305/ET604），次日 17:10 抵京</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">旺季（7–8 月）返程提前 1 个月订；内罗毕机场安检严格，留足 3h 转机时间。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-cover.jpg" alt="马赛马拉·角马大迁徙" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马赛马拉·角马大迁徙 <small>$100–200/天</small></div>
+          <div class="sc-feat">草原灵魂。<b>7–10 月角马过马拉河</b>，百万大军奔腾，肯尼亚名片。</div>
+          <div class="sc-meta">📅 6–10 月 · ⏱ 3 天 · 🚗 内罗毕驱车 5h 或包机 45min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-1.jpg" alt="安博塞利·象群与乞力马扎罗" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">安博塞利·象群与乞力马扎罗 <small>$90/人/天</small></div>
+          <div class="sc-feat"><b>雪山脚下象群</b>，非洲最上镜的画面之一，清晨机位最佳。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2 天 · 🚗 内罗毕驱车 4h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-2.jpg" alt="纳库鲁湖·火烈鸟" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">纳库鲁湖·火烈鸟 <small>$90/人/天</small></div>
+          <div class="sc-feat"><b>粉色火烈鸟群</b> + 黑白犀牛，东非大裂谷湖区生态名片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 3h · 🚗 马赛马拉驱车 4h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-3.jpg" alt="马赛人·传统村落" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马赛人·传统村落 <small>约 $20–30</small></div>
+          <div class="sc-feat">马赛红袍与珠饰。<b>村落拜访收入直接支持社区</b>。</div>
+          <div class="sc-meta">📅 傍晚 · ⏱ 1–2h · 📍 马赛马拉周边</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-4.jpg" alt="长颈鹿中心" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">长颈鹿中心 <small>约 $12</small></div>
+          <div class="sc-feat">亲手喂食<b>罗特希尔德长颈鹿</b>，内罗毕半日亲子好去处。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 1–2h · 🚗 内罗毕市区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-5.jpg" alt="马赛马拉·热气球" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马赛马拉·热气球 <small>$450–480/人</small></div>
+          <div class="sc-feat">日出升空俯瞰草原，<b>香槟早餐</b>仪式感拉满，人生体验。</div>
+          <div class="sc-meta">📅 05:30 出发 · ⏱ 1h 飞行 · 🎈 需提前预订</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-6.jpg" alt="迪亚尼海滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">迪亚尼海滩 <small>免费</small></div>
+          <div class="sc-feat"><b>印度洋白沙滩</b>，浮潜、玻璃船、风筝冲浪一次玩够。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3 天 · 🚂 内罗毕 SGR 5.5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/kenya/kenya-7.jpg" alt="迪亚尼·海滨漫步" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">迪亚尼·海滨漫步 <small>免费</small></div>
+          <div class="sc-feat">清晨赤足散步，<b>退潮后的珊瑚礁池</b>藏着海星与海胆。</div>
+          <div class="sc-meta">📅 日出/傍晚 · ⏱ 1h · 📍 迪亚尼南段</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（马赛马拉大迁徙、安博塞利象群、纳库鲁火烈鸟、马赛人、长颈鹿、热气球、迪亚尼海滩均为肯尼亚实景），用于页面配图。更多免费景点：内罗毕国家博物馆、肯雅塔国际会议中心、蒙巴萨海岬灯塔。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 18 肯尼亚先令（KSh）估算。Safari 越野车与营地按<strong>2 人拼车</strong>计算，人多更便宜。往返机票按淡季 5000–7000 元、旺季 10000+ 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（18000–28000）</th>
+<th>标准（35000–50000）</th>
+<th>舒适（70000–110000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机 5000–7000</td>
+<td>转机 7000–10000</td>
+<td>商务/灵活 15000–20000</td>
+</tr>
+<tr>
+<td>住宿（11 晚）</td>
+<td>内罗毕/纳库鲁经济酒店 + 基础营地 6000–8000</td>
+<td>中档帐篷营地 15000–22000</td>
+<td>奢华营地 40000–60000</td>
+</tr>
+<tr>
+<td>Safari 车与司机（7 天）</td>
+<td>拼车 4000–6000</td>
+<td>2–3 人包车 8000–12000</td>
+<td>包车 + 包机 20000–35000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>公园门票约 2500–3500</td>
+<td>含热气球 4000–6000</td>
+<td>多次游猎 + 包机 8000–12000</td>
+</tr>
+<tr>
+<td>餐饮（12 天）</td>
+<td>营地含餐 + 城市简餐 3000–4000</td>
+<td>正常用餐 6000–8000</td>
+<td>度假村全包 12000–18000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 42000 元）</span>
+      往返机票 8500 + 住宿 11 晚 16500（草原营地为主）+ Safari 越野车与司机 9500 + 门票 5200（含热气球 $480）+ 餐饮 6800 + 签证/黄皮书/保险/小费 3000 ≈ <strong>39000–45000 元</strong>。大头是 Safari 营地和门票，旺季（7–10 月）请按上限准备。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>12.1 省钱版 · 砍掉蒙巴萨</h3>
+
+
+    <p>把蒙巴萨/迪亚尼 3 天砍掉，改为内罗毕休整后返程，总预算可降至经济档下限（约 18000–22000 元）。Safari 段不变：内罗毕→马赛马拉→纳库鲁→安博塞利→内罗毕，9 天即可。适合时间紧或预算有限的玩家。</p>
+
+    <h3>12.2 亲子/摄影版调整</h3>
+
+
+    <p>带娃推荐马赛马拉营地选带泳池的儿童友好营地，安博塞利缩短为 1 天；摄影党把热气球换成 2 次马拉河清晨蹲守（拍角马过河），并租 70–200mm 或 100–400mm 长焦。长颈鹿中心非常亲子。</p>
+
+    <h3>12.3 深度版 · 加桑布鲁与纳瓦沙</h3>
+
+
+    <ul>
+
+      <li>内罗毕→桑布鲁（北线，网纹长颈鹿 + 细纹斑马）</li>
+
+      <li>纳瓦沙湖乘船看河马 + 新月岛徒步</li>
+
+      <li>马赛马拉延长到 4 天蹲守迁徙</li>
+
+      <li>全程延至 15–16 天</li>
+
+    </ul>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>13.1 北京 ⇄ 肯尼亚 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（推荐）</td>
+<td>北京→内罗毕 总约 13–16h（ET605 约 11.5h + 亚的斯亚贝巴中转约 2.5h）</td>
+<td>往返 4700–11000 元（旺季 16000+）</td>
+<td>埃塞俄比亚航空经亚的斯亚贝巴，中转顺路免签转机区</td>
+</tr>
+<tr>
+<td>转机（经迪拜）</td>
+<td>总约 15–18h</td>
+<td>8000–16000 元</td>
+<td>阿提哈德/阿联酋航空，中转体验更好但更贵</td>
+</tr>
+<tr>
+<td>境内衔接</td>
+<td>蒙巴萨✈内罗毕约 1h</td>
+<td>单程约 800–1200 元</td>
+<td>返程必须经内罗毕国际转机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 肯尼亚境内交通核心提醒</span>
+      国家公园内<strong>只允许 4×4 越野车进入</strong>（自驾也可但强烈建议包车带司机兼向导）；内罗毕→马赛马拉可选威尔逊机场小飞机（单程 $200–400，45min）；内罗毕→蒙巴萨首选 <strong>SGR 标准轨铁路</strong>（经济舱 KSh1,000 / 一等 KSh3,000，约 5.5h），避开拥堵的机场与颠簸长途车。
+    </div>
+
+    <h3>13.2 肯尼亚境内交通</h3>
+    <ul>
+      <li><strong>SGR 标准轨铁路</strong>：内罗毕⇄蒙巴萨 约 5h40m，经济舱 KSh1,000 / 一等 KSh3,000，每天 2 班</li>
+      <li><strong>威尔逊机场小飞机</strong>：内罗毕→马赛马拉 45–60min，单程 $200–400，Safarilink/AirKenya 运营</li>
+      <li><strong>4×4 Safari 越野车</strong>：车顶可开，国家公园标配，包车约 $200–300/天（含司机兼向导）</li>
+      <li><strong>长途大巴/拼车</strong>：内罗毕-马赛马拉约 5h、纳库鲁约 3h，便宜但土路颠簸</li>
+      <li><strong>市内交通</strong>：内罗毕用 Uber/Bolt（起步约 KSh300–400），晚上避免步行与公交</li>
+      <li><strong>热气球</strong>：马赛马拉日出约 $450–480/人，含香槟早餐，需提前预订</li>
+    </ul>
+
+    <h3>13.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>内罗毕（2 晚）</td>
+<td>经济 300–500 / 标准 500–900 元</td>
+<td>Westlands/市区安全便利</td>
+<td>堵车严重，早晚高峰避开</td>
+</tr>
+<tr>
+<td>马赛马拉帐篷营地（3 晚）</td>
+<td>经济 1100–1800 / 中档 2500–4500 / 奢华 9000–15000 元</td>
+<td>一价全包含三餐，Safari 方便</td>
+<td>旺季翻倍且要提前 3–6 个月订</td>
+</tr>
+<tr>
+<td>纳库鲁（1 晚）</td>
+<td>经济 250–400 / 标准 400–700 元</td>
+<td>湖滨酒店位置好</td>
+<td>小镇设施一般</td>
+</tr>
+<tr>
+<td>安博塞利营地（2 晚）</td>
+<td>经济 900–1500 / 中档 1800–3500 元</td>
+<td>含三餐，观象房型</td>
+<td>旺季同样紧张</td>
+</tr>
+<tr>
+<td>迪亚尼海滩（3 晚）</td>
+<td>经济 400–800 / 标准 900–1800 元</td>
+<td>白沙滩 + 全包度假村可选</td>
+<td>离蒙巴萨市区 1h</td>
+</tr>
+<tr>
+<td>蒙巴萨过渡</td>
+<td>经济 300–500 元</td>
+<td>机场/火车站附近方便</td>
+<td>市区治安需注意</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍖 必吃经典</h3>
+        <ul>
+          <li>百兽宴 Carnivore 烤肉（内罗毕，全球 50 佳）</li>
+          <li>尼亚玛乔马（Nyama Choma）炭烤烤肉</li>
+          <li>乌加里 Ugali 玉米糊 + 苏库玛维基炒青菜</li>
+          <li>斯瓦希里椰子咖喱（沿海）</li>
+        </ul>
+        <h3>🐟 沿海风味</h3>
+        <ul>
+          <li>烤剑鱼、龙虾（迪亚尼海边）</li>
+          <li>比尔亚尼炒饭（斯瓦希里版）</li>
+          <li>椰子海鲜汤（Mchuzi wa Samaki）</li>
+          <li>新鲜芒果汁 + 肯尼亚 AA 咖啡</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥘 街头小吃</h3>
+        <ul>
+          <li>曼达兹（甜炸面团早餐）</li>
+          <li>萨莫萨三角饺</li>
+          <li>路边烤玉米（内罗毕街头）</li>
+          <li>查帕提烙饼（配炖菜）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>内罗毕 Westlands 美食街</li>
+          <li>迪亚尼沙滩餐厅（日落位）</li>
+          <li>马赛马拉营地三餐（含餐）</li>
+          <li>蒙巴萨老城香料市场旁小吃</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 路边烤肉摊卫生参差，优先选正规餐厅或营地餐；② 营地「含餐」通常指早中晚三道式西餐，别期望中餐；③ 生水和冰块谨慎，只喝瓶装水；④ 百兽宴价格 300–700 元/人视套餐与酒水，提前问清楚含不含饮料。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月+）+ eTA 电子旅行许可（提前 2 周申请并打印）</li>
+        <li>黄皮书（黄热病疫苗，出发前≥10 天接种）</li>
+        <li>防疟疾药物 + 驱蚊液（DEET 30%+）</li>
+        <li>美元现金（小费/门票，小额 $1/$5/$10）</li>
+      </ul>
+      <ul>
+        <li>充电转接头（240V G 型英标三脚）+ 插线板</li>
+        <li>长焦镜头（70–200mm 或更长，Safari 必备）</li>
+        <li>薄羽绒/冲锋衣（清晨 Game Drive 约 10°C）</li>
+        <li>Google 离线地图 + Safari 预订确认单打印件</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>旺季门票翻倍</strong>：马赛马拉 7–12 月 $200/天，预算有限选 6 月或 11–12 月初；② <strong>Safari 车勿下车</strong>：野生动物会靠近车辆，把手收进车内，服从向导指令；③ <strong>内罗毕夜间别步行</strong>：出行用 Uber/包车，贵重物品少带；④ <strong>小费是惯例</strong>：司机/向导 $10–20/人/天，营地服务 $5–10/人/天，准备好零钱。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      肯尼亚是「<strong>一生一次的草原心跳</strong>」——百万角马踏过马拉河、安博塞利雪山下的象群、纳库鲁的粉色湖面，最后在印度洋的白沙滩躺平。签证（eTA）、黄皮书和 Safari 预算三件事提前搞定，剩下的交给向导和旷野。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#a8322d",
+    "d": 3,
+    "n": "主线 · 内罗毕→马赛马拉→纳库鲁→安博塞利→内罗毕→蒙巴萨/迪亚尼",
+    "pts": [
+      [
+        -1.292,
+        36.822
+      ],
+      [
+        -1.464,
+        35.014
+      ],
+      [
+        -0.367,
+        36.08
+      ],
+      [
+        -2.656,
+        37.252
+      ],
+      [
+        -1.292,
+        36.822
+      ],
+      [
+        -4.043,
+        39.668
+      ],
+      [
+        -4.314,
+        39.581
+      ]
+    ]
+  },
+  {
+    "c": "#2a9d8f",
+    "d": 3,
+    "n": "返程 · 蒙巴萨—内罗毕 SGR 铁路（约 5.5h）",
+    "pts": [
+      [
+        -4.043,
+        39.668
+      ],
+      [
+        -1.292,
+        36.822
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -1.366,
+    "lng": 36.742,
+    "name": "内罗毕·长颈鹿中心",
+    "t": "D8 下午 · 2h",
+    "fee": "约 KSh1,500",
+    "note": "喂食罗特希尔德长颈鹿，适合亲子"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -1.464,
+    "lng": 35.014,
+    "name": "马赛马拉·保护区",
+    "t": "D2–D4 全天 · 3 天",
+    "fee": "$100–200/天",
+    "note": "角马大迁徙、五大兽、热气球"
+  },
+  {
+    "num": 3,
+    "prio": "nice",
+    "lat": -1.591,
+    "lng": 35.117,
+    "name": "马赛马拉·热气球",
+    "t": "D3 清晨 · 1h",
+    "fee": "$450–480/人",
+    "note": "日出升空，香槟早餐"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": -0.367,
+    "lng": 36.08,
+    "name": "纳库鲁湖·火烈鸟",
+    "t": "D5 下午 · 3h",
+    "fee": "$90/人/天",
+    "note": "火烈鸟群 + 黑白犀牛"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -2.656,
+    "lng": 37.252,
+    "name": "安博塞利·象群",
+    "t": "D6–D7 · 2 天",
+    "fee": "$90/人/天",
+    "note": "象群 + 乞力马扎罗雪山"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": -1.292,
+    "lng": 36.822,
+    "name": "内罗毕·百兽宴",
+    "t": "D1/D8 晚餐 · 2h",
+    "fee": "约 500 元/人",
+    "note": "全球 50 佳烤肉餐厅 Carnivore"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": -4.043,
+    "lng": 39.668,
+    "name": "蒙巴萨·耶稣堡",
+    "t": "D11 上午 · 2h",
+    "fee": "约 KSh1,200",
+    "note": "16 世纪葡萄牙要塞，世界遗产"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": -4.314,
+    "lng": 39.581,
+    "name": "迪亚尼海滩",
+    "t": "D9–D11 · 3 天",
+    "fee": "免费",
+    "note": "白沙滩 + 浮潜 + 风筝冲浪"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-5.2, 33.5], [0.8, 40.9]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#a8322d\"></span>草原主线（内罗毕→马赛马拉→纳库鲁→安博塞利）<br><span class=\"sw\" style=\"background:#2a9d8f\"></span>海滨段（蒙巴萨—迪亚尼 + SGR 铁路）<br><span class=\"sw dash\"></span>北京—内罗毕为国际航班</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

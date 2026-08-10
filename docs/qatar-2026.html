@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 卡塔尔 6 天全景攻略 · 海湾明珠</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #1b6fb5;
+    --red-light: #3a8cd6;
+    --gold: #d4a017;
+    --ink: #2b3a44;
+    --muted: #6b7f8f;
+    --bg: #f5f7fa;
+    --card: #ffffff;
+    --line: #dbe7f2;
+    --blue: #14507e;
+    --cover1: #0a3a5e;
+    --ov1: rgba(10,58,94,.88);
+    --ov2: rgba(27,111,181,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(212,160,23,.20);
+    --key-bg: #faf3e0;
+    --info-bg: #eef4fa;
+    --head-bg: rgba(27,111,181,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/qatar/qatar-cover.jpg" alt="卡塔尔旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 6 天 · 多哈都市 + 沙漠</div>
+      <h1>卡塔尔 6 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 多哈 · 伊斯兰艺术博物馆 · 瓦其夫市场 · 珍珠湾 · 卡塔拉 · 沙漠冲沙</div>
+      <div class="meta">
+        <span>🛫 行程链：多哈 → 瓦其夫 → 伊斯兰艺术博物馆 → 珍珠湾 → 卡塔拉 → 内陆海沙漠 → 返程</span>
+        <span>📅 时间窗口：6 天 5 晚（多哈都市 + 沙漠一日）</span>
+        <span>✈️ 北京⇄多哈 卡塔尔航空直飞约 9 小时</span>
+        <span>🛂 签证：中国护照免签 30 天（零门槛，护照 6 个月以上有效）</span>
+        <span>🕐 时差 -5 小时 · 🔌 电压 240V G 型插座（三扁脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 6 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 6 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">多哈</span>
+      <span class="arrow">→</span>
+      <span class="node">瓦其夫市场</span>
+      <span class="arrow">→</span>
+      <span class="node">伊斯兰艺术博物馆</span>
+      <span class="arrow">→</span>
+      <span class="node">珍珠湾</span>
+      <span class="arrow">→</span>
+      <span class="node">卡塔拉</span>
+      <span class="arrow">→</span>
+      <span class="node">内陆海沙漠</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 6 天怎么安排最合理</span>
+      卡塔尔是「<strong>一个小国、两种面孔</strong>」的目的地：多哈是一座在十年里拔地而起的海湾都会——贝聿铭的伊斯兰艺术博物馆、瓦其夫市集的烟火气、珍珠湾的人工潟湖，再往南一小时就是沙漠与大海相接的内陆海。6 天刚好把「都市文化」与「沙漠奇观」各分一半：<strong>前 4 天泡在多哈</strong>，第 5 天冲沙，第 6 天收尾返程。免签 30 天 + 卡航红眼直飞，出发门槛几乎为零。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>免签 30 天</strong>（中卡互免协定），护照有效期需超过返程日 6 个月以上，入境备好返程机票与酒店订单</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>卡塔尔比北京慢 <strong>5 小时</strong>（多哈 UTC+3），红眼航班抵达当天倒时差刚好</td>
+</tr>
+<tr>
+<td>电源插座</td>
+<td>电压 <strong>240V，G 型三扁脚插座</strong>（英标），国内两脚插头需带转接头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>卡塔尔里亚尔 QAR，1 QAR ≈ 1.95 元人民币；现金+信用卡+Apple Pay 均可用</td>
+</tr>
+<tr>
+<td>行程结构</td>
+<td>多哈都市 4 天（博物馆/市集/海湾）+ 沙漠冲沙 1 天 + 返程 1 天</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 8000–12000 ／ 标准 15000–22000 ／ 舒适 35000–50000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 订卡航往返机票（红眼航班提前 2 个月）② 订沙漠冲沙团 ③ 核对博物馆闭馆日（周三/周二）</td>
+</tr>
+<tr>
+<td>最佳季节</td>
+<td>11 月–4 月 20–28°C 舒适；5–9 月白天 40°C+，酒店 6–7 折但只能室内+傍晚出行</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>闭馆日陷阱</strong>：伊斯兰艺术博物馆每周三闭馆、国家博物馆每周二闭馆，机票定了之后第一件事就是把两个博物馆的参观日排好，别千里迢迢扑个空。② <strong>卡航是凌晨红眼航班</strong>：去程 01:45 起飞、清晨 05:55 落地，酒店一般 14:00 才可入住——落地先把行李寄存再出门，D1 别安排长途户外，否则白天暴晒+时差会把人拖垮。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 6 天版</h2>
+
+    <p>以下为 6 天 5 晚的推荐节奏：前 4 天按「博物馆日 → 市集日 → 海湾日 → 历史日」轮转，第 5 天下午出发冲沙（避开正午高温），最后一天购物返程。每日主景点 ≤2 个，交通以地铁红线 + 打车为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵多哈</td>
+<td>北京✈多哈（卡航直飞约 9h），落地寄存行李，下午滨海大道+西湾天际线，晚上瓦其夫市场</td>
+<td>多哈·西湾</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>伊斯兰艺术博物馆 MIA（50 QAR）→ 滨海大道午餐 → 瓦其夫市场深度逛（香料/黄金/猎鹰集市）</td>
+<td>多哈</td>
+<td>艺术+市集</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>珍珠湾码头 → 卡塔拉文化村（画廊/清真寺/海滩）→ 卡塔拉海边晚餐看日落</td>
+<td>多哈</td>
+<td>海湾悠闲</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>国家博物馆 NMoQ（25 QAR）→ 姆什莱布老城 → 教育城园区（可选）→ 瓦其夫夜市</td>
+<td>多哈</td>
+<td>历史+现代</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>沙漠冲沙：4x4 冲沙 → 内陆海 Khor Al Adaid → 滑沙/骑骆驼 → 营地烧烤晚餐</td>
+<td>多哈</td>
+<td>沙漠日</td>
+</tr>
+<tr>
+<td>D6 返程</td>
+<td>上午自由活动（Villaggio 购物/咖啡），下午到哈马德机场，多哈✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可把 D2 的市集深度逛压缩到晚上，D4 的教育城换成卡塔拉海滩回炉；带娃家庭建议 D5 换私人冲沙团（节奏可控、可随时停）。11 月–4 月是黄金季，5–9 月去则把博物馆全部移到上午、户外放傍晚。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 6 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达多哈</span>
+          <span class="d-desc">红眼航班 · 滨海大道初探</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">01:45–05:55</td><td class="t-what">卡航 QR893：北京大兴✈多哈哈马德机场（直飞约 9h，红眼航班机上睡一觉）</td></tr>
+          <tr><td class="t-time">06:30–09:00</td><td class="t-what">入境（免签 30 天，备好返程机票与酒店订单）→ 地铁红线到西湾 / 打车约 20min 到酒店</td></tr>
+          <tr><td class="t-time">09:30–13:00</td><td class="t-what">入住酒店放行李（多哈酒店一般 14:00 后入住，先寄存）+ 补觉倒时差（时差 -5h）</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>滨海大道 Corniche</b>（免费）：7 公里海滨步道，看对岸<b>西湾天际线</b>，午后光照渐弱更好走</td></tr>
+          <tr><td class="t-time">18:00–21:30</td><td class="t-what"><b>瓦其夫市场</b>（免费）：傍晚 6 点后最热闹，香料街、阿拉伯咖啡馆、猎鹰集市散步，晚餐市集烤串+卡拉克奶茶</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卡航是凌晨红眼航班，前一晚务必早睡；落地当天只安排一个轻量活动，把体力留给第二天的博物馆。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 伊斯兰艺术博物馆 + 瓦其夫</span>
+          <span class="d-desc">艺术与市集一日</span>
+          <span class="d-tag ">🏛 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>伊斯兰艺术博物馆 MIA</b>（成人 50 QAR ≈ 100 元）：贝聿铭封山之作，1400 年伊斯兰艺术馆藏，<b>周三闭馆</b></td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">博物馆公园散步 + 滨海大道午餐（海边汉堡/阿拉伯餐厅）</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><b>瓦其夫市场深度逛</b>（免费）：黄金集市（南侧）、<b>猎鹰集市</b>（西侧，看猎鹰与驯鹰人）、香料与椰枣店</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">瓦其夫传统巷子晚餐：玛布司香料焖饭 / 沙威玛，饭后水烟店看人流</td></tr>
+          <tr><td class="t-time">20:00–21:30</td><td class="t-what">市场夜景灯光散步，买伴手礼（阿拉伯香水、椰枣、手工铜壶 dallah）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">MIA 门票可现场买也可官网预约时段；馆内部分展品禁止拍照，跟着官方导览 App 走更高效。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 珍珠湾 + 卡塔拉文化村</span>
+          <span class="d-desc">海湾悠闲一日</span>
+          <span class="d-tag alt">🏖 海湾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>珍珠湾 The Pearl-Qatar</b>（免费）：人工潟湖岛屿，威尼斯式运河+码头游艇，逛逛精品店</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">珍珠湾码头区午餐：意大利餐/海鲜，配阿拉伯咖啡</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>卡塔拉文化村</b>（免费）：金色露天剧场、蓝色清真寺、艺术画廊、海边集市，<b>海滩入场 10 QAR</b></td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">卡塔拉海边看日落，周边高分海鲜餐厅晚餐（周五/周六人多，提前订座）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">珍珠湾和卡塔拉都在多哈北部，地铁红线可达卡塔拉站；两地步行较远，中间打车 5–10 分钟衔接最顺。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 国家博物馆 + 姆什莱布老城</span>
+          <span class="d-desc">历史与现代一日</span>
+          <span class="d-tag ">🏺 历史日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>国家博物馆 NMoQ</b>（成人 25 QAR ≈ 50 元）：让·努维尔「沙漠玫瑰」造型，卡塔尔从沙漠到现代的故事，<b>周二闭馆</b></td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">博物馆咖啡厅/周边午餐</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>姆什莱布老城 Msheireb</b>（免费）：重建的历史街区，四座遗产博物馆+现代精品建筑群</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>教育城 Education City</b>（免费）：卡塔尔基金会园区，3-2-1 奥林匹克与体育博物馆（可选）</td></tr>
+          <tr><td class="t-time">19:00–21:00</td><td class="t-what">瓦其夫市场夜市收尾 或 滨海大道夜景灯光散步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国家博物馆到瓦其夫步行约 10 分钟，可与 D2 交换顺序；教育城在城西，需打车 15–20 分钟。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 沙漠冲沙 · 内陆海</span>
+          <span class="d-desc">Khor Al Adaid 内陆海</span>
+          <span class="d-tag alt">🏜 沙漠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00</td><td class="t-what">酒店接送出发（沙漠冲沙一般下午出发，避开正午高温）</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what"><b>4x4 越野冲沙</b>：冲沙丘、滑沙板、沙丘拍照点，司机为持证沙漠向导</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>内陆海 Khor Al Adaid</b>（免费，须 4x4 到达）：沙漠与海相接的奇观，可下水/拍照</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">贝都因风格营地：骑骆驼、阿拉伯咖啡+椰枣、烧烤晚餐（可升级私人团/过夜帐篷）</td></tr>
+          <tr><td class="t-time">20:30</td><td class="t-what">返程回多哈（全程含接送约 7–8h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">拼团约 300 QAR/人、私人半日 350 QAR/人（1 QAR≈1.95 元）；冲沙刺激，晕车提前吃药；营地过夜体验更完整，需提前预订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 返程</span>
+          <span class="d-desc">多哈✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">自由活动：Villaggio 购物中心（威尼斯运河主题）或卡塔拉海滩晨光，买椰枣/藏红花伴手礼</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what">午餐：最后一顿卡拉克奶茶+沙威玛</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">退房，打车到哈马德机场（建议提前 3 小时到）</td></tr>
+          <tr><td class="t-time">18:40–次日</td><td class="t-what">卡航 QR892：多哈✈北京大兴（直飞约 9h，次日清晨抵京）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卡航返程多为傍晚班，白天可安排大半天自由活动；机场免税店有卡塔尔椰枣、骆驼奶巧克力与藏红花。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-cover.jpg" alt="多哈·西湾天际线" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">多哈·西湾天际线 <small>免费</small></div>
+          <div class="sc-feat">卡塔尔现代名片。<b>滨海大道对岸高楼群</b>，日落时分金光铺满玻璃幕墙。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 🚇 地铁红线 Corniche/西湾站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-1.jpg" alt="伊斯兰艺术博物馆" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">伊斯兰艺术博物馆 <small>50 QAR</small></div>
+          <div class="sc-feat">贝聿铭封山之作。<b>石灰岩几何造型 + 1400 年伊斯兰馆藏</b>，周三闭馆。</div>
+          <div class="sc-meta">📅 周六–周二 9:00–19:00 · ⏱ 2–3h · 🚇 金线 Souq Waqif 站步行 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-2.jpg" alt="瓦其夫市场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦其夫市场 <small>免费</small></div>
+          <div class="sc-feat">多哈烟火气中心。<b>香料街 + 猎鹰集市 + 黄金集市</b>，傍晚 6 点后最热闹。</div>
+          <div class="sc-meta">📅 商店 9:00–13:00 & 16:00–22:00 · ⏱ 2–3h · 🚇 金线 Souq Waqif 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-3.jpg" alt="珍珠湾" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">珍珠湾 <small>免费</small></div>
+          <div class="sc-feat">人工潟湖上的威尼斯。<b>码头游艇 + 运河餐厅</b>，多哈最悠闲的海湾。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚕 打车（地铁红线至卢赛尔方向再换乘）</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-4.jpg" alt="卡塔拉文化村" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">卡塔拉文化村 <small>免费（海滩 10 QAR）</small></div>
+          <div class="sc-feat">艺术与海滩并存。<b>金色露天剧场 + 蓝色清真寺 + 海滨步道</b>。</div>
+          <div class="sc-meta">📅 公共区 24h · 画廊 9:00–19:00 · ⏱ 2–3h · 🚇 红线 Katara 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-5.jpg" alt="沙漠冲沙·内陆海" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">沙漠冲沙·内陆海 <small>300 QAR 起</small></div>
+          <div class="sc-feat">沙漠与海相拥。<b>4x4 冲沙 + 滑沙 + 骑骆驼 + 营地晚餐</b>。</div>
+          <div class="sc-meta">📅 下午出发 · ⏱ 4–8h · 🚗 酒店接送含包</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-6.jpg" alt="滨海大道夜景" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">滨海大道夜景 <small>免费</small></div>
+          <div class="sc-feat">多哈的浪漫时刻。<b>7 公里海滨步道 + 西湾灯光倒影</b>，夜跑/散步胜地。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 红线 West Bay 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/qatar/qatar-7.jpg" alt="阿拉伯美食" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿拉伯美食 <small>人均 30–100 QAR</small></div>
+          <div class="sc-feat">中东味觉盛宴。<b>玛布司焖饭 + 卡拉克奶茶 + 椰枣</b>，瓦其夫市集一站吃齐。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 📍 瓦其夫/卡塔拉/珍珠湾</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（多哈天际线、伊斯兰艺术博物馆、瓦其夫市场、珍珠湾、卡塔拉、沙漠冲沙、城市夜景、阿拉伯美食），用于页面配图。更多免费景点：姆什莱布老城、教育城园区、Aspire 公园、瓦其夫黄金集市。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 卡塔尔里亚尔 ≈ 1.95 元人民币估算。往返机票按卡塔尔航空直飞淡季 4000–6000 元、旺季 6000–7500 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（8000–12000）</th>
+<th>标准（15000–22000）</th>
+<th>舒适（35000–50000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>淡季经济舱 4000–5000</td>
+<td>卡航直飞 5500–7500</td>
+<td>灵活舱/商务 12000–20000</td>
+</tr>
+<tr>
+<td>住宿（5 晚）</td>
+<td>青旅/经济酒店 200–350/晚</td>
+<td>西湾 4 星 700–1000/晚</td>
+<td>5 星海滨度假 2500–4500/晚</td>
+</tr>
+<tr>
+<td>沙漠冲沙+门票</td>
+<td>拼团冲沙约 600</td>
+<td>拼团+全部门票约 1500</td>
+<td>私人冲沙+奢华体验 3000–5000</td>
+</tr>
+<tr>
+<td>市内交通</td>
+<td>地铁+公交 200–400</td>
+<td>打车+地铁 600–900</td>
+<td>包车/专车 2000–3000</td>
+</tr>
+<tr>
+<td>餐饮（6 天）</td>
+<td>市集+快餐 500–800</td>
+<td>餐厅+市集 1200–1800</td>
+<td>高端餐厅+酒店自助 3000–5000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 17000 元）</span>
+      往返机票 6500 + 住宿 5 晚 4000（西湾 4 星平均 800/晚）+ 沙漠冲沙与门票 1800 + 市内交通 800 + 餐饮 1500 + 保险/杂费 700 ≈ <strong>15000–17000 元</strong>。提前 2 个月订卡航机票并避开周末，能再省 1000–1500 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>5.1 转机省钱版（12–18h）</h3>
+
+
+    <ul>
+
+      <li>经广州/上海/香港/迪拜/曼谷转机，往返可省 1500–2500 元</li>
+
+      <li>多哈免签 30 天，转机可顺带落地玩 1–2 天；哈马德机场官方 Discover Qatar 有半日转机沙漠团</li>
+
+      <li>适合预算优先、不介意多飞 4–8 小时的人</li>
+
+    </ul>
+
+    <h3>5.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：卡塔拉海滩（10 QAR）+ MIA 儿童互动区 + 国家博物馆互动展 + Villaggio 商场室内娱乐；沙漠冲沙选私人团（节奏可控、可随时停）。6–9 月带娃慎选户外行程，全程室内化。</p>
+
+    <h3>5.3 淡旺季怎么选</h3>
+
+
+    <p>最佳季 11 月–4 月：20–28°C，户外舒适，但机票酒店贵 30–50%；5–9 月白天 40°C+，酒店常打 6–7 折，适合「泡酒店 + 逛室内博物馆 + 傍晚出行」的玩法。斋月（2026 年约 2–3 月）餐厅白天歇业、夜晚氛围独特。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 卡塔尔 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>卡航直飞（推荐）</td>
+<td>北京大兴⇄多哈哈马德约 9h</td>
+<td>往返 4000–7500 元</td>
+<td>去程 QR893 凌晨 01:45 起飞 05:55 落地；返程 QR892 傍晚起飞次日清晨到</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>12–18h</td>
+<td>3000–5000 元</td>
+<td>经广州/上海/香港/迪拜/曼谷，便宜但绕路</td>
+</tr>
+<tr>
+<td>其他航司/代码共享</td>
+<td>9–11h</td>
+<td>4000–7000 元</td>
+<td>国航、东航等经停或代码共享班次，班次少需比价</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 红眼航班特别提醒</span>
+      卡航去程 QR893 是凌晨 01:45 起飞、当地时间 05:55 抵达的<strong>红眼航班</strong>，机上睡一觉到多哈是清晨，而酒店一般 14:00 后才可入住——建议订可提前寄存行李的酒店，落地先寄存再出门，别把 D1 排得太满。
+    </div>
+
+    <h3>19.2 卡塔尔境内交通</h3>
+    <ul>
+      <li><strong>多哈地铁 Doha Metro</strong>：红/金/绿 3 线，红线机场直达市区与卡塔拉，金线到瓦其夫与国家博物馆；单程 2–7 QAR（≈4–14 元），一日票约 9 QAR</li>
+      <li><strong>卢赛尔轻轨 Lusail Tram</strong>：连接卢赛尔新城，珍珠湾北端可达</li>
+      <li><strong>Karwa 出租车</strong>：正规打表，起步约 4 QAR，机场到西湾约 60–80 QAR</li>
+      <li><strong>Uber / Careem</strong>：比出租车便宜 20–30%，多哈打车首选，与国内叫车体验一致</li>
+      <li><strong>观光巴士 Doha City Tour</strong>：随上随下，串联滨海大道、瓦其夫、卡塔拉</li>
+      <li><strong>沙漠冲沙</strong>：内陆海无公共交通，必须报团或包 4x4 越野车（运营商含酒店接送）</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>西湾 West Bay / 滨海大道</td>
+<td>4 星约 700–900 元（$100–120）</td>
+<td>天际线景观、地铁直达、商务酒店多</td>
+<td>旺季贵，餐饮偏商务</td>
+</tr>
+<tr>
+<td>老多哈 Old Doha / 瓦其夫</td>
+<td>青旅 180–300 / 经济酒店 300–600</td>
+<td>步行到瓦其夫市场与文化核心，最便宜</td>
+<td>设施偏旧，离地铁稍远</td>
+</tr>
+<tr>
+<td>珍珠湾 The Pearl</td>
+<td>高端 1000–3000 元</td>
+<td>码头海景、运河餐厅、精品酒店</td>
+<td>远离地铁，出门打车为主</td>
+</tr>
+<tr>
+<td>卡塔拉文化村周边</td>
+<td>中高端 700–2000 元</td>
+<td>近海滩与文化场馆，带娃友好</td>
+<td>离市中心 15–20 分钟</td>
+</tr>
+<tr>
+<td>姆什莱布 Msheireb</td>
+<td>设计酒店 800–1800 元</td>
+<td>老城新貌、博物馆集群、安静</td>
+<td>选择相对少</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍢 必吃经典</h3>
+        <ul>
+          <li>玛布司 Machboos：香料黄米饭+鸡肉/羊肉，卡塔尔国菜级焖饭</li>
+          <li>卡拉克奶茶 Karak：姜黄奶茶，街头标配</li>
+          <li>沙威玛 Shawarma 与阿拉伯烤肉拼盘</li>
+          <li>海鲜饭与海捕虾（卡塔尔海岸线出品）</li>
+        </ul>
+        <h3>🕌 在地名物</h3>
+        <ul>
+          <li>瓦其夫市场巷子里的中东早餐（鹰嘴豆配皮塔饼）</li>
+          <li>卡塔拉文化村海边海鲜餐厅</li>
+          <li>珍珠湾码头区的意式/法餐与海景</li>
+          <li>姆什莱布/西湾的高端自助与 fine dining</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥙 街头小吃</h3>
+        <ul>
+          <li>卢格迈 Luqaimat：椰枣糖浆炸小圆球</li>
+          <li>胡姆斯、法拉费、葡萄叶卷</li>
+          <li>阿拉伯咖啡+椰枣（待客标配）</li>
+          <li>骆驼奶巧克力（Baladna 本土品牌伴手礼）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>Souq Waqif 巷内：Karak 摊、烤串店、阿拉伯甜点铺</li>
+          <li>卡塔拉文化村：海滨餐厅带日落景观</li>
+          <li>The Pearl：码头餐厅街</li>
+          <li>Villaggio 与西湾购物中心美食城</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 斋月期间餐厅白天歇业、日落才开门，非斋月部分餐厅也有午休；② 多哈酒精饮品稀缺且贵，只在高档酒店/指定酒吧供应，普通餐厅无酒；③ 瓦其夫海鲜大排档先问清计价再落座，避免「时价」刺客；④ Karak 奶茶市场均价 1–2 QAR，超过 5 QAR 就是游客价。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上有效期）+ 返程机票/酒店预订单（免签备查）</li>
+        <li>G 型电源转接头（240V 三扁脚，国内两脚插头用不了）</li>
+        <li>Uber/Careem 打车 App + Google 地图 + Doha Metro App</li>
+        <li>防晒霜、墨镜、遮阳帽（日照极强）+ 薄外套（室内冷气足）</li>
+      </ul>
+      <ul>
+        <li>确认免签 30 天入境政策与斋月/节日日历（2026 斋月约 2 月中–3 月中）</li>
+        <li>提前订沙漠冲沙团（旺季一位难求）</li>
+        <li>MIA/国家博物馆闭馆日核对（周三/周二）</li>
+        <li>随身带水，多哈白天极干燥</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>闭馆日</strong>：伊斯兰艺术博物馆周三闭、国家博物馆周二闭，行程先排好；② <strong>盛夏高温</strong>：5–9 月白天 40°C+，户外活动全部挪到傍晚，正午只逛室内；③ <strong>尊重习俗</strong>：进入清真寺男女需遮肩盖膝，斋月白天不在公共场合饮食；④ <strong>沙漠安全</strong>：冲沙坐后排系好安全带，晕车者提前用药，选正规运营商（含保险）。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      卡塔尔是「<strong>沙漠与海湾握手</strong>」的六天目的地——一半是贝聿铭的几何光影与瓦其夫的市集烟火，一半是珍珠湾的海风与内陆海的大漠孤烟。免签 30 天零门槛，卡航红眼航班一觉睡到，跟着地铁红线就能逛完大半个多哈。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1b6fb5",
+    "d": 3,
+    "n": "多哈主线 · 机场→西湾→MIA→瓦其夫→珍珠湾→卡塔拉→内陆海沙漠",
+    "pts": [
+      [
+        25.26,
+        51.613
+      ],
+      [
+        25.325,
+        51.527
+      ],
+      [
+        25.295,
+        51.539
+      ],
+      [
+        25.287,
+        51.531
+      ],
+      [
+        25.36,
+        51.55
+      ],
+      [
+        25.36,
+        51.531
+      ],
+      [
+        24.621,
+        51.304
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 25.325,
+    "lng": 51.527,
+    "name": "多哈·西湾天际线",
+    "t": "D1 傍晚 · 1h",
+    "fee": "免费",
+    "note": "滨海大道北端高楼群，日落金光"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 25.295,
+    "lng": 51.539,
+    "name": "伊斯兰艺术博物馆",
+    "t": "D2 上午 · 2.5h",
+    "fee": "50 QAR",
+    "note": "贝聿铭封山之作，周三闭馆"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 25.287,
+    "lng": 51.531,
+    "name": "瓦其夫市场",
+    "t": "D1 晚/D2 下午 · 2–3h",
+    "fee": "免费",
+    "note": "香料、黄金集市、猎鹰集市"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 25.2865,
+    "lng": 51.5518,
+    "name": "国家博物馆 NMoQ",
+    "t": "D4 上午 · 2h",
+    "fee": "25 QAR",
+    "note": "沙漠玫瑰造型，周二闭馆"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 25.36,
+    "lng": 51.55,
+    "name": "珍珠湾",
+    "t": "D3 上午 · 2h",
+    "fee": "免费",
+    "note": "人工潟湖岛屿，码头餐厅"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 25.36,
+    "lng": 51.531,
+    "name": "卡塔拉文化村",
+    "t": "D3 下午 · 2–3h",
+    "fee": "免费（海滩 10 QAR）",
+    "note": "露天剧场、清真寺、海滨步道"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 24.621,
+    "lng": 51.304,
+    "name": "内陆海·沙漠冲沙",
+    "t": "D5 全天 · 4–8h",
+    "fee": "300 QAR 起",
+    "note": "4x4 冲沙+滑沙+骑骆驼"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 25.305,
+    "lng": 51.529,
+    "name": "滨海大道 Corniche",
+    "t": "D1/D4 · 1–2h",
+    "fee": "免费",
+    "note": "7 公里海滨步道，傍晚最舒服"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[24.8, 50.7], [26.2, 51.8]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1b6fb5\"></span>多哈主线（机场→西湾→MIA→瓦其夫→珍珠湾→卡塔拉）<br><span class=\"sw dash\"></span>D5 沙漠冲沙往返内陆海 Khor Al Adaid<br><span class=\"sw dash\"></span>返程为多哈✈北京直飞（约 9h）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

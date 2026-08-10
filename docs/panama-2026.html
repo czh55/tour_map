@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 巴拿马 6 天全景攻略 · 运河与加勒比群岛</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #1e6fb5;
+    --red-light: #2f86cf;
+    --gold: #d9a441;
+    --ink: #23303a;
+    --muted: #72808c;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #dde7ee;
+    --blue: #205e3c;
+    --cover1: #0f3a63;
+    --ov1: rgba(15,58,99,.88);
+    --ov2: rgba(30,111,181,.72);
+    --ov3: rgba(46,107,70,.38);
+    --ov4: rgba(42,157,143,.20);
+    --key-bg: #e7f0f7;
+    --info-bg: #edf2f5;
+    --head-bg: rgba(30,111,181,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/panama/panama-cover.jpg" alt="巴拿马旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 6 天环线 · 巴拿马城 + 运河 + 博卡斯德尔托罗</div>
+      <h1>巴拿马 6 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 巴拿马城 · 世界工程奇迹 · 加勒比群岛度假</div>
+      <div class="meta">
+        <span>🛫 行程链：巴拿马城 → 运河米拉弗洛雷斯 → 博卡斯/圣布拉斯 → 返程</span>
+        <span>📅 时间窗口：6 天 5 晚</span>
+        <span>✈️ 北京✈巴拿马城 转机约 20h（美国/欧洲/墨西哥转）</span>
+        <span>🛂 签证：中国护照需签证；有美签可入境</span>
+        <span>🕐 时差 -13 小时 · 🔌 电压 120V A/B 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 6 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 6 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">巴拿马城</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">运河·米拉弗洛雷斯</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">博卡斯德尔托罗</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 6 天怎么安排最合理</span>
+      巴拿马是「<strong>连接两大洋的中美洲枢纽</strong>」：巴拿马运河的万吨货轮爬闸、老城的殖民街巷、加勒比侧博卡斯/圣布拉斯的白沙滩，6 天刚好浓缩成<strong>都市 3 天 + 海岛 2 天 + 返程 1 天</strong>。全程用美元，是拉美最省心的高配短途目的地。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办巴拿马签证；<strong>持有效美国签证可入境</strong>（美签剩余有效期与行程匹配即可），也有「先有美签再办签」更快的通道</td>
+</tr>
+<tr>
+<td>时差</td>
+<td>比北京慢 13 小时</td>
+</tr>
+<tr>
+<td>电源</td>
+<td>120V，A/B 型插座（两扁脚），需转换头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>官方货币巴波亚（PAB）<strong>与美元 1:1 流通</strong>，直接花美元，无需换汇</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>巴拿马城 2 天 + 运河 1 天 + 博卡斯德尔托罗/圣布拉斯 2 天 + 返程 1 天</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 巴拿马城 → 米拉弗洛雷斯运河 → 博卡斯德尔托罗 → 巴拿马城 → 北京</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 12000–18000 ／ 标准 22000–35000 ／ 舒适 50000–70000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 确认美签或办巴拿马签证 ② 订巴拿马城—博卡斯国内航班 ③ 老城与海岛住宿提前 2–3 周</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>博卡斯与圣布拉斯隔海</strong>：它们都在加勒比侧，从巴拿马城去博卡斯需 1 小时国内航班（单程约 100–150 美元），去圣布拉斯需陆路+船，国内段机票务必提前 2 个月订，临近基本买不到。② <strong>运河看船讲究时机</strong>：米拉弗洛雷斯船闸有固定放行时刻表，官网可查当日船只通行时间，提前确认能直接看到货轮「爬」过闸门而不是干等。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 6 天版</h2>
+
+    <p>以下为 6 天 5 晚的推荐节奏：巴拿马城沉浸 2 天，第 3 天专门看运河船闸，之后飞加勒比群岛度假 2 天，最后一天返程。城市段步行+Uber，海岛段水上出租车。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵巴拿马城</td>
+<td>北京✈巴拿马城（转机约 20h），入住老城 Casco Viejo</td>
+<td>巴拿马城</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>老城 Casco Viejo 徒步 → 阿马多尔堤道 → 生物博物馆</td>
+<td>巴拿马城</td>
+<td>殖民+现代</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>运河日：米拉弗洛雷斯船闸看货轮 → 运河博物馆 → 老城全景</td>
+<td>巴拿马城</td>
+<td>运河奇观</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>飞博卡斯德尔托罗（约 1h）：博卡斯镇漫步 + 海滩</td>
+<td>博卡斯</td>
+<td>转场+海岛</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>博卡斯跳岛：海星海滩 → 卡耶罗岛 / 冲浪布拉夫海滩</td>
+<td>博卡斯</td>
+<td>跳岛日</td>
+</tr>
+<tr>
+<td>D6 返程</td>
+<td>博卡斯✈巴拿马城（转机）✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      海岛二选一：博卡斯德尔托罗（设施成熟、跳岛+冲浪+夜生活）适合多数人；圣布拉斯群岛（Kuna 原住民区、原始白沙滩、无网络）适合纯度假党，但只能陆路+船或小飞机到达，转场更费时。看运河也可把 D3 换成加通湖完整过闸段（需半天预约）。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 6 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达巴拿马城</span>
+          <span class="d-desc">转机 20h 入境</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">全天</td><td class="t-what">北京✈巴拿马城（经美国/欧洲/墨西哥转机，总航程约 20h；美国转机需美签）</td></tr>
+          <tr><td class="t-time">抵达</td><td class="t-what">托库门国际机场入境，持美签者出示签证、返程机票与酒店订单</td></tr>
+          <tr><td class="t-time">16:00</td><td class="t-what">入住老城 Casco Viejo（世界遗产），傍晚城墙边看海</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">老城晚餐：Ceviche + Sancocho 炖鸡汤，夜逛老城</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">巴拿马直接使用美元，不用换汇；机场到老城打车 Uber 约 20–30 美元、30–40 分钟。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 老城与现代</span>
+          <span class="d-desc">Casco Viejo+堤道</span>
+          <span class="d-tag ">🏛 城市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>Casco Viejo 老城</b>徒步：玻利瓦尔广场、大教堂、金教堂，彩色殖民建筑+街头艺术</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：老城巷子里的酸橘汁腌鱼店</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>阿马多尔堤道</b>（Amador Causeway）：连接三岛的海堤，骑车/散步看太平洋与城市天际线</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>生物博物馆</b> Biomuseo（Frank Gehry 设计，约 20 美元）：彩盒建筑讲述巴拿马生物多样性</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">堤道海鲜晚餐 + 城市灯光夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Casco Viejo 是巴拿马城最出片的老城，1997 年列入世界遗产；生物博物馆周一闭馆。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 运河奇观</span>
+          <span class="d-desc">米拉弗洛雷斯船闸</span>
+          <span class="d-tag ">🚢 运河日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:30</td><td class="t-what"><b>米拉弗洛雷斯船闸</b>（Miraflores，门票约 15–20 美元）：看万吨货轮分三闸爬升，加演 4D 电影</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">午餐：运河访客中心观景餐厅</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what"><b>运河博物馆</b>：运河百年史，从法国失败到美国建成再到巴拿马收回</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">老城城墙（Bóvedas）俯瞰运河口 + 巴拿马城新旧天际线同框</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">告别晚餐：加勒比烤鱼</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">米拉弗洛雷斯有官网放行时刻表，看到货轮通过全程约 1–2h；早班闸最精彩，周末游客多。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 飞博卡斯</span>
+          <span class="d-desc">国内航班+海岛第一晚</span>
+          <span class="d-tag ">🛫 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">从<b>阿尔布鲁克机场</b>（非托库门）飞博卡斯德尔托罗（约 1h，单程 100–150 美元）</td></tr>
+          <tr><td class="t-time">10:30</td><td class="t-what">入住博卡斯镇（Bocas Town）海滨民宿，加勒比木屋风情</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：码头烧烤 + 椰子水，博卡斯镇闲逛</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>水上出租车</b>到附近海滩（卡耶罗岛/卡列罗岛）踩水，初见加勒比碧海</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">镇上海鲜晚餐 + 现场音乐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">博卡斯镇 2003 年后成为背包客+冲浪天堂；岛上没有大型超市，必需品在镇上买齐。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 跳岛一日</span>
+          <span class="d-desc">海星海滩+卡耶罗岛</span>
+          <span class="d-tag alt">🏖 跳岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">博卡斯码头出发<b>跳岛船游</b>（全天约 40–60 美元，含午餐）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>海星海滩</b>（Starfish Beach）：浅水区满布橙色海星，浮潜</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>卡耶罗岛</b>（Cayo Caí）：沙滩午餐 + 游泳</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">冲浪者天堂<b>布拉夫海滩</b>（Playa Bluff）或浮潜点，看海龟</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">返回博卡斯镇，日落码头散步</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">告别晚餐：烤龙虾</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海星别用手摸出水面（有害）；7–10 月博卡斯小气候偏干，是雨季里难得的出海窗口。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 返程</span>
+          <span class="d-desc">博卡斯✈巴拿马城✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">退房，博卡斯机场值机（小机场行李限额严，提前称重）</td></tr>
+          <tr><td class="t-time">10:30</td><td class="t-what">飞回巴拿马城托库门国际机场</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">托库门起飞，转机回北京</td></tr>
+          <tr><td class="t-time">落地</td><td class="t-what">到家休息，倒 2 天时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程转机点若为美国需持有效美签；博卡斯回程记得留出托库门机场 3h 国际值机时间。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-2.jpg" alt="巴拿马城·Casco Viejo 老城" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">巴拿马城·Casco Viejo 老城 <small>免费</small></div>
+          <div class="sc-feat">世界遗产老城。<b>彩色殖民建筑 + 城墙海景</b>，巴拿马最出片区。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚶 步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-1.jpg" alt="巴拿马城·天际线" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">巴拿马城·天际线 <small>免费</small></div>
+          <div class="sc-feat">中美洲最现代天际线。<b>阿马多尔堤道看楼群倒影</b>，都市夜景。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚕 堤道</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-cover.jpg" alt="运河·米拉弗洛雷斯船闸" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">运河·米拉弗洛雷斯船闸 <small>约 15–20 美元</small></div>
+          <div class="sc-feat">世界工程奇迹。<b>万吨货轮三闸爬升</b>，看船过闸全流程。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 2–3h · 🚕 老城 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-4.jpg" alt="巴拿马城·生物博物馆" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">巴拿马城·生物博物馆 <small>约 20 美元</small></div>
+          <div class="sc-feat">Gehry 彩盒。<b>巴拿马生物多样性</b>，颜色斑斓的雨林桥。</div>
+          <div class="sc-meta">📅 周三–日 10:00–16:00 · ⏱ 1.5h · 🚶 堤道口</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-3.jpg" alt="博卡斯·博卡斯镇" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">博卡斯·博卡斯镇 <small>免费</small></div>
+          <div class="sc-feat">加勒比木屋小镇。<b>码头 + 彩色吊脚楼</b>，跳岛大本营。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · ✈️ 巴拿马城 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-7.jpg" alt="博卡斯·海星海滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">博卡斯·海星海滩 <small>免费（船费另计）</small></div>
+          <div class="sc-feat">橙色海星浅滩。<b>浮潜看海星 + 加勒比碧海</b>，跳岛招牌。</div>
+          <div class="sc-meta">📅 上午最佳 · ⏱ 2h · 🚤 水上出租 20min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-5.jpg" alt="圣布拉斯·群岛" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">圣布拉斯·群岛 <small>船+民宿约 40–60 美元/天</small></div>
+          <div class="sc-feat">Kuna 原住民天堂。<b>无人白沙滩 + 椰林村落</b>，与世隔绝。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚐 陆路+船 4h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/panama/panama-6.jpg" alt="博卡斯·布拉夫海滩" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">博卡斯·布拉夫海滩 <small>免费</small></div>
+          <div class="sc-feat">冲浪者天堂。<b>长浪沙滩 + 丛林海岸</b>，博卡斯最野海滩。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚤 水上出租 30min</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（巴拿马城天际线、老城海湾、运河船闸、码头船只、圣布拉斯群岛与加勒比海滩等均为巴拿马实景或同主题替代图），用于页面配图。更多免费景点：阿马多尔堤道、玻利瓦尔广场、Casco Viejo 城墙、博卡斯镇码头。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。巴拿马直接流通美元（巴波亚=美元），无需换汇，消费比中美邻国偏贵；国内航班与海岛住宿是大头。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（12000–18000）</th>
+<th>标准（22000–35000）</th>
+<th>舒适（50000–70000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机往返 6000–8500</td>
+<td>含国内段 9000–12000</td>
+<td>商务/直挂 16000–22000</td>
+</tr>
+<tr>
+<td>住宿（5 晚）</td>
+<td>青旅/民宿 150–250/晚</td>
+<td>中档酒店 450–800/晚</td>
+<td>度假村 1200–2500/晚</td>
+</tr>
+<tr>
+<td>交通</td>
+<td>大巴+市内 800–1200</td>
+<td>国内航班 1800–2500</td>
+<td>包车/小飞机 5000–9000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点 200–400</td>
+<td>运河+博物馆 600–1000</td>
+<td>全含+向导 1500–2500</td>
+</tr>
+<tr>
+<td>餐饮（6 天）</td>
+<td>街头+市场 900–1500</td>
+<td>正常下馆子 2000–3500</td>
+<td>Fine Dining 5000–8000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 23000 元）</span>
+      往返机票 10000 + 住宿 5 晚 3200（平均 640/晚）+ 巴拿马城—博卡斯往返机票与市内交通 2200 + 门票（运河/博物馆/生物馆）800 + 餐饮 2800 + 保险/杂费 1200 ≈ <strong>20000–24000 元</strong>。国内航班提前 2 个月订能省 40%；跳岛船票在镇上比网上便宜。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>6.1 精简 4 天版</h3>
+
+
+    <ul>
+
+      <li>巴拿马城 2 天（老城+运河）</li>
+
+      <li>博卡斯或圣布拉斯 1 天</li>
+
+      <li>返程 1 天</li>
+
+    </ul>
+
+    <h3>6.2 双运河与雨林版</h3>
+
+
+    <p>时间充裕（9–12 天）可在巴拿马城段加：加通湖看完整过闸（预约半天）、索韦拉尼亚国家公园赏鸟（近郊雨林）、奇里基省的博克特咖啡小镇；再从博卡斯延伸至巴鲁火山。巴拿马国家小但「都市+雨林+海岛+咖啡」可以一次集齐。</p>
+
+    <h3>6.3 圣布拉斯深潜版</h3>
+
+
+    <p>喜欢与世隔绝就把博卡斯换成圣布拉斯群岛：Kuna 原住民村落住 2–3 晚、包餐包船跳岛，加勒比最原始的白沙滩没有之一。但住宿无空调/无稳定网络、转场要陆路+船约 4h，适合「断网度假」的硬核玩家。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>6.1 北京 ⇄ 巴拿马 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（唯一方式）</td>
+<td>北京→巴拿马城 20–28h</td>
+<td>往返 6000–9000 元</td>
+<td>经美国（需美签）/欧洲/墨西哥城转机</td>
+</tr>
+<tr>
+<td>直飞</td>
+<td>—</td>
+<td>—</td>
+<td>中国无直飞巴拿马航班</td>
+</tr>
+<tr>
+<td>国内航班</td>
+<td>巴拿马城—博卡斯 1h</td>
+<td>单程 100–150 美元</td>
+<td>阿尔布鲁克机场（非托库门）起飞，提前 2 个月订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 巴拿马境内交通核心提醒</span>
+      巴拿马运河横贯国土，<strong>太平洋侧与加勒比侧陆路绕行很远</strong>，去博卡斯基本靠飞机（阿尔布鲁克机场国内航站，别跑错托库门）；去圣布拉斯需先陆路到卡蒂（约 2.5h）再坐船 1h。群岛内交通靠<strong>水上出租车</strong>，10–20 美元/程，拼船更便宜。
+    </div>
+
+    <h3>6.2 巴拿马境内交通</h3>
+    <ul>
+      <li><strong>国内航班</strong>：巴拿马城（阿尔布鲁克）—博卡斯 1h，单程 100–150 美元，提前订</li>
+      <li><strong>水上出租车</strong>：博卡斯岛间交通主力，跳岛 10–20 美元/程，可拼船</li>
+      <li><strong>圣布拉斯</strong>：巴拿马城→卡蒂陆路 2.5h + 船 1h，或小飞机（约 150–200 美元）</li>
+      <li><strong>巴拿马城 Metro</strong>：1 号线连接市区，机场外 Uber 更省心</li>
+      <li><strong>Uber/出租车</strong>：老城—托库门机场约 20–30 美元、30–40 分钟</li>
+      <li><strong>租车</strong>：市区与太平洋侧可用，去博卡斯/圣布拉斯隔海不建议自驾</li>
+    </ul>
+
+    <h3>6.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>巴拿马城·Casco Viejo</td>
+<td>标准 500–1000</td>
+<td>古城氛围、餐厅酒吧</td>
+<td>价格偏高、老楼隔音</td>
+</tr>
+<tr>
+<td>巴拿马城·El Cangrejo</td>
+<td>经济 200–400</td>
+<td>本地生活、便宜</td>
+<td>离老城约 20 分钟</td>
+</tr>
+<tr>
+<td>博卡斯·博卡斯镇</td>
+<td>海滨民宿 300–700</td>
+<td>加勒比木屋、跳岛码头</td>
+<td>设施简单、旺季抢手</td>
+</tr>
+<tr>
+<td>圣布拉斯·Kuna 民宿</td>
+<td>经济 200–400（含餐）</td>
+<td>原始海岛体验</td>
+<td>无空调/稳定网络</td>
+</tr>
+<tr>
+<td>托库门机场区</td>
+<td>标准 400–700</td>
+<td>返程方便</td>
+<td>无景点</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍤 必吃经典</h3>
+        <ul>
+          <li>Ceviche 酸橘汁腌鱼</li>
+          <li>Sancocho 炖鸡汤</li>
+          <li>海鲈鱼整烤</li>
+          <li>Patacones 炸青蕉饼</li>
+        </ul>
+        <h3>🥥 海岛风味</h3>
+        <ul>
+          <li>烤龙虾（博卡斯/圣布拉斯）</li>
+          <li>椰子海鲜饭</li>
+          <li>新鲜椰子水</li>
+          <li>热带水果拼盘</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🌽 在地特色</h3>
+        <ul>
+          <li>Arroz con Pollo 鸡肉饭</li>
+          <li>Tamal 玉米粽</li>
+          <li>加勒比红腰豆饭</li>
+          <li>Carimañola 炸木薯包肉</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>老城 Casco Viejo 巷子餐厅</li>
+          <li>阿马多尔堤道海鲜</li>
+          <li>博卡斯码头烧烤摊</li>
+          <li>圣布拉斯民宿包餐</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 圣布拉斯 Kuna 民宿包餐按人头算，菜式原生态别期待奢华；② 博卡斯海鲜新鲜但街边摊注意餐具卫生，水果现切现吃；③ 老城餐厅比堤道贵 30%，同价位堤道分量更大；④ 直接花美元，标价一般已含 10% 服务费。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 巴拿马签证（或有效美签）</li>
+        <li>返程机票 + 酒店订单打印件</li>
+        <li>旅行保险</li>
+        <li>国际信用卡 + 美元现金</li>
+      </ul>
+      <ul>
+        <li>转换插头（120V A/B 型）</li>
+        <li>防晒霜、驱蚊液（海岛必备）</li>
+        <li>防水袋（跳岛/船程）</li>
+        <li>离线地图 + 水上出租现金零钱</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>直接用美元</strong>：巴波亚与美元 1:1 流通，不用换汇但小摊找零可能有巴波亚硬币；② <strong>别跑错机场</strong>：博卡斯国内航班在阿尔布鲁克机场，国际在托库门，两者相距远；③ <strong>雨季午后阵雨</strong>：跳岛与海滩排上午，下午留室内；④ <strong>尊重 Kuna 原住民</strong>：圣布拉斯是原住民自治领地，拍照先询问、不随地丢弃垃圾。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      巴拿马是「<strong>中美洲最高效的高配旅行</strong>」——上午还在米拉弗洛雷斯看万吨货轮爬闸，下午已经跳上博卡斯的水上出租车冲向海星滩。全程美元省心、有美签就免签入境，6 天把「工程奇观 + 殖民老城 + 加勒比海岛」一次集齐。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e6fb5",
+    "d": 4,
+    "n": "巴拿马主线 · 巴拿马城→运河→博卡斯德尔托罗",
+    "pts": [
+      [
+        8.983,
+        -79.519
+      ],
+      [
+        8.997,
+        -79.594
+      ],
+      [
+        9.34,
+        -82.242
+      ]
+    ]
+  },
+  {
+    "c": "#2a9d8f",
+    "d": 3,
+    "n": "备选支线 · 圣布拉斯群岛",
+    "pts": [
+      [
+        8.983,
+        -79.519
+      ],
+      [
+        8.997,
+        -79.594
+      ],
+      [
+        9.55,
+        -78.98
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 8.952,
+    "lng": -79.535,
+    "name": "巴拿马城·Casco Viejo 老城",
+    "t": "D2 上午 · 半天",
+    "fee": "免费",
+    "note": "世界遗产、彩色殖民建筑"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 8.983,
+    "lng": -79.519,
+    "name": "巴拿马城·市中心",
+    "t": "D2 全天 · 1 天",
+    "fee": "免费",
+    "note": "现代天际线、堤道海景"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 8.997,
+    "lng": -79.594,
+    "name": "运河·米拉弗洛雷斯船闸",
+    "t": "D3 上午 · 2–3h",
+    "fee": "约 15–20 美元",
+    "note": "货轮三闸爬升、4D 电影"
+  },
+  {
+    "num": 4,
+    "prio": "nice",
+    "lat": 8.94,
+    "lng": -79.543,
+    "name": "巴拿马城·阿马多尔堤道",
+    "t": "D2 下午 · 2h",
+    "fee": "免费",
+    "note": "三岛海堤、城市天际线"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 8.933,
+    "lng": -79.546,
+    "name": "巴拿马城·生物博物馆",
+    "t": "D2 傍晚 · 1.5h",
+    "fee": "约 20 美元",
+    "note": "Gehry 彩盒建筑"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 9.34,
+    "lng": -82.242,
+    "name": "博卡斯·博卡斯镇",
+    "t": "D4–D5 · 1–2 天",
+    "fee": "免费",
+    "note": "加勒比木屋、跳岛码头"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 9.397,
+    "lng": -82.265,
+    "name": "博卡斯·海星海滩",
+    "t": "D5 上午 · 2h",
+    "fee": "免费（船费另计）",
+    "note": "橙色海星浅滩、浮潜"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 9.55,
+    "lng": -78.98,
+    "name": "圣布拉斯·群岛",
+    "t": "备选 2 天",
+    "fee": "船+民宿 40–60 美元/天",
+    "note": "Kuna 原住民白沙滩"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[8.4, -82.9], [10.0, -78.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e6fb5\"></span>巴拿马主线（巴拿马城→运河→博卡斯）<br><span class=\"sw\" style=\"background:#2a9d8f\"></span>备选支线（圣布拉斯群岛）<br><span class=\"sw dash\"></span>岛屿段为国内航班/船衔接</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

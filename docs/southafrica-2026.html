@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 南非 16 天全景攻略 · 克鲁格草原与彩虹之国</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #e07a3f;
+    --red-light: #e8945f;
+    --gold: #d4a017;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #ece2d6;
+    --blue: #3a7d5c;
+    --cover1: #8a5316;
+    --ov1: rgba(138,83,22,.88);
+    --ov2: rgba(212,160,23,.72);
+    --ov3: rgba(224,122,63,.38);
+    --ov4: rgba(58,125,92,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f0f3ee;
+    --head-bg: rgba(224,122,63,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/southafrica/southafrica-cover.jpg" alt="南非旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 16 天环线 · 克鲁格猎游 + 桌山好望角 + 花园大道</div>
+      <h1>南非 16 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 约翰内斯堡 · 克鲁格国家公园 · 开普敦 · 花园大道</div>
+      <div class="meta">
+        <span>🛫 行程链：约翰内斯堡 → 克鲁格国家公园 → 开普敦 → 好望角 → 花园大道 → 返程</span>
+        <span>📅 时间窗口：16 天 15 晚</span>
+        <span>✈️ 北京⇄约翰内斯堡 直飞约 15 小时（国航经停深圳）</span>
+        <span>🛂 签证：中国护照需签证，现已开通 ETA 在线申请（约 10 个工作日出签）</span>
+        <span>🕐 时差 -6 小时 · 🔌 电压 230V D/M/N 插座（三圆脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 16 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 16 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">约翰内斯堡</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">克鲁格</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">开普敦</span>
+      <span class="arrow">→</span>
+      <span class="node">好望角</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">花园大道</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 16 天怎么安排最合理</span>
+      南非是「<strong>野性与都市并存</strong>」的彩虹之国：克鲁格国家公园的 Big Five 猎游、开普敦的桌山与酒庄、好望角两大洋交汇、花园大道的海岸公路。16 天刚好分成三段：前 6 天玩东北（约堡+克鲁格），中 6 天在开普（开普敦+好望角），最后 3 天沿花园大道自驾收尾。节奏<strong>松弛有度</strong>，克鲁格与开普敦都留了缓冲日。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>需签证</strong>：2025 年 10 月起南非对中国大陆护照开放 <strong>ETA 电子授权</strong>（eta.dha.gov.za 在线申请，无需面签，材料齐全约 10 个工作日出签，单次停留最长 90 天）</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>约堡 2 天 + 克鲁格 3 天猎游 + 开普敦 4 天 + 好望角 2 天 + 花园大道 3 天 + 返程 2 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>D15 傍晚从伊丽莎白港/开普敦飞回约堡，D16 约堡✈北京；返程国航经停深圳约 15h+</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>约翰内斯堡 → 克鲁格 → 开普敦 → 好望角 → 花园大道 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 18000–28000 ／ 标准 35000–50000 ／ 舒适 70000–100000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办 ETA ② 订克鲁格园区住宿与 game drive ③ 订约堡⇄开普敦内陆机票与租车</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>10–4 月（南半球春夏秋）最宜；6–8 月冬天气温低但动物多、观鲸季开始；11 月—3 月野花与观鲸季</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>刷卡普及（Visa/Master），随身备 1000–2000 兰特现金用于小费与路边摊</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>治安是现实课题</strong>：约堡市中心与夜间不建议步行，住宿选桑顿/机场商务区，出行 Uber，贵重物品寄存酒店保险箱。② <strong>桌山缆车看天气</strong>：开普敦冬季（6–8 月）多雨多雾，缆车经常停运，最好把桌山排在行程前半段并在行程里留一个「天气缓冲日」机动补拍。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 16 天版</h2>
+
+    <p>以下为 16 天 15 晚的推荐节奏：东北段约堡+克鲁格以猎游为主，中段开普敦城市+半岛慢逛，最后 3 天花园大道自驾一路向东。每日主景点 ≤2 个，克鲁格园区内节奏跟着日出日落走。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵达约翰内斯堡</td>
+<td>北京✈约堡（经停深圳约 15h+），入住桑顿商务区，休整</td>
+<td>约翰内斯堡</td>
+<td>抵达+休整</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>先民纪念馆 → 宪法山 → 曼德拉故居/索韦托（可选）</td>
+<td>约翰内斯堡</td>
+<td>彩虹之国史</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>约堡→克鲁格：途中风景大道、布莱德河峡谷、上帝之窗</td>
+<td>克鲁格</td>
+<td>进草原</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>克鲁格全天猎游：清晨+傍晚 game drive，看 Big Five</td>
+<td>克鲁格</td>
+<td>猎游日1</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>克鲁格全天：自驾或敞篷车，观鸟与夜行动物</td>
+<td>克鲁格</td>
+<td>猎游日2</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>克鲁格→约堡✈开普敦（约 2h），傍晚 V&A 海滨</td>
+<td>开普敦</td>
+<td>飞向母城</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>桌山缆车（475 兰特）→ Bo-Kaap 马来区 → 长街</td>
+<td>开普敦</td>
+<td>桌山日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>罗本岛（600 兰特）→ 康斯坦博斯植物园</td>
+<td>开普敦</td>
+<td>岛屿与花园</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>豪特湾海豹岛游船 → 十二门徒峰 → 开普敦市区老街</td>
+<td>开普敦</td>
+<td>半岛预热</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>斯泰伦博斯/法兰舒克葡萄酒庄园一日（品酒）</td>
+<td>开普敦</td>
+<td>酒乡日</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>好望角：开普角灯塔 → 马卡苏角 → 博尔德斯企鹅滩</td>
+<td>开普敦</td>
+<td>两大洋交汇</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>好望角补充日：查普曼峰公路 → 半岛海滩 → 天气机动</td>
+<td>开普敦</td>
+<td>半岛深度</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>开普敦→赫曼努斯（观鲸）→ 摩梭湾（邮政树）</td>
+<td>摩梭湾</td>
+<td>花园大道1</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>摩梭湾→克尼斯纳（环礁湖游船）→ 齐齐卡马</td>
+<td>齐齐卡马</td>
+<td>花园大道2</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>布洛克兰斯桥蹦极（可选）→ 普利登堡湾 → 伊丽莎白港✈约堡</td>
+<td>约翰内斯堡</td>
+<td>花园大道3</td>
+</tr>
+<tr>
+<td>D16 返程</td>
+<td>约堡✈北京（国航经停深圳约 15h+），入境到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      观鲸季（6–11 月）赫曼努斯不可错过，非观鲸季可压缩为海岸线驾驶；时间紧可把克鲁格缩为 2 天或开普敦减 1 天。冬季（6–8 月）克鲁格看动物更集中（植被稀疏、水源固定），是「性价比猎游」好季节。带娃家庭建议选园区内营地自驾而非私密营地，经济且灵活。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 16 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达约翰内斯堡</span>
+          <span class="d-desc">入住桑顿</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">全天</td><td class="t-what">北京✈约翰内斯堡（国航 CA867 经停深圳，全程约 15h+；或转机迪拜/多哈约 17–24h）</td></tr>
+          <tr><td class="t-time">20:00–21:30</td><td class="t-what">入境（ETA 电子授权需提前办妥，打印纸质件备用），取行李打车到<b>桑顿 Sandton</b> 商务区入住</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">酒店周边便利店补给（水、零食），早睡倒时差（-6h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">约堡奥坦博机场（JNB）到桑顿约 30–40 分钟车程，建议用酒店接机或 Uber（约 250–350 兰特），别坐路边黑车。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 约翰内斯堡</span>
+          <span class="d-desc">先民纪念馆与历史</span>
+          <span class="d-tag ">🏛 彩虹之国日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>先民纪念馆 Voortrekker Monument</b>（成人约 100 兰特）：荷兰裔拓荒者历史纪念碑，方形花岗岩建筑可登顶看约堡全景</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：纪念馆附近或回桑顿 Mall 吃南非烤肉 Braai</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>宪法山 Constitutional Hill</b>（约 80 兰特）：旧监狱改建的宪法法院，曼德拉与甘地都曾被关押于此，南非转型史一课</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">自由选择：<b>索韦托 Soweto</b> 半日（曼德拉故居 Vilakazi 街，约 60 兰特，建议包 Uber 司机陪同）或桑顿 Nelson Mandela Square 闲逛</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：桑顿 MABONENG 街区，南非特色烤肉+葡萄酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">约堡市中心（CBD）治安差，白天也别步行；去索韦托务必跟可靠司机。博物馆周一大多闭馆，行程尽量避开。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 约堡→克鲁格</span>
+          <span class="d-desc">风景大道进草原</span>
+          <span class="d-tag ">🌳 进草原日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">约堡出发，自驾/包车前往<b>克鲁格国家公园</b>（约 5–6h，中途走 Panorama Route）</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what"><b>布莱德河峡谷 Blyde River Canyon</b>（免费观景）：世界第三大峡谷，上帝之窗（God's Window）俯瞰低草原</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">沿途柏林瀑布、博克好运穴，午餐峡谷观景台</td></tr>
+          <tr><td class="t-time">15:00</td><td class="t-what">抵达克鲁格南门（如 Paul Kruger Gate），入住园区内营地（SANParks）或园外酒店</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">傍晚园内短途巡游热身：大象、长颈鹿、羚羊高频出没</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">营地晚餐，克鲁格星空</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">克鲁格园区住宿（营房/小木屋）非常抢手，提前 2–3 个月在 SANParks 官网订；日保育费国际成人 R602/天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 克鲁格猎游1</span>
+          <span class="d-desc">Big Five 全天</span>
+          <span class="d-tag ">🦁 猎游日1</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–08:00</td><td class="t-what"><b>清晨 game drive</b>：日出前出车，狮子/花豹清晨最活跃，也是摄影黄金时段（自备望远镜）</td></tr>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">营地早餐，回房休息充电</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">白天自驾巡游：大象、犀牛、水牛多在荫凉处，注意路边树梢找豹</td></tr>
+          <tr><td class="t-time">11:30–15:00</td><td class="t-what">营地午餐+午休（正午动物趴窝，是休息好时段）</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what"><b>傍晚 game drive</b>：日落前动物进入饮水点，长颈鹿/斑马/狮群高频</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">营地晚餐；可自费报名夜巡（观察夜行动物）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">克鲁格入园时间日出至日落（约 5:30–18:30），园内限速 50km/h；看到其他车聚集就是发现动物了，静候即可。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 克鲁格猎游2</span>
+          <span class="d-desc">深度与观鸟</span>
+          <span class="d-tag alt">🦏 猎游日2</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–09:00</td><td class="t-what">清晨 game drive：换一条线路（如南部 S1/S3 环线），看花豹与犀牛</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">营地早午餐</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what">白天机动：可选<b>私人保护区敞篷车团</b>（半天约 1200–2500 兰特，向导带专业追踪）或沿 Sabie 河自驾看河马鳄鱼</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">营地午餐午休</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what">傍晚最后一次巡游：克鲁格看 Big Five 完美收官</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：营地烤肉（Braai 套餐），宿克鲁格</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">猎游概率排序：大象/长颈鹿/斑马 > 水牛/犀牛 > 狮子 > 花豹。想看「五大全齐」别急着赶路，克鲁格 2 天通常能见到 4 种以上。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 飞向开普敦</span>
+          <span class="d-desc">克鲁格→约堡✈开普敦</span>
+          <span class="d-tag ">🛫 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–09:00</td><td class="t-what">克鲁格北门出发回约堡（约 4h，或从霍德斯普鲁特机场 HDS 直飞约堡 45 分钟）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what">还车/转机，约堡奥坦博机场国内航站楼候机</td></tr>
+          <tr><td class="t-time">11:30–14:00</td><td class="t-what">约堡✈开普敦（约 2h，FlySafair/南非航空，提前订约 400–700 元）</td></tr>
+          <tr><td class="t-time">14:30</td><td class="t-what">抵达开普敦机场（CPT），Uber 到市区酒店</td></tr>
+          <tr><td class="t-time">15:30–18:00</td><td class="t-what"><b>V&A 码头 Waterfront</b>（免费）：海滨购物区+码头看桌山倒影，南非最安全繁华的商圈</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：V&A 市场（The Old Biscuit Mill/美食市场），生蚝+南非葡萄酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">开普敦住宿首选 V&A 码头或长街附近；桌山天气窗口短，D7 一早出发前先看天气 App 再决定上山顺序。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 桌山</span>
+          <span class="d-desc">上帝的餐桌</span>
+          <span class="d-tag ">⛰ 桌山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">乘<b>桌山缆车</b>上山（线上往返 R475/现场 R530，建议提前在官网买好）：360° 旋转缆车约 5 分钟到海拔 1067m 山顶</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>桌山顶徒步</b>（免费）：山顶平整如桌面，绕 Plateau 步道看开普敦城、桌湾与远处好望角</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">山顶咖啡+拍照，若遇「桌布云」覆盖山顶正是最美时刻</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">下山，午餐：Kloof 街/长街餐厅</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>Bo-Kaap 马来区</b>（免费）：彩虹色联排房屋，开普马来文化街区，最适合街拍</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：V&A 码头海滨餐厅，看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">桌山缆车冬季常因大风停运，官方每天 7:30 更新运营状态；山顶风大，带防风外套，晴天能见度是决定性因素。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 罗本岛与植物园</span>
+          <span class="d-desc">岛屿与花园</span>
+          <span class="d-tag alt">🏝 人文自然日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–13:00</td><td class="t-what"><b>罗本岛 Robben Island</b>（国际成人约 R600，含渡轮+导览，务必提前 1–2 周官网订票）：从 V&A 码头乘渡轮 30 分钟登岛，参观曼德拉被囚 18 年的监狱与石灰岩采石场</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：V&A 码头或水上市场</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>康斯坦博斯植物园 Kirstenbosch</b>（约 R220）：桌山山脚下的南非国花天堂，尤以「树冠步道 Canopy Walkway」与 protea 帝王花出名</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返市区，晚餐：开普马来咖喱（Bobotie）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">罗本岛船班一天 2–3 班，需提前 30 分钟到码头集合；风浪大时渡轮会取消，出发前查天气。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 开普半岛预热</span>
+          <span class="d-desc">海豹岛与十二门徒</span>
+          <span class="d-tag ">🌊 半岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:00</td><td class="t-what">驱车沿大西洋海岸线到<b>豪特湾 Hout Bay</b></td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what"><b>海豹岛 Duiker Island 游船</b>（约 R180–250/人，视天气）：成百上千海豹在礁石上晒太阳，全程 45 分钟</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">豪特湾海鲜午餐（龙虾/炸鱼薯条）</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what"><b>十二门徒峰 Twelve Apostles</b>（车览+观景点拍照）：桌山向大西洋延伸的十二座山峰</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>开普敦市区老街</b>：长街 Long Street 彩色建筑、南非博物馆（可选）、圣乔治教堂外观</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：City Bowl 意大利菜/烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海豹岛游船 6–9 月浪大易晕船，提前吃晕船药；豪特湾周六有露天鱼市，可以顺便看本地烟火气。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 葡萄酒庄园</span>
+          <span class="d-desc">斯泰伦博斯/法兰舒克</span>
+          <span class="d-tag ">🍇 酒乡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">开普敦出发前往<b>斯泰伦博斯 Stellenbosch</b>（约 45 分钟），南非最古老大学城+荷兰式建筑</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what">酒庄品酒：选 2 家老牌酒庄（如 Spier、Lanzerac），品酒套餐约 R60–150/人，含 5–7 款</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">酒庄午餐：庄园餐厅配酒，性价比极高</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>法兰舒克 Franschhoek</b>（法国角）：法国胡格诺移民小镇，「南非美食之都」，街拍+甜品店</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">返程路经<b>酒乡大道</b>，山间葡萄园起伏如画，找观景点拍全景</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返开普敦晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">南非不强制酒驾测试但对酒驾零容忍，品酒后请司机别碰酒杯；也可报「Hop-on-Hop-off 酒乡巴士」换乘品酒。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 好望角</span>
+          <span class="d-desc">两大洋交汇</span>
+          <span class="d-tag ">🌅 好望角日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">开普敦出发沿半岛南线前往<b>好望角自然保护区 Cape of Good Hope</b>（在桌山国家公园内，含日保育费）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>开普角 Cape Point</b>：乘 Funicular 小缆车（往返约 R85）或徒步上 238 米山顶，看大西洋与印度洋在眼前交汇，老灯塔+新灯塔经典机位</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">保护区入口咖啡/野餐</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">返程途中<b>博尔德斯海滩 Boulders Beach</b>（约 R190）：非洲企鹅栖息地，栈道上看企鹅群与碧蓝海湾</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>西蒙镇 Simon's Town</b>海滨小镇散步，海军码头看军舰</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">返开普敦晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">好望角天气说变就变，一早出发最好；开普角山风极大，抓稳手机与帽子。企鹅滩下午光线最好，企鹅会在沙滩上散步。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 半岛深度</span>
+          <span class="d-desc">查普曼峰与天气机动</span>
+          <span class="d-tag alt">🚗 半岛深度日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">豪特湾出发走<b>查普曼峰公路 Chapman's Peak Drive</b>（收费约 R60/车）：悬崖凿出的 9 公里沿海公路，180° 大西洋海景</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">诺德霍克海滩 Noordhoek 骑马/散步（可选），Kommetjie 海岸线</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：海边小镇炸鱼薯条</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>天气机动时间</b>：若桌山此前因天气未成行，此段补桌山缆车；若已成行，去信号山/坎普斯湾海滩看城市全景</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">坎普斯湾 Camps Bay 海滩（免费）：南非最美海滨大道，白色沙滩+桌山背景</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：坎普斯湾 Sunset 餐厅看日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">查普曼峰公路遇落石会临时封闭，出发前查官网；冬季自驾注意横风。Camps Bay 晚餐建议预约靠窗位。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 花园大道1</span>
+          <span class="d-desc">观鲸小镇与摩梭湾</span>
+          <span class="d-tag ">🚗 花园大道日1</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">开普敦出发沿 N2 东行（全程自驾约 4.5h 分两天走）</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what"><b>赫曼努斯 Hermanus</b>（6–11 月观鲸季）：世界最佳陆地观鲸点，悬崖步道免费看南露脊鲸喷水拍尾，可自费出海观鲸（约 R1200）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">赫曼努斯午餐+漫步</td></tr>
+          <tr><td class="t-time">14:00–15:00</td><td class="t-what"><b>阿古拉斯 Cape Agulhas</b>（可选绕行）：非洲大陆最南端，两大洋官方分界点，白色灯塔</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">抵达<b>摩梭湾 Mossel Bay</b>：看 1488 年葡萄牙人登陆点、邮政树（Post Office Tree）、狄亚士航海博物馆（约 R50）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住摩梭湾，海边晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">非观鲸季（12–5 月）可跳过阿古拉斯绕行直接去摩梭湾；花园大道全程自驾是最佳打开方式，租车记得确认保险含道路救援。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 花园大道2</span>
+          <span class="d-desc">克尼斯纳与齐齐卡马</span>
+          <span class="d-tag ">🚗 花园大道日2</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">摩梭湾出发前往<b>克尼斯纳 Knysna</b>（约 1h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>克尼斯纳环礁湖</b>：乘船游泻湖（约 R300/人，含海岬 Head 观景），看两大岬角与泻湖，生蚝码头</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：克尼斯纳码头生蚝（南非生蚝之乡，半打约 R120–180）</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">车览普利登堡湾 Plettenberg Bay 方向海岸线，或去海豹礁观景台</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>齐齐卡马 Tsitsikamma 国家公园</b>（日保育费约 R200）：风暴河口 Storms River 悬索桥徒步（约 1h 往返），看印度洋浪打峡谷</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住风暴河小镇森林小屋，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">克尼斯纳生蚝配当地 Sauvignon Blanc 是花园大道招牌体验；齐齐卡马傍晚潮水大涨，悬索桥路线务必日落前返回。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 花园大道3·转场</span>
+          <span class="d-desc">蹦极与伊丽莎白港</span>
+          <span class="d-tag ">🚗 花园大道日3</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what"><b>布洛克兰斯桥 Bloukrans Bridge</b>（可选）：非洲最高蹦极，216 米，约 R1200 含证书；不敢蹦也有观景台看别人跳</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">普利登堡湾海滩+观景（若昨日未看）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：伊丽莎白港方向沿途小镇</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">抵达<b>伊丽莎白港 Port Elizabeth</b>，还车</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">伊丽莎白港✈约翰内斯堡（约 1h45，提前订票），入住机场附近酒店</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：约堡机场酒店</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">若不想开单程（异地还车费高），可在开普敦往返做 3 天花园大道环线；布洛克兰斯蹦极需 12 岁以上、体重 35–130kg。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D16 · 返程</span>
+          <span class="d-desc">约堡✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">酒店早餐，机场免税店补货：南非红酒（每人限带 2 瓶）、Biltong 肉干、博士茶 Rooibos、钻石/铂金饰品可选</td></tr>
+          <tr><td class="t-time">11:00</td><td class="t-what">值机安检，国航返京航班</td></tr>
+          <tr><td class="t-time">13:00–次日</td><td class="t-what">约翰内斯堡✈北京（经停深圳，全程约 15h+），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">南非出境建议提前 3h 到机场；返京航班时间较长，带颈枕与娱乐。钻石只在有证书的正规店买，切记索要原产地证明。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-cover.jpg" alt="开普敦·桌山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">开普敦·桌山 <small>缆车往返 R475（线上）</small></div>
+          <div class="sc-feat">「上帝的餐桌」。<b>360° 旋转缆车 + 山顶桌布云</b>，开普敦名片。</div>
+          <div class="sc-meta">📅 8:30 起 · ⏱ 3h · 🚡 官方每日更新运营状态</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-1.jpg" alt="克鲁格国家公园" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">克鲁格国家公园 <small>日保育费 R602</small></div>
+          <div class="sc-feat">南非野生动物王牌。<b>Big Five + 清晨猎游</b>，太阳升起的草原最动人。</div>
+          <div class="sc-meta">📅 日出至日落 · ⏱ 2–3 天 · 🚗 自驾或敞篷车</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-2.jpg" alt="好望角·开普角" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">好望角·开普角 <small>含公园日费+小缆车</small></div>
+          <div class="sc-feat">两大洋交汇之角。<b>238 米灯塔 + 断崖海天</b>，天涯海角具象化。</div>
+          <div class="sc-meta">📅 7:00–17:00 · ⏱ 3–4h · 🚌 半岛环线</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-3.jpg" alt="约翰内斯堡·先民纪念馆" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">约翰内斯堡·先民纪念馆 <small>约 100 兰特</small></div>
+          <div class="sc-feat">南非近现代史地标。<b>花岗岩方碑 + 城市全景</b>，理解彩虹之国的钥匙。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 1.5h · 🚗 桑顿打车 20 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-4.jpg" alt="博尔德斯海滩·非洲企鹅" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">博尔德斯海滩·非洲企鹅 <small>约 R190</small></div>
+          <div class="sc-feat">南非企鹅栖息地。<b>栈道看企鹅 + 碧蓝海湾</b>，唯一能近距离看的企鹅滩。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 1–1.5h · 🐧 西蒙镇</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-5.jpg" alt="克尼斯纳·环礁湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">克尼斯纳·环礁湖 <small>游船约 R300</small></div>
+          <div class="sc-feat">花园大道明珠。<b>泻湖游船 + 生蚝码头</b>，山海之间最放松的一站。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🦪 生蚝半打 R120–180</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-6.jpg" alt="斯泰伦博斯·葡萄酒庄园" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">斯泰伦博斯·葡萄酒庄园 <small>品酒 R60–150</small></div>
+          <div class="sc-feat">开普酒乡核心。<b>老牌酒庄品酒 + 荷兰式建筑</b>，南非高端体验性价比之最。</div>
+          <div class="sc-meta">📅 10:00–17:00 · ⏱ 半天 · 🍷 开普敦 45 分钟</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/southafrica/southafrica-7.jpg" alt="罗本岛" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">罗本岛 <small>约 R600（国际成人）</small></div>
+          <div class="sc-feat">曼德拉 18 年囚禁地。<b>渡轮登岛 + 前囚犯导览</b>，南非自由史现场课。</div>
+          <div class="sc-meta">📅 需提前订票 · ⏱ 4h · ⛴ V&A 码头出发</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（桌山、克鲁格野生动物、好望角、企鹅滩、克尼斯纳环礁湖等均为南非实景），用于页面配图。更多免费看点：V&A 码头、Bo-Kaap 马来区、坎普斯湾海滩、信号山日落。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 2.6 南非兰特估算。往返机票按淡季国航经停深圳 4500–6000 元计；克鲁格园内营地比私密营地省一半以上。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（18000–28000）</th>
+<th>标准（35000–50000）</th>
+<th>舒适（70000–100000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄约堡 4500–6000</td>
+<td>含约堡⇄开普敦内陆 7000–8500</td>
+<td>商务/灵活 15000–22000</td>
+</tr>
+<tr>
+<td>住宿（15 晚）</td>
+<td>青旅/民宿 200–350/晚</td>
+<td>四星酒店 500–900/晚</td>
+<td>野奢营地+五星 1500–3500/晚</td>
+</tr>
+<tr>
+<td>交通（租车+内陆飞）</td>
+<td>租车自驾 4000–6000</td>
+<td>包车+内陆飞 8000–12000</td>
+<td>全程包车+头等 18000–28000</td>
+</tr>
+<tr>
+<td>门票与活动</td>
+<td>公园+缆车 1500–2500</td>
+<td>含猎游/酒庄/观鲸 4000–6000</td>
+<td>全含+私密营地+蹦极 10000–15000</td>
+</tr>
+<tr>
+<td>餐饮（16 天）</td>
+<td>超市+简餐 1500–2500</td>
+<td>正常下馆子 4000–6000</td>
+<td>米其林+酒庄餐 10000–15000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 42000 元）</span>
+      往返机票 7500 + 住宿 15 晚 10000（平均 650/晚）+ 租车油费保险 6000 + 约堡⇄开普敦内陆飞 1500 + 克鲁格猎游与门票 4500 + 餐饮 5000 + 签证杂费 1000 ≈ <strong>38000–43000 元</strong>。大头是机票、住宿与租车；克鲁格选园内营地+自驾而非私密营地，可省 8000+，酒庄品酒是最值的「平价奢华」。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>15.1 缩短为 11–12 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D2 约堡+克鲁格（紧凑）</li>
+
+      <li>D3 克鲁格猎游</li>
+
+      <li>D4 飞开普敦</li>
+
+      <li>D5 桌山+Bo-Kaap</li>
+
+      <li>D6 好望角+企鹅滩</li>
+
+      <li>D7 罗本岛/酒庄二选一</li>
+
+      <li>D8–D10 花园大道 3 日往返</li>
+
+      <li>D11 返程</li>
+
+    </ul>
+
+    <h3>15.2 观鲸季专属（6–11 月）</h3>
+
+
+    <p>6–11 月赫曼努斯必去（陆地免费观鲸+出海 R1200），克鲁格因旱季植被稀疏更易看到动物，是「低成本猎游」黄金期。可将开普敦减 1 天、赫曼努斯住 1 晚。冬季开普敦多雨，桌山缆车要留机动日。</p>
+
+    <h3>15.3 亲子版调整</h3>
+
+
+    <p>带娃家庭选克鲁格园内营房自驾（营地有泳池与动物科普），跳过私密营地的长途敞篷车（颠簸且贵）；开普敦加桑公园（Boulders 企鹅、海豹岛孩子最爱）；花园大道可跳过蹦极改野生动物园/海豚馆。南非酒店普遍加床友好，租车务必配儿童座椅。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>18.1 北京 ⇄ 南非 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京✈约翰内斯堡约 15h（经停深圳）</td>
+<td>往返 4500–6000 元</td>
+<td>国航 CA867，每周多班，旺季提前 2 个月订</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>17–24h</td>
+<td>4000–5500 元</td>
+<td>经迪拜/多哈/亚的斯亚贝巴/曼谷，班次多</td>
+</tr>
+<tr>
+<td>内陆航班</td>
+<td>约堡⇄开普敦约 2h</td>
+<td>往返 800–1500 元</td>
+<td>FlySafair/南非航空/英国航空，克鲁格可飞霍德斯普鲁特机场</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 南非境内交通核心提醒</span>
+      南非是<strong>自驾天堂</strong>：右舵驾驶，路况良好，克鲁格与花园大道自驾体验最佳（租车约 250–450 元/天，需国际驾照认证件+全险）。长途用<strong>内陆航班</strong>衔接（约堡⇄开普敦 2h）。克鲁格园内限速 50km/h，夜间严禁自驾（动物横穿）。
+    </div>
+
+    <h3>18.2 南非境内交通</h3>
+    <ul>
+      <li><strong>内陆航班</strong>：约堡⇄开普敦 2h、开普敦⇄伊丽莎白港 1h45，FlySafair 提前订约 300–500 元/程</li>
+      <li><strong>租车自驾</strong>：克鲁格与花园大道首选，右舵，租车约 250–450 元/天，取车出示认证件</li>
+      <li><strong>约堡/开普敦市区</strong>：Uber 便宜又安全（短途 40–80 兰特），别路边招手</li>
+      <li><strong>克鲁格园内</strong>：自驾限速 50km/h，或报名 game drive 敞篷车（含向导更易找动物）</li>
+      <li><strong>观鲸/游船</strong>：赫曼努斯观鲸船、克尼斯纳环礁湖游船、海豹岛船班均需提前预约</li>
+      <li><strong>出租车</strong>：不建议路边招手，一律 Uber/Grab；机场到市区用酒店接机更稳</li>
+    </ul>
+
+    <h3>18.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>约翰内斯堡·桑顿/机场</td>
+<td>经济 250–400 / 标准 500–900</td>
+<td>商务区安全、机场近</td>
+<td>市中心治安一般</td>
+</tr>
+<tr>
+<td>克鲁格·园内营地/园外</td>
+<td>经济 300–500 / 标准 800–1500</td>
+<td>营地近动物、含餐可选</td>
+<td>私密营地 4500 兰特起</td>
+</tr>
+<tr>
+<td>开普敦·V&A/市区</td>
+<td>经济 300–500 / 标准 600–1000</td>
+<td>海滨繁华、景点步行可达</td>
+<td>旺季周末房态紧张</td>
+</tr>
+<tr>
+<td>斯泰伦博斯·酒庄区</td>
+<td>标准 700–1400</td>
+<td>庄园住宿、品酒方便</td>
+<td>距开普敦约 45 分钟</td>
+</tr>
+<tr>
+<td>克尼斯纳·环礁湖</td>
+<td>标准 500–900</td>
+<td>湖景民宿性价比高</td>
+<td>圣诞季涨价明显</td>
+</tr>
+<tr>
+<td>齐齐卡马·风暴河</td>
+<td>标准 400–800</td>
+<td>森林小木屋、紧邻公园</td>
+<td>设施朴素、信号弱</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍖 必吃经典</h3>
+        <ul>
+          <li>Braai 南非烤肉：牛排/香肠 Boerewors，配 pap（玉米糊）</li>
+          <li>Biltong 牛肉干：国民零食，公路旅行必备</li>
+          <li>Bunny Chow：咖喱面包碗（印度裔特色）</li>
+          <li>Bobotie：开普马来式咖喱肉糜焗蛋</li>
+        </ul>
+        <h3>🍇 葡萄酒乡</h3>
+        <ul>
+          <li>Pinotage：南非独创葡萄品种，国宝级</li>
+          <li>波尔多混酿与 Sauvignon Blanc</li>
+          <li>酒庄品酒套餐 R60–150/人，含 5–7 款</li>
+          <li>奶酪与橄榄油伴手礼</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🦞 海鲜盛宴</h3>
+        <ul>
+          <li>克尼斯纳生蚝：南非生蚝之乡，半打 R120–180</li>
+          <li>大西洋龙虾（西海岸），做法多</li>
+          <li>Snoek 梭鱼烧烤：开普特色</li>
+          <li>炸鱼薯条：半岛海滨小镇标配</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>开普敦 V&A 美食市场与长街</li>
+          <li>约翰内斯堡 MABONENG 区</li>
+          <li>克尼斯纳码头生蚝吧</li>
+          <li>赫曼努斯海滨餐厅观鲸边晚餐</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 南非餐厅普遍收 10–15% 服务费（部分并入账单），结账先看账单再决定是否另给小费；② 自来水大城市可直饮，但初到建议瓶装水；③ 生蚝认准有牌照餐厅，别吃路边来路不明海鲜；④ 品酒会很便宜但酒驾零容忍，司机一杯都不能碰；⑤ 克鲁格营地自助餐份量很大，别点多。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上）+ ETA 电子授权打印件</li>
+        <li>往返机票与酒店预订单</li>
+        <li>转换插头（230V D/M/N 三圆脚）</li>
+        <li>南非兰特现金（1000–2000 备用）</li>
+      </ul>
+      <ul>
+        <li>租车自驾需国际驾照认证件+全险</li>
+        <li>克鲁格/桌山缆车/罗本岛提前网上订票</li>
+        <li>下载离线地图与天气 App</li>
+        <li>查观鲸季节（6–11 月）与克鲁格开放时间</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>治安</strong>：约堡市中心与夜间不步行，住宿选商务区，贵重物品寄存保险箱，别露财。② <strong>桌山缆车看天气</strong>：冬季多雨雾易停运，行程留「机动日」补拍，别把桌山排到最后一天。③ <strong>克鲁格安全</strong>：园内严禁下车、投喂，与动物保持 20 米+，日落前回营地。④ <strong>右舵驾驶适应</strong>：新手上路先在市区缓速适应，头两天别开夜路；街头换汇陷阱多，去银行/机场正规兑换。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      南非是「<strong>野性与都市并存</strong>」的彩虹之国——克鲁格的 Big Five、开普敦的桌山与葡萄酒乡、好望角两大洋交汇、花园大道的海岸公路，16 天刚好串成一条东南大环线。办好 ETA、租辆右舵车，剩下的就是跟太阳赛跑去追动物。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#e07a3f",
+    "d": 3,
+    "n": "东北段 · 约堡⇄克鲁格",
+    "pts": [
+      [
+        -26.204,
+        28.047
+      ],
+      [
+        -23.988,
+        31.555
+      ]
+    ]
+  },
+  {
+    "c": "#3a7d5c",
+    "d": 3,
+    "n": "西南段 · 开普敦→好望角→花园大道→伊丽莎白港",
+    "pts": [
+      [
+        -33.957,
+        18.403
+      ],
+      [
+        -34.358,
+        18.472
+      ],
+      [
+        -34.036,
+        23.048
+      ],
+      [
+        -33.977,
+        23.558
+      ],
+      [
+        -33.96,
+        25.6
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": -26.204,
+    "lng": 28.047,
+    "name": "约翰内斯堡·先民纪念馆",
+    "t": "D2 上午 · 2h",
+    "fee": "约 100 兰特",
+    "note": "拓荒者纪念碑、城市全景"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": -23.988,
+    "lng": 31.555,
+    "name": "克鲁格国家公园",
+    "t": "D3–D5 · 3 天",
+    "fee": "日保育费 602 兰特",
+    "note": "Big Five、清晨猎游"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": -33.957,
+    "lng": 18.403,
+    "name": "开普敦·桌山",
+    "t": "D7 上午 · 3h",
+    "fee": "缆车往返 475 兰特",
+    "note": "上帝的餐桌、360° 缆车"
+  },
+  {
+    "num": 4,
+    "prio": "nice",
+    "lat": -33.807,
+    "lng": 18.366,
+    "name": "罗本岛",
+    "t": "D8 上午 · 4h",
+    "fee": "约 600 兰特",
+    "note": "曼德拉监狱、渡轮导览"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": -34.358,
+    "lng": 18.472,
+    "name": "好望角·开普角",
+    "t": "D11 全天 · 5h",
+    "fee": "含公园日费",
+    "note": "两大洋交汇、238m 灯塔"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": -33.937,
+    "lng": 18.861,
+    "name": "斯泰伦博斯·酒庄",
+    "t": "D10 全天 · 6h",
+    "fee": "品酒 60–150 兰特",
+    "note": "开普荷兰建筑、品酒会"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": -34.036,
+    "lng": 23.048,
+    "name": "克尼斯纳·环礁湖",
+    "t": "D14 上午 · 3h",
+    "fee": "游船约 300 兰特",
+    "note": "泻湖、海岬、生蚝"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": -33.977,
+    "lng": 23.558,
+    "name": "齐齐卡马·悬索桥",
+    "t": "D14 下午 · 3h",
+    "fee": "日保育费约 200 兰特",
+    "note": "风暴河口、森林徒步"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[-35.2, 16.2], [-22.3, 32.9]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#e07a3f\"></span>东北段（约堡⇄克鲁格）<br><span class=\"sw\" style=\"background:#3a7d5c\"></span>西南段（开普敦→好望角→花园大道→伊丽莎白港）<br><span class=\"sw dash\"></span>克鲁格—开普敦段为内陆航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

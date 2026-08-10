@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 老挝 8 天全景攻略 · 琅勃拉邦万荣万象</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #d4a017;
+    --red-light: #e0b83b;
+    --gold: #d4a017;
+    --ink: #2d2a24;
+    --muted: #8a8578;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e0d0;
+    --blue: #2e8b6e;
+    --cover1: #1f5a45;
+    --ov1: rgba(31,90,69,.88);
+    --ov2: rgba(46,139,110,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(138,90,46,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #eef6f1;
+    --head-bg: rgba(46,139,110,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/laos/laos-cover.jpg" alt="老挝旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 8 天 · 中老铁路 · 琅勃拉邦 ⇄ 万荣 ⇄ 万象</div>
+      <h1>老挝 8 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 万象 · 千年佛都琅勃拉邦 · 喀斯特户外万荣 · 湄公河首都万象</div>
+      <div class="meta">
+        <span>🛫 行程链：琅勃拉邦 → 万荣 → 万象 → 返程</span>
+        <span>📅 时间窗口：8 天 7 晚（旱季 11 月–次年 4 月最佳）</span>
+        <span>✈️ 北京⇄万象 直飞约 6 小时 · 或昆明陆路乘中老铁路</span>
+        <span>🛂 签证：中国护照免签 30 天（亦可电子签/落地签备选）</span>
+        <span>🕐 时差 -1 小时 · 🔌 电压 230V A/B/C/E/F 型插座</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 8 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 8 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">琅勃拉邦</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">万荣</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">万象</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 8 天怎么安排最合理</span>
+      老挝是「<strong>东南亚最慢的节奏</strong>」：琅勃拉邦是联合国教科文组织世界遗产古城，清晨布施、湄公河日落、光西瀑布；万荣是喀斯特群山间的「户外天堂」，热气球、皮划艇、轮胎漂流；万象则以塔銮与法式街道收尾。中老铁路把三城串成一条线，每段高铁 1–2.5 小时，8 天刚好从北到南走完，不赶路。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>免签 30 天</strong>；入境走免签通道即可，也可提前办电子签/落地签（20 美元）备选</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>琅勃拉邦 3 天 → 万荣 2 天 → 万象 2 天 → 返程 1 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 8 天从万象瓦岱机场返京；万象机场离市区约 6 公里，预留 2.5h 值机</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>琅勃拉邦 → 万荣 → 万象（中老铁路高铁，琅勃拉邦–万象约 2.5h）</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 8000–12000 ／ 标准 15000–22000 ／ 舒适 30000–50000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① LCR Ticket App 注册并抢高铁票 ② 万荣热气球提前订 ③ 琅勃拉邦住宿提前 2 周</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>旱季（11–4 月）晴朗最适合热气球与漂流；4 月最热 35℃+，5–10 月雨季湄公河水位高</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>基普现金为主（1 元 ≈ 2650 基普），万象/琅勃拉邦部分商家收微信与支付宝</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>高铁票比想象中抢手</strong>：中老铁路跨境段一票难求，务必用 LCR Ticket App 提前 5–7 天买，进站刷护照+二维码；车站离市区普遍有 5–10 公里，留足 1 小时赶车。② 免签虽方便，但<strong>自 2025 年 9 月起入境需在 immigration.gov.la 在线登记</strong>，生成 3 天有效的二维码，出入境都要出示，出发前 3 天内完成。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 8 天版</h2>
+
+    <p>以下为 8 天 7 晚的推荐节奏：以中老铁路高铁为骨架，从北到南推进。每日主景点 ≤2 个，琅勃拉邦放慢、万荣放开玩、万象收尾买手信。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵琅勃拉邦</td>
+<td>北京✈万象（约 6h），转高铁北上琅勃拉邦（约 2.5h），入住古城，夜市晚餐</td>
+<td>琅勃拉邦</td>
+<td>抵达+夜市</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>清晨布施 → 普西山日出 → 香通寺 → 老城法式街区漫步</td>
+<td>琅勃拉邦</td>
+<td>千年佛都</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>光西瀑布一日（泳池+熊救护中心）→ 湄公河日落船/竹桥</td>
+<td>琅勃拉邦</td>
+<td>瀑布日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>高铁到万荣（约 1h），坦普坎蓝湖 → 南松河轮胎漂流</td>
+<td>万荣</td>
+<td>户外天堂</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>热气球日出（可选）→ 皮划艇/攀岩/溶洞，下午湄公河畔发呆</td>
+<td>万荣</td>
+<td>喀斯特运动</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>高铁到万象（约 1h），塔銮 → 凯旋门 → 湄公河夜市</td>
+<td>万象</td>
+<td>首都地标</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>香昆寺佛园 → 玉佛寺/国家博物馆 → 早市手信采购</td>
+<td>万象</td>
+<td>佛国收尾</td>
+</tr>
+<tr>
+<td>D8 返程</td>
+<td>万象✈北京（直飞约 6h），到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍万荣 1 天（只留热气球+漂流半天）；亲子家庭把光西瀑布放上午、避开正午暴晒；想深度可在琅勃拉邦加 1 天去千岛湖（Pak Ou 岩洞）或湄公河快船到北部的孟威。万象如只当天中转，可把香昆寺与夜市合并为半天。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 8 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达琅勃拉邦</span>
+          <span class="d-desc">北京✈万象+高铁北上</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–14:30</td><td class="t-what">北京✈万象瓦岱机场（直飞约 6h，东航/老挝航空）。落地前 3 天内先在 immigration.gov.la 完成在线登记并保存二维码</td></tr>
+          <tr><td class="t-time">15:00–16:00</td><td class="t-what">机场→万象站（约 20 分钟），换乘<strong>中老铁路高铁北上</strong>琅勃拉邦（约 2.5h，二等座约 15 万基普），沿途喀斯特山景</td></tr>
+          <tr><td class="t-time">18:30–19:30</td><td class="t-what">抵达琅勃拉邦站（离古城约 8 公里），拼车/酒店接站进古城，入住湄公河畔或主街民宿</td></tr>
+          <tr><td class="t-time">19:30–21:30</td><td class="t-what"><strong>琅勃拉邦夜市</strong>：手工织布、老挝咖啡、椰子煎饼；晚餐老挝米粉+烤鱼</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">高铁票提前 5–7 天在 LCR Ticket App 上买；万象站打车到市区约 5–6 万基普，拼车更省。若直飞延误错过高铁，可改乘隔天早班或包车（约 4h）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 布施与古城</span>
+          <span class="d-desc">千年佛都一日</span>
+          <span class="d-tag ">🏮 佛都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–06:30</td><td class="t-what"><strong>清晨布施</strong>：主街沿线的清晨化缘，数百僧侣列队接受糯米饭布施。摊点可买糯米饭（约 2 万基普/篮），跪坐低姿、不触碰僧侣</td></tr>
+          <tr><td class="t-time">07:00–08:30</td><td class="t-what">布施后回酒店早餐休整</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><strong>普西山（Mount Phousi）</strong>：328 级台阶登顶，俯瞰湄公河与古城红屋顶，山顶金塔</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what"><strong>香通寺（Wat Xieng Thong）</strong>：老挝最美寺庙，马赛克生命之树外墙+倾斜屋顶大佛殿，门票约 2 万基普</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：湄公河畔法式小馆（老挝菜+法棍三明治）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><strong>老城法式街区漫步</strong>：王宫博物馆（约 3 万基普）、竹桥、手工纸伞坊；找个河边咖啡馆发一下午呆</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what">湄公河日落：河畔长堤看日落，晚餐夜市烧烤+Beerlao 啤酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">布施时段保持安静、不拍照怼脸、不用闪光灯；女生勿穿吊带短裙。普西山日落比日出更拥挤，可反向安排。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 光西瀑布</span>
+          <span class="d-desc">瀑布泳池与熊</span>
+          <span class="d-tag alt">💦 瀑布日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">包突突车/拼团出发<strong>光西瀑布</strong>（单程约 45 分钟，包车往返约 20–25 万基普，拼车约 5 万/人）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><strong>光西瀑布（Kuang Si）</strong>：门票 6 万基普（约 23 元），多层碧绿钙华池+主瀑布，趁早下水人少，含园内接驳车</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">园区午餐：简餐+烤串，熊救护中心旁凉亭休整</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what"><strong>熊救护中心</strong>（免费，含在门票内）：观赏从非法贸易救回的亚洲黑熊，上午 9–10 点喂食时间最活跃</td></tr>
+          <tr><td class="t-time">15:00–16:30</td><td class="t-what">回程途中顺访<strong>稻田咖啡馆/湄公河观景点</strong>，河畔休息</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><strong>竹桥+湄公河日落</strong>：古城南端竹桥（过桥费约 1–2 万基普），日落时分当地孩子跳水玩耍</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">光西瀑布 9 点前到最清静；泳池水凉，带速干衣与防水袋。瀑布上游段水流急，只在安全区游泳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 万荣户外</span>
+          <span class="d-desc">高铁到万荣+蓝湖</span>
+          <span class="d-tag ">🚄 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">琅勃拉邦站→万荣站（高铁约 1h，二等座约 8 万基普），车站拼车进镇（约 5 公里）</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what">入住万荣河畔酒店，租电瓶车/山地车（约 10–15 万基普/天）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><strong>坦普坎蓝湖（Tham Phu Kham）</strong>：门票约 1 万基普，翠蓝湖水+洞穴探险（带头灯），跳台跳水</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">蓝湖旁午餐：老挝烤鱼+糯米饭</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><strong>南松河轮胎漂流</strong>：租轮胎（约 6 万基普）+救生衣，沿河漂 2–3 小时，河岸酒吧停靠点丰富</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what">万荣夜市+河畔酒吧晚餐，看落日余晖下的喀斯特山</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蓝湖水质受雨季影响大，雨季（5–10 月）水浑时改去坦江溶洞（Tham Chang）；漂流务必穿救生衣，河道有石块。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 热气球与攀岩</span>
+          <span class="d-desc">喀斯特运动日</span>
+          <span class="d-tag alt">🎈 热气球日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:30–07:30</td><td class="t-what"><strong>万荣热气球</strong>（可选）：系留/自由飞行约 45 分钟，俯瞰南松河谷喀斯特峰林与稻田。自由飞约 90–120 美元（约 680 元），清晨天气最稳</td></tr>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">热气球后回酒店早餐，补个回笼觉</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><strong>皮划艇半日</strong>：南松河 6–8 公里划行，约 15–20 万基普含向导，穿救生衣</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：万荣西式+老挝混合餐厅</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><strong>攀岩/溶洞自由安排</strong>：初学者攀岩课程约 20–35 万基普，或骑电瓶车逛稻田与南松河桥</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">万荣观景台（Phangern Viewpoint）看日落，晚餐烧烤自助</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">热气球价格受天气与代理浮动，正规公司提前 1–2 天订；恐高可选系留式（约 35 万基普，定点升降）。当天有雨项目可能取消，多留半天缓冲。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 万象地标</span>
+          <span class="d-desc">塔銮与凯旋门</span>
+          <span class="d-tag ">🏛 首都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">万荣站→万象站（高铁约 1h，二等座约 8 万基普），车站到市区约 20 分钟</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what">入住万象市中心（湄公河畔/早市附近），寄存行李</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><strong>塔銮（Pha That Luang）</strong>：老挝国徽上的金塔，门票约 3 万基普，外圈回廊+中央大塔，四面佛龛</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：万象早市附近老挝米粉+椰汁</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><strong>凯旋门（Patuxai）</strong>：登顶约 3000 基普，俯瞰总统府与凯旋门广场；<strong>玉佛寺</strong>（Ho Phra Keo，约 2 万基普）：历史佛像博物馆</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><strong>湄公河夜市</strong>：河边摊档+滨河步道日落，晚餐湄公河边烤鱼餐厅</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">塔銮周一闭馆（开放时间 8:00–16:30，周一休息），行程避开周一安排；凯旋门登顶楼梯窄，穿平底鞋。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 佛园与手信</span>
+          <span class="d-desc">香昆寺+早市</span>
+          <span class="d-tag ">🛍 收尾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">早餐后退房寄存行李，包突突车出发<strong>香昆寺（Xieng Khuan 佛园）</strong>，万象东南约 25 公里</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><strong>香昆寺佛园</strong>：门票约 1.5 万基普，200 多尊水泥佛像与巨型卧佛，彩色混搭的超现实雕塑园</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">返程午餐：万象最地道的<strong>老挝火锅 Sinh Daeng</strong>（烤+涮）</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><strong>万象早市（Morning Market）与湄公河购物区</strong>：老挝咖啡豆、手工织锦、茶叶、木雕手信采购</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what">回酒店取行李，<strong>国家博物馆/文化宫</strong>外观打卡，机场方向</td></tr>
+          <tr><td class="t-time">18:00–19:00</td><td class="t-what">抵达瓦岱机场，办值机准备返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">香昆寺往返包车约 30–40 万基普（可拼车）；佛像园拍照自由但攀爬时注意安全。手信砍价：咖啡豆与织锦按报价 7–8 折。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 返程</span>
+          <span class="d-desc">万象✈北京</span>
+          <span class="d-tag return">🛬 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">早班或午班航班：万象✈北京（直飞约 6h），提前 2.5h 到机场，出示免签登记二维码</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">若为下午航班：机场周边或市区再喝一杯老挝咖啡，机场免税店补货 Beerlao/咖啡豆</td></tr>
+          <tr><td class="t-time">14:00–20:00</td><td class="t-what">万象✈北京，入境到家</td></tr>
+          <tr><td class="t-time">—</td><td class="t-what">回家整理照片，回看布施与热气球画面</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">万象瓦岱机场值机柜台少、旺季排队久，提前 2.5 小时到；回国前留好免签登记二维码与往返机票凭证备查。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-cover.jpg" alt="琅勃拉邦·普西山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">琅勃拉邦·普西山 <small>约 2 万基普</small></div>
+          <div class="sc-feat">古城制高点。<b>328 级台阶看湄公河与红屋顶</b>，日出日落机位。</div>
+          <div class="sc-meta">📅 5:00–18:00 · ⏱ 1h · 🚶 古城中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-1.jpg" alt="琅勃拉邦·光西瀑布" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">琅勃拉邦·光西瀑布 <small>6 万基普</small></div>
+          <div class="sc-feat">多层碧绿钙华池。<b>天然泳池+熊救护中心</b>，琅勃拉邦名片。</div>
+          <div class="sc-meta">📅 8:00–17:30 · ⏱ 3–4h · 🛺 突突车 45min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-2.jpg" alt="万荣·南松河" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">万荣·南松河 <small>漂流约 6 万基普</small></div>
+          <div class="sc-feat">喀斯特河谷。<b>热气球+皮划艇+轮胎漂流</b>，户外天堂。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🚄 高铁 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-3.jpg" alt="万象·塔銮" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">万象·塔銮 <small>约 3 万基普</small></div>
+          <div class="sc-feat">老挝国徽金塔。<b>金色大塔+回廊佛龛</b>，国家精神象征。</div>
+          <div class="sc-meta">📅 8:00–16:30（周一休）· ⏱ 1h · 🛺 市中心 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-4.jpg" alt="琅勃拉邦·清晨布施" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">琅勃拉邦·清晨布施 <small>免费（糯米饭约 2 万基普/篮）</small></div>
+          <div class="sc-feat">千年化缘传统。<b>数百僧侣列队受布施</b>，世界遗产晨景。</div>
+          <div class="sc-meta">📅 每日 5:30 前后 · ⏱ 1h · 🚶 主街沿线</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-5.jpg" alt="琅勃拉邦·香通寺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">琅勃拉邦·香通寺 <small>约 2 万基普</small></div>
+          <div class="sc-feat">老挝最美寺庙。<b>生命之树马赛克</b>与倾斜屋顶大殿。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 1h · 🚶 古城东南</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-6.jpg" alt="万荣·坦普坎蓝湖" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">万荣·坦普坎蓝湖 <small>约 1 万基普</small></div>
+          <div class="sc-feat">翠蓝湖+溶洞。<b>跳台跳水与洞穴探秘</b>，万荣性价比之王。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 2h · 🛺 镇外 7km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/laos/laos-7.jpg" alt="万象·湄公河夜市" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">万象·湄公河夜市 <small>免费</small></div>
+          <div class="sc-feat">河滨夜市。<b>日落+烤鱼+Beerlao</b>，首都慢生活。</div>
+          <div class="sc-meta">📅 17:00 起 · ⏱ 2h · 🚶 湄公河畔</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（琅勃拉邦古城、光西瀑布、万荣喀斯特、万象塔銮等均为老挝实景），用于页面配图。更多免费景点：湄公河日落步道、老城竹桥、万象凯旋门广场、香昆寺外围。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 2650 基普估算。往返机票按直飞往返 2500–3500 元计，高铁按三城往返合计约 300 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（8000–12000）</th>
+<th>标准（15000–22000）</th>
+<th>舒适（30000–50000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄万象 2500–3500</td>
+<td>直飞+灵活时段 4000–5500</td>
+<td>直飞商务/含转机休整 8000–12000</td>
+</tr>
+<tr>
+<td>住宿（7 晚）</td>
+<td>青旅/民宿 100–180/晚</td>
+<td>精品酒店/河景房 250–450/晚</td>
+<td>殖民别墅/度假村 700–1500/晚</td>
+</tr>
+<tr>
+<td>交通（高铁等）</td>
+<td>高铁二等座+突突车 300–500</td>
+<td>高铁+包车/拼团 800–1500</td>
+<td>全程包车/专车 3000–6000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>光西瀑布+塔銮等约 100–150</td>
+<td>含热气球外全部景点 250–400</td>
+<td>含万荣热气球等 2500–4000</td>
+</tr>
+<tr>
+<td>餐饮（8 天）</td>
+<td>夜市+老挝菜 600–1000</td>
+<td>正常下馆子 1600–2500</td>
+<td>河畔法餐+精品餐厅 5000–9000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 17000 元）</span>
+      往返机票 4500 + 住宿 7 晚 2400（平均 340/晚）+ 高铁与包车 1000 + 门票 300 + 餐饮 2000 + 万荣热气球 680 + 杂费/接驳 600 ≈ <strong>11500–13000 元</strong>。若住河景精品并加皮划艇/攀岩则逼近 17000 元。老挝整体物价低，大头仍是往返机票与热气球这类活动。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>8.1 亲子/休闲版调整</h3>
+
+
+    <p>琅勃拉邦延长至 4 天（加 Pak Ou 千佛洞与湄公河游船），万荣只玩半天蓝湖+河边发呆（避开漂流与热气球），万象压缩为 1.5 天。整体 8 天更松弛，适合带娃家庭与怕累人群。</p>
+
+    <h3>8.2 陆路进出国版（10 天）</h3>
+
+
+    <ul>
+
+      <li>昆明乘中老铁路（磨憨–磨丁口岸过关）进入琅勃拉邦</li>
+
+      <li>顺游磨憨边贸与磨丁免税</li>
+
+      <li>万象出境后经中老铁路回昆明</li>
+
+      <li>适合想体验跨境高铁的铁路爱好者，额外预算约 1500–2500 元</li>
+
+    </ul>
+
+    <h3>8.3 雨季备选（5–10 月）</h3>
+
+
+    <p>雨季蓝湖水质浑浊、万荣漂流涨水，建议热气球/攀岩改室内与寺庙；湄公河水涨时琅勃拉邦竹桥封闭，可改坐渡船；光西瀑布水量反而最大，最壮观。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>11.1 北京 ⇄ 老挝 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→万象约 6h</td>
+<td>往返 2500–3500 元</td>
+<td>东航/老挝航空直飞瓦岱机场</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>经昆明/广州/曼谷 7–10h</td>
+<td>2000–3200 元</td>
+<td>顺路玩昆明或西双版纳</td>
+</tr>
+<tr>
+<td>中老铁路（陆路）</td>
+<td>昆明–万象约 10h</td>
+<td>二等座 542 元</td>
+<td>跨境高铁，磨憨–磨丁口岸过关，适合铁路体验</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 老挝境内交通核心提醒</span>
+      三城之间<strong>首选中老铁路高铁</strong>：琅勃拉邦–万荣约 1h、万荣–万象约 1h、琅勃拉邦–万象约 2.5h。车票用 <strong>LCR Ticket App</strong> 提前 5–7 天抢购（支持微信/支付宝），进站刷护照+二维码；车站离市区普遍 5–10 公里，留足赶车时间。长途大巴便宜但慢（万象–琅勃拉邦约 10h），不赶时间才选。
+    </div>
+
+    <h3>11.2 老挝境内交通</h3>
+    <ul>
+      <li><strong>中老铁路高铁</strong>：琅勃拉邦–万荣 1h、万荣–万象 1h、万象–琅勃拉邦 2.5h，LCR App 购票</li>
+      <li><strong>突突车/嘟嘟车</strong>：琅勃拉邦市区短途 2–3 万基普，光西瀑布包车往返 20–25 万基普</li>
+      <li><strong>自行车/摩托车</strong>：琅勃拉邦古城租车 5–10 万基普/天，慢游首选</li>
+      <li><strong>万荣电瓶车</strong>：镇内到蓝湖/稻田 10–15 万基普/天</li>
+      <li><strong>万象网约车/突突车</strong>：Loca App 打车（部分司机讲价），短途 3–5 万基普</li>
+      <li><strong>长途大巴</strong>：万象–琅勃拉邦约 10h、2–3 万基普，仅预算党选择</li>
+    </ul>
+
+    <h3>11.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>琅勃拉邦·古城主街</td>
+<td>经济 100–180 / 标准 250–450</td>
+<td>布施、夜市、普西山步行可达</td>
+<td>晚间略吵，房间偏小</td>
+</tr>
+<tr>
+<td>琅勃拉邦·湄公河畔</td>
+<td>标准 300–500 / 精品 700–1500</td>
+<td>河景日落，安静</td>
+<td>离主街稍远</td>
+</tr>
+<tr>
+<td>万荣·南松河畔</td>
+<td>经济 80–150 / 标准 200–400</td>
+<td>河景+项目集合点近</td>
+<td>雨季河水上涨时河边房慎选</td>
+</tr>
+<tr>
+<td>万象·湄公河/早市区</td>
+<td>经济 100–200 / 标准 250–450</td>
+<td>夜市与地标步行可达</td>
+<td>部分老楼隔音一般</td>
+</tr>
+<tr>
+<td>万象·凯旋门/使馆区</td>
+<td>标准 300–600</td>
+<td>安静安全，环境好</td>
+<td>离夜市稍远</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍜 必吃经典</h3>
+        <ul>
+          <li>老挝米粉 Khao Piak Sen：手打米线+鸡骨汤</li>
+          <li>老挝火锅 Sinh Daeng：烤肉+涮锅两吃</li>
+          <li>竹筒糯米饭 Khao Lam：竹筒烤糯米</li>
+          <li>湄公河烤鱼：香茅裹身炭火烤</li>
+        </ul>
+        <h3>🥢 在地名物</h3>
+        <ul>
+          <li>琅勃拉邦传统炖菜（夜市家常味）</li>
+          <li>万荣河畔烤鸡与烤肉自助</li>
+          <li>万象早市米线+椰汁</li>
+          <li>Beerlao 老挝啤酒（东南亚最佳之一）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>琅勃拉邦夜市煎饼、烤串</li>
+          <li>老挝法棍三明治 Khao Jee Pate：法越殖民遗风</li>
+          <li>老挝沙拉 Laap：柠檬薄荷拌肉末</li>
+          <li>椰子煎饼与老挝咖啡</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>琅勃拉邦夜市+湄公河畔法式小馆</li>
+          <li>万荣南松河畔餐厅与烧烤自助</li>
+          <li>万象早市周边与湄公河夜市</li>
+          <li>香昆寺返程路上的乡村火锅</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 生水不喝，只喝瓶装水；② 老挝菜偏辣偏酸，点单先说「不辣」；③ 夜市海鲜慎重（内陆国家，海鲜多为进口冻品）；④ 街边鲜榨果汁确认是否兑水加糖；⑤ 万荣酒吧街热闹但价格高，看酒单再点。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上有效期）+ 免签/签证凭证</li>
+        <li>immigration.gov.la 在线登记二维码（入境前 3 天内）</li>
+        <li>往返机票与酒店订单打印件</li>
+        <li>基普现金+少量美元（景点门票多收现金）</li>
+      </ul>
+      <ul>
+        <li>LCR Ticket App 注册并提前买高铁票</li>
+        <li>万荣热气球/皮划艇提前 1–2 天订</li>
+        <li>防晒、驱蚊液、防水袋（光西瀑布泳池）</li>
+        <li>查汇率：1 元 ≈ 2650 基普</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>高铁票是真难点</strong>：跨境段与周末票紧俏，退改签麻烦，行程定下来再买；② 寺庙与布施礼仪：进香通寺等须脱鞋、露肩露膝会被拦，布施不摸僧侣、不用闪光灯；③ 老挝是佛教国家，进塔銮等圣地别坐佛像旁或背对佛像拍照；④ 突突车/包车先谈价再上车，避免下车加价纠纷。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      老挝是「<strong>慢生活与户外并存</strong>」的湄公河小国——琅勃拉邦清晨的布施、光西瀑布的碧绿泳池、万荣河谷的热气球与漂流、万象塔銮的金光，8 天坐高铁从北到南刚好走完。免签 30 天 + 中老铁路直达，是东南亚里最省心又最有味道的选择之一。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#2e8b6e",
+    "d": 3,
+    "n": "主线 · 琅勃拉邦→万荣→万象（中老铁路）",
+    "pts": [
+      [
+        19.885,
+        102.135
+      ],
+      [
+        18.933,
+        102.449
+      ],
+      [
+        17.975,
+        102.634
+      ]
+    ]
+  },
+  {
+    "c": "#d4a017",
+    "d": 2,
+    "n": "光西瀑布支线 · 琅勃拉邦往返",
+    "pts": [
+      [
+        19.885,
+        102.135
+      ],
+      [
+        19.749,
+        101.995
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 19.8918,
+    "lng": 102.137,
+    "name": "琅勃拉邦·普西山",
+    "t": "D2 上午 · 1h",
+    "fee": "约 2 万基普",
+    "note": "328 级台阶、湄公河全景"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 19.8909,
+    "lng": 102.1407,
+    "name": "琅勃拉邦·香通寺",
+    "t": "D2 上午 · 1h",
+    "fee": "约 2 万基普",
+    "note": "生命之树马赛克"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 19.749,
+    "lng": 101.995,
+    "name": "琅勃拉邦·光西瀑布",
+    "t": "D3 上午 · 3h",
+    "fee": "6 万基普",
+    "note": "多层钙华池、熊救护中心"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 18.933,
+    "lng": 102.449,
+    "name": "万荣·南松河",
+    "t": "D4–D5 · 2 天",
+    "fee": "漂流约 6 万基普",
+    "note": "热气球、皮划艇、轮胎漂流"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 18.947,
+    "lng": 102.445,
+    "name": "万荣·坦普坎蓝湖",
+    "t": "D4 中午 · 2h",
+    "fee": "约 1 万基普",
+    "note": "蓝湖跳水、溶洞探秘"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 17.9768,
+    "lng": 102.6343,
+    "name": "万象·塔銮",
+    "t": "D6 上午 · 1h",
+    "fee": "约 3 万基普",
+    "note": "国徽金塔、周一闭馆"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 17.9707,
+    "lng": 102.6184,
+    "name": "万象·凯旋门",
+    "t": "D6 下午 · 1h",
+    "fee": "登顶约 3000 基普",
+    "note": "俯瞰总统府广场"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 17.8707,
+    "lng": 102.7492,
+    "name": "万象·香昆寺佛园",
+    "t": "D7 上午 · 2h",
+    "fee": "约 1.5 万基普",
+    "note": "200 尊水泥佛像"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[17.2, 101.4], [20.6, 103.2]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#2e8b6e\"></span>主线（琅勃拉邦→万荣→万象，中老铁路）<br><span class=\"sw\" style=\"background:#d4a017\"></span>光西瀑布支线（琅勃拉邦往返）<br><span class=\"sw dash\"></span>北京⇄万象为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

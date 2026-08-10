@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 不丹 8 天全景攻略 · 虎穴寺与喜马拉雅秘境</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #b8322d;
+    --red-light: #e07a3f;
+    --gold: #d9a441;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e6e0d3;
+    --blue: #2e6b46;
+    --cover1: #4a0f0d;
+    --ov1: rgba(74,15,13,.88);
+    --ov2: rgba(184,50,45,.72);
+    --ov3: rgba(224,122,63,.38);
+    --ov4: rgba(46,107,70,.20);
+    --key-bg: #faf0e0;
+    --info-bg: #eff5ef;
+    --head-bg: rgba(184,50,45,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/bhutan/bhutan-cover.jpg" alt="不丹旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 8 天 7 晚 · 喜马拉雅秘境环线</div>
+      <h1>不丹 8 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 帕罗 · 虎穴寺 · 廷布 · 普那卡宗 · 经幡与宗堡</div>
+      <div class="meta">
+        <span>🛫 行程链：帕罗 → 廷布 → 普那卡 → 帕罗 → 返程</span>
+        <span>📅 时间窗口：8 天 7 晚（3–5 月、9–11 月最佳）</span>
+        <span>✈️ 北京⇄帕罗 经曼谷转机约 10–13 小时</span>
+        <span>🛂 签证：需旅行社代办签证 + 可持续发展费 SDF 100 美元/晚</span>
+        <span>🕐 时差 -2 小时 · 🔌 电压 230V D/F/G 插座</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 8 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 8 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">帕罗</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">廷布</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">普那卡</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">帕罗</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 8 天怎么安排最合理</span>
+      不丹是喜马拉雅深处「<strong>高价值、低流量</strong>」的雷龙之国：签证与行程绑定、每天要缴可持续发展费，决定了它是最不适合自由行的目的地之一。8 天主线<strong>帕罗进帕罗出</strong>，先拿下虎穴寺，再沿山谷公路把廷布的都城与普那卡的田园串起来，最后回到帕罗飞走——节奏稳、不用赶，把经典一次看完。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照必须<strong>通过不丹持牌旅行社代办签证</strong>：$40 签证费 + 可持续发展费 SDF <strong>$100/人/晚</strong>（2027-08-31 前的优惠价），需护照+白底照片+往返机票+行程单，5–7 个工作日出签</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>8 天：帕罗 2 天（含虎穴寺）→ 廷布 2 天 → 普那卡 2 天 → 帕罗 1 天 → 返程</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>帕罗机场航班少且多为早班（曼谷线约 6–7 点起飞），返程前一晚务必宿帕罗</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>帕罗 → 廷布 → 普那卡 → 帕罗 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 18000–26000 ／ 标准 32000–48000 ／ 舒适 70000–100000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 找持牌旅行社订全包行程 ② 付清 SDF+签证费拿到清关信 ③ 提前订帕罗往返机票（曼谷转机）</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>3–5 月春花与清新山谷、9–11 月秋高气爽最宜；6–8 月雨季虎穴寺可能因雷雨临时关闭；12–2 月干冷但晴天多</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>努扎姆 BTN（1 元 ≈ 11.5 努扎姆），印度卢比 1:1 混用；游客大额支出已含在旅行社套餐内</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证和 SDF 只能通过持牌旅行社办</strong>，个人无法申请，任何「免 SDF」「自由行」渠道都属违规，被查到会遣返；费用需在出发前一次性付清，出签后拿到清关信才能登机。② <strong>帕罗机场位于峡谷中，起降条件苛刻</strong>，航班受天气影响大且班次少，曼谷转机必须留出至少一晚缓冲，千万别把国际航班与不丹国内段接得太紧。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 8 天版</h2>
+
+    <p>以下为 8 天 7 晚的推荐节奏：帕罗进帕罗出，三城由山谷公路串联（全程旅行社配车+向导）。虎穴寺徒步放在适应高海拔后的第二天，之后每天移动 ≤2h。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵帕罗</td>
+<td>北京✈曼谷✈帕罗（转机约 10–13h），下午帕罗镇+帕罗宗，宿帕罗</td>
+<td>帕罗</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>虎穴寺全天徒步（往返 4–6h，落差 600–900m），宿帕罗</td>
+<td>帕罗</td>
+<td>虎穴寺日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>上午帕罗国立博物馆，驱车赴廷布（约 2h），下午纪念塔+廷布宗</td>
+<td>廷布</td>
+<td>廷布初访</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>廷布：佛都登玛大佛+周末市场+民俗博物馆，宿廷布</td>
+<td>廷布</td>
+<td>廷布文化日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>过多楚拉山口（108 座佛塔）赴普那卡（约 3h），下午普那卡宗</td>
+<td>普那卡</td>
+<td>普那卡日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>普那卡吊桥+奇美寺（求子庙）+卡姆苏姆佛塔徒步，宿普那卡</td>
+<td>普那卡</td>
+<td>山谷徒步日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>驱车返帕罗（约 3h），杜克耶堡废墟+帕罗山谷，宿帕罗</td>
+<td>帕罗</td>
+<td>返帕罗日</td>
+</tr>
+<tr>
+<td>D8 返程</td>
+<td>帕罗✈曼谷✈北京（早班机转机），到家</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍掉普那卡的卡姆苏姆徒步（D6）改为半日休闲；虎穴寺登山杖可省很多力。若赶上 4 月帕罗 Tshechu 僧侣节或 9–10 月廷布节，把对应城市多留一天。带老人小孩可骑马上虎穴寺（到中途补给站，约 20–25 美元），但最后 700 级台阶必须自己走。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 8 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵帕罗</span>
+          <span class="d-desc">转机落地 · 帕罗镇初印象</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">00:00–07:00</td><td class="t-what">北京✈曼谷（直飞约 4.5h）建议前一晚出发，宿曼谷一晚衔接早班机（帕罗线每天仅早班）</td></tr>
+          <tr><td class="t-time">06:00–10:30</td><td class="t-what">曼谷✈帕罗（不丹航空/皇家航空约 4h25m），穿越喜马拉雅，峡谷降落</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">入境+取行李，旅行社持牌向导接机，入住帕罗酒店（海拔 2200m，先适应）</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><b>帕罗镇</b>（免费）：老街漫步+<b>帕罗宗 Rinpung Dzong</b>（约 80 元），看日落</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：帕罗镇餐厅（Momo 蒸饺、辣椒奶酪 Ema Datshi）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">帕罗机场起降条件苛刻，航班易受天气延误；务必在曼谷留一晚缓冲，别把两段机票接在当天。到达后不要马上爬虎穴寺，先适应一晚海拔。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 虎穴寺徒步</span>
+          <span class="d-desc">绝壁上的信仰</span>
+          <span class="d-tag ">⛰ 虎穴寺日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:00</td><td class="t-what">早餐后退房出发，驱车到虎穴寺登山口 Ramthangka（2220m）</td></tr>
+          <tr><td class="t-time">08:00–11:00</td><td class="t-what"><b>徒步上山</b>（约 2–3h）：松林+经幡路，中途补给站 Taktsang Cafeteria 休息</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>虎穴寺 Taktsang</b>（门票约 1000 努扎姆）：参观悬于 900m 绝壁的寺院，内部禁拍</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">午餐（补给站简餐约 7–11 美元）后徒步下山</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what">帕罗国立博物馆 Ta Dzong（约 80 元）+ 帕罗山谷观景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">全程往返 6–8km、落差 600–900m，4–6 小时；海拔 3120m，量力而行。相机手机进寺院须寄存，着装盖住肩膝，骑马到补给站约 20–25 美元但最后台阶必须走。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 帕罗→廷布</span>
+          <span class="d-desc">都城初访</span>
+          <span class="d-tag ">🏛 廷布日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">驱车帕罗→廷布（约 2h，65km 柏油山路，途中可远眺帕罗河）</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>廷布国家纪念塔 Memorial Chorten</b>（免费）：转经与佛塔，当地人生活缩影</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：廷布市场周边（藏式咖喱、Momo）</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>扎西确宗 Tashichho Dzong</b>（约 80 元）：首都王宫+政府机关所在地，河畔宗堡</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">廷布街头闲逛，宿廷布（海拔 2350m）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">廷布是不丹唯一「首都」——全国无红绿灯，圆环加交警指挥。纪念塔内圈要顺时针转经，入寺脱帽脱鞋、不喧哗。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 廷布</span>
+          <span class="d-desc">大佛与市场</span>
+          <span class="d-tag alt">🛕 廷布文化日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>佛都登玛大佛 Buddha Dordenma</b>（免费）：51.5m 巨型坐佛，俯瞰廷布谷</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>廷布周末市场</b>（免费，周五–周日开放）：辣椒、菌菇、不丹手工艺品</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：市场周边小吃</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>民俗遗产博物馆</b>（约 60 元）：传统农居与生活展，+邮局定制邮票（可选）</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">回酒店休息，晚上可看传统射箭比赛（当地最热运动）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大佛内部正在装修时可远观；周末市场周五开始摆摊，周日最热闹；射箭是不丹国粹，遇到比赛值得驻足。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 廷布→普那卡</span>
+          <span class="d-desc">多楚拉山口 + 水畔宗堡</span>
+          <span class="d-tag ">🏔 山口日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what">驱车廷布→普那卡（约 3h，76km），先到<b>多楚拉山口 Dochula Pass</b>（3100m）看 108 座佛塔与喜马拉雅雪山</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">山口观景台+咖啡，晴天可见珠穆拉里峰</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">普那卡午餐（海拔 1250m，气候温暖）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>普那卡宗 Punakha Dzong</b>（约 80 元）：不丹最美国王宗堡，建在普那卡河交汇处</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿普那卡，晚餐酒店餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">多楚拉山口 6–8 月雨季多雾，看雪山看运气；普那卡宗傍晚阳光最出片，可安排先游览再入住。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 普那卡</span>
+          <span class="d-desc">吊桥 + 求子庙 + 佛塔徒步</span>
+          <span class="d-tag alt">🌉 山谷日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>普那卡吊桥</b>（免费）：不丹最长的铁索吊桥，稻田与河谷景观</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>奇美寺 Chimi Lhakhang</b>（约 60 元）：疯癫圣僧的「求子庙」，田间徒步 20 分钟抵达</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：普那卡镇</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>卡姆苏姆佛塔 Khamsum Yulley Namgyal Chorten</b>（免费，徒步往返 2–3h）：河谷上的白塔</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">回酒店，晚餐后河畔散步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">奇美寺求子灵验的传说让无数夫妇专程而来；卡姆苏姆佛塔徒步 1.5h 上坡，穿徒步鞋、带水，山顶视野绝佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 返帕罗</span>
+          <span class="d-desc">杜克耶堡废墟 + 山谷收尾</span>
+          <span class="d-tag ">🏯 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what">驱车普那卡→帕罗（约 3h），途中看河谷与梯田</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">帕罗午餐</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>杜克耶堡 Drukgyel Dzong</b>（免费）：昔年抗击西藏入侵的古堡废墟+雪山背景</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">帕罗镇自由活动：购物（手工纸、唐卡、手织围巾），宿帕罗</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">D7 宿帕罗是为 D8 早班机做准备；帕罗购物建议集中今天，廷布市场买不到的工艺品这里更全。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 返程</span>
+          <span class="d-desc">帕罗✈曼谷✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–07:00</td><td class="t-what">退房，驱车到帕罗机场（机场离镇 10 分钟）</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what">帕罗✈曼谷（早班机约 4h25m）</td></tr>
+          <tr><td class="t-time">13:00–18:00</td><td class="t-what">曼谷转机：机场午餐+免税店</td></tr>
+          <tr><td class="t-time">18:30–次日</td><td class="t-what">曼谷✈北京（约 4.5h），落地入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">帕罗回程多为上午早班，D7 必须宿帕罗；帕罗机场免税店小而美，不丹特产（红米、辣椒酱、手工纸）可在这里补货。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-cover.jpg" alt="帕罗·虎穴寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">帕罗·虎穴寺 <small>约 1000 努扎姆</small></div>
+          <div class="sc-feat">不丹名片。<b>悬于 900m 绝壁的寺院</b>，徒步 4–6h 抵达。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 4–6h · 🥾 往返 6–8km 落差 900m</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-1.jpg" alt="帕罗·帕罗宗" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">帕罗·帕罗宗 <small>约 80 元</small></div>
+          <div class="sc-feat">河谷上的白色宗堡。<b>寺庙+行政中心</b>二合一，不丹经典机位。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 1–1.5h · 🚶 帕罗镇步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-2.jpg" alt="廷布·扎西确宗" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">廷布·扎西确宗 <small>约 80 元</small></div>
+          <div class="sc-feat">不丹政治与宗教心脏。<b>王宫+政府+寺院同驻</b>，河畔城堡。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 1.5h · 🚗 廷布市中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-3.jpg" alt="廷布·佛都登玛大佛" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">廷布·佛都登玛大佛 <small>免费</small></div>
+          <div class="sc-feat">51.5m 巨型坐佛。<b>俯瞰廷布谷</b>，不丹最大佛像。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 1h · 🚗 廷布南郊山坡</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-4.jpg" alt="廷布·国家纪念塔" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">廷布·国家纪念塔 <small>免费</small></div>
+          <div class="sc-feat">全城精神中心。<b>金顶佛塔+转经人潮</b>，最地道的烟火气。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 🚶 廷布市中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-5.jpg" alt="普那卡·普那卡宗" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">普那卡·普那卡宗 <small>约 80 元</small></div>
+          <div class="sc-feat">不丹最美国王宗堡。<b>建在双河交汇处</b>，日落金光必看。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 1.5–2h · 🚗 普那卡镇南</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-6.jpg" alt="多楚拉山口·108 佛塔" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">多楚拉山口·108 佛塔 <small>免费</small></div>
+          <div class="sc-feat">3100m 山口。<b>108 座纪念佛塔+喜马拉雅雪峰</b>，晴天绝景。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 🚗 廷布—普那卡必经之口</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/bhutan/bhutan-7.jpg" alt="普那卡·奇美寺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">普那卡·奇美寺 <small>约 60 元</small></div>
+          <div class="sc-feat">疯癫圣僧的求子庙。<b>田间徒步 20 分钟</b>，传说灵验。</div>
+          <div class="sc-meta">📅 白天 · ⏱ 1.5h · 🚶 吊桥旁稻田徒步</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（虎穴寺、帕罗宗、扎西确宗、大佛、纪念塔、普那卡宗、多楚拉山口佛塔、奇美寺均为不丹实景），用于页面配图。更多免费体验：廷布射箭场、帕罗山谷骑行、普那卡吊桥。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 11.5 努扎姆。最大头是「政府费」：SDF $100/晚 × 7 晚 + 签证 $40 ≈ <strong>5500 元</strong>，所有档位相同。机票按曼谷转机往返 12000–16000 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（18000–26000）</th>
+<th>标准（32000–48000）</th>
+<th>舒适（70000–100000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>曼谷转机 12000–15000</td>
+<td>旺季/灵活 15000–20000</td>
+<td>商务舱/全程接驳 25000–35000</td>
+</tr>
+<tr>
+<td>签证 + SDF（7 晚）</td>
+<td>约 5500（固定）</td>
+<td>约 5500（固定）</td>
+<td>约 5500（固定）</td>
+</tr>
+<tr>
+<td>住宿（7 晚）</td>
+<td>3 星 400–700/晚</td>
+<td>4 星 900–2000/晚</td>
+<td>5 星/奢华酒店 4000–10000/晚</td>
+</tr>
+<tr>
+<td>导游+车+餐饮（套餐制）</td>
+<td>跟团套餐 800–1200/天</td>
+<td>专属车导 1200–2000/天</td>
+<td>全包+私人向导 3000–6000/天</td>
+</tr>
+<tr>
+<td>门票活动</td>
+<td>虎穴寺+宗堡 300–600</td>
+<td>加骑马/射箭体验 800–1500</td>
+<td>加热气球/深度徒步/SPA 3000–8000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 42000 元）</span>
+      机票 16000 + 签证+SDF 5500 + 住宿 7 晚（3–4 星）9000 + 专属车导餐饮 7 天 10000 + 门票活动 1200 ≈ <strong>40000–44000 元</strong>。机票占三分之一、SDF 占七分之一，两项几乎锁死总预算；能省的主要是住宿档位，以及挑淡季机票。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>8.1 东不丹延伸版（二刷）</h3>
+
+
+    <ul>
+
+      <li>主线 8 天 + 帕罗→布姆唐国内航班（约 1h）</li>
+
+      <li>布姆唐：燃烧湖、梅巴尔措圣湖、古寺群</li>
+
+      <li>行程需加 2–3 天，预算上浮约 6000–9000 元</li>
+
+      <li>适合喜欢徒步与藏传佛教深度的人</li>
+
+    </ul>
+
+    <h3>8.2 紧凑 6 天版</h3>
+
+
+    <p>砍掉普那卡第二天的卡姆苏姆徒步（D6 改为半日吊桥+奇美寺，下午返帕罗），或廷布 D4 压缩为半天。6 天可压到 22000–35000 元。注意虎穴寺、廷布、普那卡宗三大经典一天都不能少，砍的全是「二线景点」。</p>
+
+    <h3>8.3 僧侣节 Tshechu 版</h3>
+
+
+    <p>每年 4 月帕罗 Tshechu、9–10 月廷布节是不丹最盛大的宗教庆典：面具舞、僧袍列队、万人朝圣。赶上节日的城市多留 1 天，住宿和机票要提前 3–6 个月抢；节庆期间满城经幡，氛围无价。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>6.1 北京 ⇄ 不丹 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>北京→曼谷</td>
+<td>直飞约 4.5h / 经香港约 7.5h</td>
+<td>往返 2000–4000 元</td>
+<td>国航/海航/泰航等多家直飞</td>
+</tr>
+<tr>
+<td>曼谷→帕罗</td>
+<td>约 4h25m</td>
+<td>往返约 10000–14000 元</td>
+<td>Drukair 不丹皇家航空 / 不丹航空，每日早班</td>
+</tr>
+<tr>
+<td>全程转机</td>
+<td>10–13 小时（含候机）</td>
+<td>往返合计 12000–18000 元</td>
+<td>帕罗机场地形特殊仅白天起降，建议提前一天抵曼谷</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 不丹交通核心提醒</span>
+      帕罗机场坐落在<strong>峡谷中，起降条件苛刻</strong>，只有极少数认证飞行员能执飞，航班受天气影响大、班次少。曼谷→帕罗段<strong>每天只有早班</strong>（约 6–7 点起飞），所以往返都必须<strong>在曼谷留一晚</strong>。国内段三城全靠公路，旅行社配车+向导，无需自己操心租车。
+    </div>
+
+    <h3>6.2 不丹境内交通（公路为王）</h3>
+    <ul>
+      <li><strong>公路包车+向导</strong>：帕罗–廷布约 2h（65km），廷布–普那卡约 3h（76km），全程柏油山路</li>
+      <li><strong>持牌旅行社标配</strong>：行程含专属司机+持牌向导，跨城移动、门票、餐饮全包</li>
+      <li><strong>多楚拉山口</strong>：帕罗/廷布→普那卡必经之口，海拔 3100m，108 座佛塔观景台</li>
+      <li><strong>国内航班</strong>：帕罗→布姆唐/盖勒普等有国内航线（约 1h），本主环线用不上</li>
+      <li><strong>徒步</strong>：虎穴寺往返 4–6h、卡姆苏姆佛塔 2–3h，均需向导陪同</li>
+      <li><strong>城镇内</strong>：帕罗/廷布/普那卡步行即可，出租车少量</li>
+    </ul>
+
+    <h3>6.3 住宿区域推荐（8 天 7 晚）</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>帕罗</td>
+<td>3 星 400–900 / 4–5 星 2000–8000</td>
+<td>虎穴寺与帕罗宗步行可达，山谷酒店风景好</td>
+<td>僧侣节一房难求</td>
+</tr>
+<tr>
+<td>廷布</td>
+<td>3 星 500–900 / 4 星 1500–3000</td>
+<td>首都繁华，博物馆市场多</td>
+<td>海拔 2350m 需注意高反</td>
+</tr>
+<tr>
+<td>普那卡</td>
+<td>3 星 400–800 / 4 星 1200–2500</td>
+<td>山谷田园、海拔低气候暖</td>
+<td>冬夜冷，选带暖气的房</td>
+</tr>
+<tr>
+<td>多楚拉山口一带</td>
+<td>中高端 1500–4000</td>
+<td>云海与雪山景观绝佳</td>
+<td>位置偏，移动绕路</td>
+</tr>
+<tr>
+<td>民宿 Homestay</td>
+<td>200–400（含餐）</td>
+<td>深度体验不丹家庭生活</td>
+<td>设施简单，需旅行社协调</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍛 不丹必吃</h3>
+        <ul>
+          <li>Ema Datshi 辣椒奶酪（国菜）</li>
+          <li>Momo 藏式蒸饺</li>
+          <li>Phaksha Paa 猪肉干椒</li>
+          <li>红米饭（不丹主粮）</li>
+        </ul>
+        <h3>🥘 雪山能量餐</h3>
+        <ul>
+          <li>咖喱鸡 + 黄油米饭</li>
+          <li>Chowmein 炒面</li>
+          <li>Thukpa 藏式汤面（徒步补给）</li>
+          <li>牦牛肉干巴</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍲 在地风味</h3>
+        <ul>
+          <li>Puta 荞麦面（布姆唐名物）</li>
+          <li>不丹硬奶酪 Yadang</li>
+          <li>Suja 酥油茶</li>
+          <li>Ara 青稞酒</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>帕罗镇中心餐厅</li>
+          <li>廷布周末市场周边</li>
+          <li>普那卡酒店餐厅（随团用餐为主）</li>
+          <li>虎穴寺中途补给站简餐</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 不丹菜以<strong>辣椒为灵魂</strong>（辣椒是蔬菜不是调料），怕辣务必先说「No chili」；② 游客餐多为套餐制、含在团费里，菜单外单点需与向导确认；③ 酥油茶口味独特，先点一小杯试味；④ 山间补给站只收现金，带足努扎姆。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上）+ 签证清关信（旅行社提供）</li>
+        <li>无人机需提前报备（帕罗机场附近禁飞）</li>
+        <li>保暖外套（帕罗 2200m 清晨冷）+ 防水徒步鞋</li>
+        <li>转换插头（230V D/F/G 型）</li>
+      </ul>
+      <ul>
+        <li>现金：努扎姆 + 少量美元（偏远小店找零）</li>
+        <li>高原防晒 + 唇膏（海拔 2350m+），常用药</li>
+        <li>下载离线地图（山区信号弱）</li>
+        <li>确认返程航班时间，返程前一晚宿帕罗</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证和 SDF 无法个人办理</strong>，必须通过持牌旅行社一次性付清，「免 SDF」「自由行」都是违规渠道，被查会遣返；② 虎穴寺海拔 3120m、落差近 900m，<strong>别落地当天就冲</strong>，先到帕罗适应一晚，下雨打雷寺院会临时关闭；③ 相机手机进虎穴寺内部要寄存，<strong>寺院内禁止拍照</strong>，着装盖住肩膝；④ 不丹「高价值低流量」政策下费用不低，SDF+机票占预算一半，别按常规东南亚预算算账。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      不丹是喜马拉雅深处的「雷龙之国」——虎穴寺悬于绝壁、宗堡立在河谷、经幡在 3100m 山口翻飞，还有全境唯一不用红绿灯的首都。8 天环线把帕罗的信仰、廷布的都城与普那卡的田园一次看完。它是地球上最特别也最「贵」的旅行地之一：规则苛刻、费用透明，值不值得，去过才懂。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#b8322d",
+    "d": 3,
+    "n": "主线环线 · 帕罗→廷布→普那卡→帕罗",
+    "pts": [
+      [
+        27.428,
+        89.416
+      ],
+      [
+        27.472,
+        89.639
+      ],
+      [
+        27.616,
+        89.874
+      ],
+      [
+        27.428,
+        89.416
+      ]
+    ]
+  },
+  {
+    "c": "#2e6b46",
+    "d": 3,
+    "n": "山口支线 · 帕罗→多楚拉山口→普那卡",
+    "pts": [
+      [
+        27.428,
+        89.416
+      ],
+      [
+        27.489,
+        89.753
+      ],
+      [
+        27.616,
+        89.874
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 27.428,
+    "lng": 89.416,
+    "name": "帕罗·帕罗宗",
+    "t": "D1 下午 · 1.5h",
+    "fee": "约 80 元",
+    "note": "河谷白色宗堡"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 27.492,
+    "lng": 89.363,
+    "name": "帕罗·虎穴寺",
+    "t": "D2 全天 · 4–6h",
+    "fee": "约 1000 努扎姆",
+    "note": "900m 绝壁悬寺，徒步往返"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 27.434,
+    "lng": 89.423,
+    "name": "帕罗·国立博物馆",
+    "t": "D2 下午 · 1h",
+    "fee": "约 80 元",
+    "note": "环形古塔内藏文物"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 27.489,
+    "lng": 89.635,
+    "name": "廷布·扎西确宗",
+    "t": "D3 下午 · 1.5h",
+    "fee": "约 80 元",
+    "note": "王宫+政府+寺院"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 27.466,
+    "lng": 89.638,
+    "name": "廷布·国家纪念塔",
+    "t": "D3 上午 · 1h",
+    "fee": "免费",
+    "note": "金顶佛塔与转经人潮"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 27.44,
+    "lng": 89.7,
+    "name": "廷布·佛都登玛大佛",
+    "t": "D4 上午 · 1h",
+    "fee": "免费",
+    "note": "51.5m 巨型坐佛"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 27.604,
+    "lng": 89.866,
+    "name": "普那卡·普那卡宗",
+    "t": "D5 下午 · 1.5h",
+    "fee": "约 80 元",
+    "note": "双河交汇水畔宗堡"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 27.585,
+    "lng": 89.869,
+    "name": "普那卡·奇美寺",
+    "t": "D6 上午 · 1.5h",
+    "fee": "约 60 元",
+    "note": "求子庙，田间徒步抵达"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[27.2, 89.0], [28.0, 90.2]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#b8322d\"></span>主线环线（帕罗→廷布→普那卡→帕罗）<br><span class=\"sw\" style=\"background:#2e6b46\"></span>山口支线（多楚拉山口）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

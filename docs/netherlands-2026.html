@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 荷兰 9 天全景攻略 · 运河与郁金香</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #e8781a;
+    --red-light: #f09a4a;
+    --gold: #d4a017;
+    --ink: #2b2620;
+    --muted: #8a7a6f;
+    --bg: #faf7f1;
+    --card: #ffffff;
+    --line: #e8ddcf;
+    --blue: #1b6fb5;
+    --cover1: #9a4a12;
+    --ov1: rgba(232,120,26,.88);
+    --ov2: rgba(212,160,23,.72);
+    --ov3: rgba(27,111,181,.38);
+    --ov4: rgba(250,247,241,.20);
+    --key-bg: #fdf3dd;
+    --info-bg: #f1f5f9;
+    --head-bg: rgba(232,120,26,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/netherlands/netherlands-cover.jpg" alt="荷兰旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 9 天环线 · 阿姆斯特丹 + 鹿特丹</div>
+      <h1>荷兰 9 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 阿姆斯特丹 · 风车村 · 羊角村 · 鹿特丹 · 海牙</div>
+      <div class="meta">
+        <span>🛫 行程链：阿姆斯特丹 → 桑斯安斯风车村 → 羊角村 → 鹿特丹 → 海牙 → 返程</span>
+        <span>📅 时间窗口：9 天 8 晚</span>
+        <span>✈️ 北京⇄阿姆斯特丹 直飞约 12.5 小时</span>
+        <span>🛂 签证：中国护照需办申根签证（需预约递签）</span>
+        <span>🕐 时差 -7h（冬）/-6h（夏） · 🔌 电压 230V C/F 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 9 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 9 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">阿姆斯特丹</span>
+      <span class="arrow">→</span>
+      <span class="node">桑斯安斯</span>
+      <span class="arrow">→</span>
+      <span class="node">羊角村</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">鹿特丹</span>
+      <span class="arrow">→</span>
+      <span class="node">海牙</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 9 天怎么安排最合理</span>
+      荷兰国土不大，却集齐了<strong>运河古城、风车水利、郁金香花田</strong>三大名片。9 天的经典打开方式：前 5 天深耕阿姆斯特丹（博物馆+运河+红灯区），中间 2 天分头去桑斯安斯风车村与羊角村（都是当日往返），最后 2 天南下鹿特丹看现代建筑与小孩堤防风车群、顺路海牙看和平宫。节奏上<strong>全程无长距离赶路</strong>，城际火车最远也就 1 小时。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办<strong>申根签证</strong>（荷兰递签）；通过领馆/中智中心预约，建议提前 4–6 周，旺季更早</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>阿姆斯特丹 5 天（双馆+运河+红灯区）+ 桑斯安斯/羊角村各 1 天 + 鹿特丹/海牙 2 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 9 天从海牙/阿姆斯特丹返程，晚间航班为主，预留 3 小时到机场</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>阿姆斯特丹 → 桑斯安斯风车村 → 羊角村 → 鹿特丹 → 海牙 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 10000–15000 ／ 标准 18000–26000 ／ 舒适 40000–55000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 预约申根签证递签 ② 订梵高/国立/安妮之家分时票 ③ 订往返机票（直飞 KLM）</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>3 月中–5 月中郁金香花季（库肯霍夫 3/19–5/10）；5–9 月最舒适；冬季运河可上冰</td>
+</tr>
+<tr>
+<td>货币与电源</td>
+<td>欧元 €（1€≈7.8 元）；时差 -6/-7h；230V C/F 型两圆脚插座，需带转接头</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>三大博物馆全部要提前网上预约分时票</strong>：梵高博物馆（€25）、国立博物馆（€23.5）、安妮之家（€16），现场基本买不到，旺季提前 2–4 周放票即抢空。② 荷兰交通全面推行 <strong>OVpay 非接触刷卡</strong>（信用卡/手机直接刷），OV-chipkaart 实体卡将逐步淘汰，短途游客<strong>不用买卡</strong>，直接刷 Visa/Mastercard 即可。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 9 天版</h2>
+
+    <p>以下为 9 天 8 晚的推荐节奏：前 5 天阿姆斯特丹（两馆分开安排避免审美疲劳），后 4 天两乡两城。每日主景点 ≤2 个，城际交通以 NS 火车 + OVpay 为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵阿姆斯特丹</td>
+<td>北京✈阿姆斯特丹（KLM 直飞约 12.5h），入住市中心，傍晚运河边散步</td>
+<td>阿姆斯特丹</td>
+<td>抵达+时差</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>梵高博物馆 → 国立博物馆（博物馆广场双馆日）→ 冯德尔公园</td>
+<td>阿姆斯特丹</td>
+<td>艺术双馆</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>运河游船 → 安妮之家 → 红灯区夜游（仅观瞻）</td>
+<td>阿姆斯特丹</td>
+<td>运河与故居</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>自行车一日：约旦区 → 花卉市场 → 西教堂 → 运河带</td>
+<td>阿姆斯特丹</td>
+<td>骑行日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>自由日：郁金香博物馆/伦勃朗故居/滑铁卢广场跳蚤市场</td>
+<td>阿姆斯特丹</td>
+<td>自由漫游</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>桑斯安斯风车村：风车+奶酪+木鞋工坊（当日往返）</td>
+<td>阿姆斯特丹</td>
+<td>风车日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>羊角村：威尼斯式运河小镇，租船游水道（当日往返）</td>
+<td>阿姆斯特丹</td>
+<td>水乡日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>鹿特丹：立体方块屋 → 大市场 → 水上巴士到小孩堤防风车群</td>
+<td>鹿特丹</td>
+<td>现代建筑日</td>
+</tr>
+<tr>
+<td>D9 返程</td>
+<td>海牙和平宫 → 莫瑞泰斯美术馆（可选）→ 返程航班</td>
+<td>—</td>
+<td>海牙+收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      花季（3 月中–5 月中）可将 D5 自由日换成<strong>库肯霍夫郁金香公园一日</strong>；亲子家庭可压缩博物馆参观、加入阿姆斯特丹动物园或 NEMO 科学博物馆；时间紧可砍海牙，D9 直接从鹿特丹返程。鹿特丹住宿比阿姆斯特丹便宜 30%，可考虑 D6 起换宿。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 9 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达阿姆斯特丹</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">10:00–16:30</td><td class="t-what">北京✈阿姆斯特丹史基浦机场（KLM 直飞约 12.5h）。机场下机过边检后，取行李</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">机场乘 NS 火车/机场快线到阿姆斯特丹中央车站（约 15–20 分钟），入住市中心酒店</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what">水坝广场 + 阿姆斯特丹王宫外观（免费）→ 运河边散步，拍黄昏运河与桥洞</td></tr>
+          <tr><td class="t-time">21:00</td><td class="t-what">晚餐：荷兰煎饼（Pannenkoek）或薯条店，回酒店倒时差</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">时差仅 -6/-7h，落地当天建议不睡太久、坚持到当地晚上 21 点后再休息，第二天好倒过来。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 双馆艺术日</span>
+          <span class="d-desc">梵高 + 国立博物馆</span>
+          <span class="d-tag ">🎨 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">按预约时段前往<b>梵高博物馆</b>（需提前网上购票，€25），在博物馆广场旁</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>梵高博物馆</b>：向日葵、自画像、《星空》手稿，馆藏全球最大梵高收藏</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">博物馆广场午餐：荷兰薯条 + 三明治，广场上席地而坐</td></tr>
+          <tr><td class="t-time">13:30–16:30</td><td class="t-what"><b>国立博物馆</b>（需提前购票，€23.5）：伦勃朗《夜巡》、维米尔《倒牛奶的女仆》、黄金时代收藏</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><b>冯德尔公园</b>（免费）散步，看本地人遛狗骑车，放松双馆疲劳</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：约旦区小馆荷兰菜（Stamppot 土豆泥炖菜）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">两馆步行仅 3 分钟，但体量都很大（各 3 小时起步），安排同一天刚好一天两馆、晚上公园放松；分时票务必按约准时入场。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 运河游船 + 安妮之家</span>
+          <span class="d-desc">水城一日</span>
+          <span class="d-tag ">🚤 运河日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>运河游船</b>（1 小时，约 €16–22，线上预订更便宜）：玻璃顶船穿行王子运河/皇帝运河/绅士运河</td></tr>
+          <tr><td class="t-time">11:00–12:00</td><td class="t-what"><b>西教堂</b>（免费外观）+ 约旦区漫步，这里曾是安妮藏身处所在街区</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：约旦区咖啡店 + 苹果派（荷兰名物）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>安妮之家</b>（需提前预约，€16）：《安妮日记》真实写作地，密室藏身处，情感冲击强</td></tr>
+          <tr><td class="t-time">18:00–21:00</td><td class="t-what"><b>红灯区</b>（免费）：德瓦伦街区，夜晚霓虹+运河灯光，<strong>只观瞻不拍照</strong>，注意安全</td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">晚餐：亚洲/荷兰混搭或回酒店休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">安妮之家旺季提前 2–3 周预约；红灯区严禁对橱窗拍照、禁止吸烟，白天参观更从容，夜里注意保管财物。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 自行车一日</span>
+          <span class="d-desc">骑行逛阿姆斯特丹</span>
+          <span class="d-tag ">🚴 骑行日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–09:30</td><td class="t-what">酒店附近租自行车（约 €10–15/天），选车况好的，戴好头盔</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">骑行<b>约旦区 + 九街</b>（免费）：运河砖房、独立小店、本地早餐</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>花卉市场 Bloemenmarkt</b>（免费）：世界唯一水上花市，郁金香球茎可托运回国（需申报）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：市场附近小吃或生鲱鱼 Haring（荷兰特色，配洋葱一口闷）</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">骑行<b>运河带 + 阿姆斯特丹博物馆区</b>，打卡瘦桥、伦勃朗故居外观</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">还车，晚餐：荷兰金酒 + 小食拼盘（苦艾酒/脆炸丸子）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿姆斯特丹是自行车王国，骑行道遍布全城；路口多、有轨电车多，左转注意让直行；夜间骑行记得开前后灯。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 自由漫游日</span>
+          <span class="d-desc">主题馆 + 跳蚤市场</span>
+          <span class="d-tag alt">🛍 自由日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>郁金香博物馆</b>（€5.5）或 <b>伦勃朗故居</b>（€15，可选其一）：了解球茎热与黄金时代画家工作室</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：阿姆斯特丹唐人街附近，或小吃拼盘</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>滑铁卢广场跳蚤市场</b>（免费）：二手黑胶、古董、纪念品，淘货乐趣</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what">自由安排：购物街 PC Hooftstraat 名牌街 / NEMO 科技馆 / 咖啡馆放空</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：海鲜餐厅（荷兰青口/牡蛎）或亚洲料理</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">此日无硬性安排，用于机动补位——下雨可改室内博物馆，晴天可多骑车。花季可整体替换为库肯霍夫一日（见备选方案）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 桑斯安斯风车村</span>
+          <span class="d-desc">风车 + 奶酪 + 木鞋</span>
+          <span class="d-tag ">🌬 风车日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">中央车站乘火车到 Zaandijk Zaanse Schans 站（约 20 分钟）</td></tr>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what"><b>桑斯安斯风车村</b>（免费进入）：5 座仍在运转的木制风车沿赞河排开，近看风车内部机械</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：风车村内荷兰煎饼 + 奶酪试吃（高德奶酪/埃丹奶酪）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>奶酪农场 + 木鞋工坊</b>（免费/小费）：看传统木鞋制作过程，买迷你木鞋伴手礼</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">沿河步行或租自行车到周边风车点，赞河日落光线最佳</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">返程回阿姆斯特丹（火车 20 分钟），晚餐市区</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">风车村从市区往返共约 1.5 小时，可轻松半日游；风车内部参观每座 €5–6，选 1–2 座体验即可；周末人多，建议早到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 羊角村</span>
+          <span class="d-desc">威尼斯式运河小镇</span>
+          <span class="d-tag alt">🛶 水乡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">中央车站乘火车到 Steenwijk 站（约 1h40m）</td></tr>
+          <tr><td class="t-time">09:30–10:00</td><td class="t-what">Steenwijk 换乘 70 路巴士（约 20 分钟）到羊角村 Dominee Hylkemaweg 站</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>羊角村</b>（免费进入）：芦苇屋顶童话小屋 + 纵横水道，租<strong>静音电动船</strong>（约 €20–30/小时）自驾</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：河边餐厅荷兰煎饼/烤鱼（Kibbeling 炸鱼块是当地招牌）</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">继续划船 + 步行：打卡 Binnenpad 木桥、看天鹅与水鸟，或租自行车环湿地</td></tr>
+          <tr><td class="t-time">16:00–19:00</td><td class="t-what">乘巴士+火车返回阿姆斯特丹，晚餐在市区</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">羊角村往返约 5 小时在路上，留足 4 小时在村里；4–10 月有 270 路直达专线（班次更密）；租船建议选静音电动船，比手划船省力。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 鹿特丹 + 小孩堤防</span>
+          <span class="d-desc">现代建筑 + 世界遗产风车</span>
+          <span class="d-tag ">🏗 鹿特丹日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">中央车站乘 IC 城际火车到鹿特丹（约 40 分钟）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>立体方块屋</b>（外观免费，参观 €3）：Kubuswoningen 倾斜立方体住宅群 + 铅笔楼</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>大市场 Markthal</b>（免费）：拱形穹顶市场，荷兰美食集中，午餐在此解决</td></tr>
+          <tr><td class="t-time">13:30–14:00</td><td class="t-what">步行到天鹅桥码头乘<b>水上巴士 Waterbus 21</b> 往小孩堤防（约 30 分钟）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>小孩堤防风车群</b>（免费进入；风车套票约 €21）：19 座 UNESCO 风车沿堤排开，可进风车内部+坐观光船</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返鹿特丹，晚餐：港口区海鲜，宿鹿特丹（比阿姆斯特丹便宜）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">水上巴士票价约 €5–6，返程末班船留意时间；小孩堤防户外免费，进风车/坐船才需买票；傍晚光线拍风车倒影最佳。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 海牙 + 返程</span>
+          <span class="d-desc">和平宫 + 返程</span>
+          <span class="d-tag return">🕊 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">鹿特丹乘火车到海牙（约 25 分钟），存行李</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>和平宫</b>（外观免费，入内导览约 €9.5 需预约）：国际法院所在地 + 和平之火常燃</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>莫瑞泰斯美术馆</b>（约 €19，可选）：《戴珍珠耳环的少女》镇馆</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：海牙街边小吃或回车站附近</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">乘火车回阿姆斯特丹中央车站（约 50 分钟），再转机场快线到史基浦（20 分钟）</td></tr>
+          <tr><td class="t-time">17:00–20:00</td><td class="t-what">阿姆斯特丹✈北京（直飞约 11h，机上过夜），次日到京</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程航班以晚间 KLM 为主，务必留足 3 小时到机场；行李多可考虑 D8 直接在鹿特丹存包，D9 从海牙直接去机场更顺。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-1.jpg" alt="阿姆斯特丹·运河带" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">阿姆斯特丹·运河带 <small>游船 €16–22</small></div>
+          <div class="sc-feat">水城灵魂。<b>三环运河 + 玻璃顶游船</b>，黄昏桥洞最出片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 中央车站/各运河码头</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-2.jpg" alt="梵高博物馆" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">梵高博物馆 <small>€25（需预约）</small></div>
+          <div class="sc-feat">全球最大梵高收藏。<b>向日葵与自画像</b>，博物馆广场双馆之首。</div>
+          <div class="sc-meta">📅 9:00–17:00（周五至 21:00） · ⏱ 2–3h · 🚇 博物馆广场站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-3.jpg" alt="国立博物馆" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">国立博物馆 <small>€23.5（需预约）</small></div>
+          <div class="sc-feat">荷兰黄金时代。<b>伦勃朗《夜巡》 + 维米尔</b>，8000 件藏品。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 3h · 🚇 博物馆广场站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-4.jpg" alt="安妮之家" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">安妮之家 <small>€16（需预约）</small></div>
+          <div class="sc-feat"><b>《安妮日记》真实藏身处</b>，密室体验令人动容，约旦区。</div>
+          <div class="sc-meta">📅 9:00–22:00（旺季） · ⏱ 1.5h · 🚇 约旦区/西教堂旁</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-5.jpg" alt="桑斯安斯风车村" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">桑斯安斯风车村 <small>免费（风车 €5–6/座）</small></div>
+          <div class="sc-feat">活态风车村。<b>5 座运转风车 + 奶酪木鞋工坊</b>，赞河两岸。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚇 火车 Zaandijk Zaanse Schans 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-6.jpg" alt="羊角村" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">羊角村 <small>免费（租船 €20–30/h）</small></div>
+          <div class="sc-feat">荷兰威尼斯。<b>芦苇屋 + 无车水道</b>，静音电船穿行童话村。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 4–5h · 🚇 火车 Steenwijk + 70 巴士</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-7.jpg" alt="鹿特丹·立体方块屋" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">鹿特丹·立体方块屋 <small>外观免费（参观 €3）</small></div>
+          <div class="sc-feat">现代建筑名片。<b>45° 倾斜立方体住宅</b> + 铅笔楼 + 大市场。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 鹿特丹 Blaak 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/netherlands/netherlands-cover.jpg" alt="小孩堤防风车群" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">小孩堤防风车群 <small>免费进入（套票 €21）</small></div>
+          <div class="sc-feat">UNESCO 世界遗产。<b>19 座风车沿堤排开</b>，荷兰水利文明缩影。</div>
+          <div class="sc-meta">📅 9:00–17:30 · ⏱ 半天 · 🚢 鹿特丹水上巴士 30 分钟</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（阿姆斯特丹运河、梵高博物馆、国立博物馆、风车村、羊角村、立体方块屋等均为荷兰实景），用于页面配图。更多免费看点：水坝广场、花卉市场、约旦区、冯德尔公园、滑铁卢广场跳蚤市场。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 欧元 ≈ 7.8 元人民币估算。往返机票按直飞淡季 4000–5500 元计，旺季（6–8 月/花季）上浮 1000–2000 元。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（10000–15000）</th>
+<th>标准（18000–26000）</th>
+<th>舒适（40000–55000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄阿姆斯特丹 4000–5500</td>
+<td>直飞含选座/灵活改期 5500–8000</td>
+<td>商务舱/高端时段 15000–22000</td>
+</tr>
+<tr>
+<td>住宿（8 晚）</td>
+<td>青旅/民宿 300–500/晚</td>
+<td>三星酒店 800–1300/晚</td>
+<td>四星+运河景观 2500–4500/晚</td>
+</tr>
+<tr>
+<td>交通（火车+市内）</td>
+<td>OVpay 刷卡 1500–2500</td>
+<td>含城际火车通票 2500–4000</td>
+<td>包车/专车 + 头等舱 8000–12000</td>
+</tr>
+<tr>
+<td>门票（双馆+游船等）</td>
+<td>约 800–1500</td>
+<td>双馆+安妮之家+游船约 2500–3500</td>
+<td>全含+VIP 导览 6000–9000</td>
+</tr>
+<tr>
+<td>餐饮（9 天）</td>
+<td>超市+薯条+简餐 2000–3000</td>
+<td>正常下馆子 4000–6000</td>
+<td>米其林+海鲜大餐 12000–20000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 24000 元）</span>
+      往返机票 6500 + 住宿 8 晚 8800（平均 1100/晚）+ 交通 3000 + 门票 2800 + 餐饮 4500 + 签证/杂费 1200 ≈ <strong>26500 元</strong>（落在标准档区间）。大头是机票与住宿，双馆分时票提前 1 个月订能抢到早鸟价。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>9.1 春季花田版（3/19–5/10）</h3>
+
+
+    <ul>
+
+      <li>D5 自由日改为库肯霍夫一日：买含往返巴士套票（约 €33.5–38.5）</li>
+
+      <li>公园成人票 €20.5–21，8:00–19:00，建议 9 点前到避开人流</li>
+
+      <li>返回后顺路拍利瑟/诺德维克花田骑行大片</li>
+
+      <li>花季全城贵，机票住宿提前 2 个月订</li>
+
+    </ul>
+
+    <h3>9.2 亲子/轻松版</h3>
+
+
+    <p>带娃推荐：压缩博物馆（梵高选 1 小时精华线）、加入阿姆斯特丹动物园（€24）或 NEMO 科学博物馆（€17.5）、桑斯安斯奶酪工坊互动体验、小孩堤防观光船。鹿特丹大市场（Markthal）对娃极友好，羊角村电动船注意安全。全程城际火车+市内电车，无需租车。</p>
+
+    <h3>9.3 冬季运河版（11–3 月）</h3>
+
+
+    <p>冬季库肯霍夫闭园，但运河可能结冰、全城滑冰氛围浓；圣诞市集（11 月底–1 月初）在博物馆广场与伦勃朗广场，灯光节（11–1 月）游船看灯饰极美。机票住宿比夏季便宜 20–30%，博物馆反而人少好约。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>9.1 北京 ⇄ 荷兰 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→阿姆斯特丹约 12.5h / 回程约 11h</td>
+<td>往返 4000–6500 元</td>
+<td>KLM 荷航每日直飞，首都机场 T2 出发</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>15–25h</td>
+<td>3500–5500 元</td>
+<td>经迪拜/多哈/法兰克福/莫斯科，便宜但费时</td>
+</tr>
+<tr>
+<td>陆路/高铁</td>
+<td>—</td>
+<td>—</td>
+<td>北京到荷兰无直达铁路/公路，只能飞机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 荷兰境内交通核心提醒</span>
+      城际用<strong>NS 荷兰铁路</strong>（中央车站—鹿特丹约 40 分钟、—海牙约 50 分钟），市内用<strong>GVB 电车/地铁</strong>；全国推行 <strong>OVpay 非接触刷卡</strong>——信用卡或手机直接贴闸机进出，自动计费（起步约 €1.16 + 里程费），<strong>不用买 OV-chipkaart 卡</strong>。所有火车班次用 NS 官网或 9292 查询，双馆/安妮之家门票务必提前预约。
+    </div>
+
+    <h3>9.2 荷兰境内交通</h3>
+    <ul>
+      <li><strong>NS 城际火车</strong>：阿姆斯特丹—鹿特丹 40 分钟、—海牙 50 分钟、—桑斯安斯 20 分钟，OVpay 刷卡</li>
+      <li><strong>OVpay</strong>：信用卡/手机直接刷闸进站，进出都刷，自动按里程扣费，短途游客首选</li>
+      <li><strong>GVB 市内电车/地铁/巴士</strong>：中央车站换乘枢纽，1 小时票约 €3.5，可刷 OVpay</li>
+      <li><strong>水上巴士 Waterbus</strong>：鹿特丹天鹅桥—小孩堤防约 30 分钟，单程 €5–6，海上风光线</li>
+      <li><strong>自行车</strong>：阿姆斯特丹全城骑行友好，租车 €10–15/天，感受本地人出行方式</li>
+      <li><strong>机场快线</strong>：史基浦机场—中央车站约 15–20 分钟，24 小时运营，也可乘直达巴士</li>
+    </ul>
+
+    <h3>9.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>阿姆斯特丹·市中心/水坝广场</td>
+<td>标准 900–1500 / 舒适 2500+</td>
+<td>景点步行可达，夜生活丰富</td>
+<td>最贵，房间普遍小</td>
+</tr>
+<tr>
+<td>阿姆斯特丹·约旦区/九街</td>
+<td>标准 800–1400</td>
+<td>文艺街区、独立小店、餐厅多</td>
+<td>离中央车站稍远，多走路</td>
+</tr>
+<tr>
+<td>阿姆斯特丹·博物馆区</td>
+<td>标准 800–1400</td>
+<td>紧邻双馆，安静</td>
+<td>夜生活相对少</td>
+</tr>
+<tr>
+<td>阿姆斯特丹·市郊/史基浦</td>
+<td>经济 400–700</td>
+<td>近机场，比市中心便宜 40%</td>
+<td>进城要 20 分钟车程</td>
+</tr>
+<tr>
+<td>鹿特丹·中央站附近</td>
+<td>经济 400–600 / 标准 700–1200</td>
+<td>比阿姆斯特丹便宜 30%，现代建筑</td>
+<td>城市氛围偏商务</td>
+</tr>
+<tr>
+<td>海牙·市中心</td>
+<td>标准 700–1200</td>
+<td>临近和平宫，海滨城市</td>
+<td>景点分散，需转车</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🥞 必吃经典</h3>
+        <ul>
+          <li>荷兰煎饼 Pannenkoek（甜咸两版，约 €10–15）</li>
+          <li>土豆泥炖菜 Stamppot（香肠配菜）</li>
+          <li>炸鱼块 Kibbeling（塔塔酱绝配）</li>
+          <li>荷兰薯条（双层蛋+洋葱，€3–5）</li>
+        </ul>
+        <h3>🍰 在地名物</h3>
+        <ul>
+          <li>荷兰苹果派（约旦区名店）</li>
+          <li>鱼市牡蛎/青口（港口城市海鲜）</li>
+          <li>奶酪拼盘（搭配红酒）</li>
+          <li>炸肉丸 Bitterballen（酒吧小食）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🧀 街头小吃</h3>
+        <ul>
+          <li>生鲱鱼 Haring（洋葱配，本地仪式感）</li>
+          <li>高德/埃丹奶酪试吃（风车村必试）</li>
+          <li>焦糖华夫饼 Stroopwafel（现做热的好吃）</li>
+          <li>荷兰金酒 Jenever + 苦艾酒</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>阿姆斯特丹·约旦区/九街</li>
+          <li>鹿特丹·大市场 Markthal（各国美食拱廊）</li>
+          <li>博物馆广场·小吃车</li>
+          <li>滑铁卢广场·集市摊</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 景点周边网红店排队 1h+，评分看 Google 4.2+；② 荷兰餐厅晚餐 18 点后供应，午餐很多店只开到 15 点；③ 点酒水注意账单是否含服务费（多数已含）；④ 超市 AH/Jumbo 的荷式三明治和沙拉很便宜，赶路时效率神器；⑤ 生鲱鱼接受度因人而异，建议先尝一小份。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 申根签证（中智/领馆预约，提前 4–6 周）</li>
+        <li>梵高/国立/安妮之家分时门票（提前预约）</li>
+        <li>往返机票（KLM 直飞）+ 全程住宿预订</li>
+        <li>信用卡开通境外支付（OVpay 直接刷卡乘交通）</li>
+      </ul>
+      <ul>
+        <li>旅行保险（申根签强制，保额 ≥3 万欧元）</li>
+        <li>欧标转换插头（230V C/F 型两圆脚）</li>
+        <li>下载 9292 / NS / Google Maps 交通 App</li>
+        <li>查花期与天气：库肯霍夫开放日历、运河冰况</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 五条提醒</span>
+      ① <strong>三大博物馆现场基本无票</strong>，梵高/国立/安妮之家全部要提前网上预约分时票，旺季提前 2–4 周；② OVpay 进出闸机都要刷卡，漏刷会按全程最高价扣费；③ 红灯区<strong>严禁对橱窗拍照</strong>、禁止吸烟，违者可能被罚；④ 荷兰风大且天气多变，一天内晴雨切换，防风外套+折叠伞必备；⑤ 周末与花季（4 月）市区人挤人，热门餐厅和火车座位提前订。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      荷兰是把「小而美」做到极致的国家——阿姆斯特丹的水城运河与艺术双馆、桑斯安斯与小孩堤防的风车、羊角村的无车水道、鹿特丹的未来主义建筑，9 天刚好走完一条不赶路的环线。办好申根签、订好三大馆分时票、学会 OVpay 刷卡，剩下的就是骑上自行车慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#e8781a",
+    "d": 3,
+    "n": "主线 · 阿姆斯特丹→桑斯安斯→羊角村→鹿特丹→海牙",
+    "pts": [
+      [
+        52.367,
+        4.904
+      ],
+      [
+        52.472,
+        4.812
+      ],
+      [
+        52.712,
+        6.095
+      ],
+      [
+        51.924,
+        4.469
+      ],
+      [
+        52.08,
+        4.315
+      ]
+    ]
+  },
+  {
+    "c": "#1b6fb5",
+    "d": 2,
+    "n": "支线 · 鹿特丹→小孩堤防风车群（水上巴士）",
+    "pts": [
+      [
+        51.924,
+        4.469
+      ],
+      [
+        51.888,
+        4.639
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 52.3584,
+    "lng": 4.8811,
+    "name": "阿姆斯特丹·梵高博物馆",
+    "t": "D2 上午 · 2.5h",
+    "fee": "€25（需预约）",
+    "note": "向日葵、自画像、全球最大梵高收藏"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 52.36,
+    "lng": 4.8852,
+    "name": "阿姆斯特丹·国立博物馆",
+    "t": "D2 下午 · 3h",
+    "fee": "€23.5（需预约）",
+    "note": "伦勃朗《夜巡》、维米尔"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 52.373,
+    "lng": 4.886,
+    "name": "阿姆斯特丹·运河游船码头",
+    "t": "D3 上午 · 1h",
+    "fee": "€16–22",
+    "note": "玻璃顶船穿行三环运河"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 52.3752,
+    "lng": 4.884,
+    "name": "阿姆斯特丹·安妮之家",
+    "t": "D3 下午 · 1.5h",
+    "fee": "€16（需预约）",
+    "note": "《安妮日记》藏身处，约旦区"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 52.472,
+    "lng": 4.812,
+    "name": "桑斯安斯风车村",
+    "t": "D6 全天 · 半天",
+    "fee": "免费（风车 €5–6）",
+    "note": "运转风车、奶酪、木鞋工坊"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 52.712,
+    "lng": 6.095,
+    "name": "羊角村",
+    "t": "D7 全天 · 5h",
+    "fee": "免费（租船 €20–30/h）",
+    "note": "芦苇屋水道，静音电船"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 51.92,
+    "lng": 4.4904,
+    "name": "鹿特丹·立体方块屋",
+    "t": "D8 上午 · 1.5h",
+    "fee": "外观免费（参观 €3）",
+    "note": "倾斜立方体住宅 + 大市场"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 51.888,
+    "lng": 4.639,
+    "name": "小孩堤防风车群",
+    "t": "D8 下午 · 3h",
+    "fee": "免费进入（套票 €21）",
+    "note": "19 座 UNESCO 风车，水上巴士抵达"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[50.7, 3.3], [53.5, 7.2]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#e8781a\"></span>主线（阿姆斯特丹→鹿特丹→海牙）<br><span class=\"sw\" style=\"background:#1b6fb5\"></span>支线（鹿特丹→小孩堤防）<br><span class=\"sw dash\"></span>桑斯安斯/羊角村为当日往返</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

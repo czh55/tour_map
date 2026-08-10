@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 菲律宾 15 天全景攻略 · 千岛之国</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #1772b4;
+    --red-light: #3e92d1;
+    --gold: #e8734a;
+    --ink: #1e3a5f;
+    --muted: #7c93a8;
+    --bg: #faf7f1;
+    --card: #ffffff;
+    --line: #e7edf1;
+    --blue: #1f5f8f;
+    --cover1: #0b4a77;
+    --ov1: rgba(11,74,119,.88);
+    --ov2: rgba(23,114,180,.72);
+    --ov3: rgba(232,115,74,.38);
+    --ov4: rgba(255,170,110,.20);
+    --key-bg: #eef6fb;
+    --info-bg: #f1f6f9;
+    --head-bg: rgba(23,114,180,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/philippines/philippines-cover.jpg" alt="菲律宾旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 15 天海岛环线 · 马尼拉 + 长滩岛 + 宿务 + 巴拉望</div>
+      <h1>菲律宾 15 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 马尼拉 · 长滩岛 · 宿务墨宝 · 薄荷岛 · 巴拉望爱妮岛</div>
+      <div class="meta">
+        <span>🛫 行程链：马尼拉 → 长滩岛 → 宿务 → 薄荷岛 → 巴拉望 → 返程</span>
+        <span>📅 时间窗口：15 天 14 晚</span>
+        <span>✈️ 北京⇄马尼拉 直飞约 5 小时</span>
+        <span>🛂 签证：2026 免签 14 天（限 NAIA/MCIA 入境）；15 天行程需 9A 旅游签</span>
+        <span>🕐 时差 0 小时 · 🔌 电压 220V A/B 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 15 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 15 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">马尼拉</span>
+      <span class="arrow">→</span>
+      <span class="node">长滩岛</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">宿务</span>
+      <span class="arrow">→</span>
+      <span class="node">薄荷岛</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">巴拉望</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🌊 15 天怎么安排最合理</span>
+      菲律宾是「<strong>千岛之国</strong>」，本方案聚焦四大片区：马尼拉看殖民老城、长滩岛泡细白沙、宿务潜沙丁鱼风暴、巴拉望探地下河与爱妮岛喀斯特海山。15 天里城市、海岛、潜水、世界遗产全都有，<strong>四段国内航班串联</strong>，节奏张弛有度。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>2026-01 起中国普通护照赴菲<strong>免签 14 天</strong>（限马尼拉 NAIA / 宿务 MCIA 入境，旅游/商务目的）；15 天行程超上限，需办 <strong>9A 旅游签证</strong>（约 1–2 周出签，材料从简）</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>马尼拉 2 天 + 长滩岛 4 天 + 宿务 4 天（含墨宝/薄荷）+ 巴拉望 4 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 15 天爱妮岛/公主港经马尼拉转机返京；旺季（春节/寒假）提前 1 个月订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>马尼拉 → 长滩岛 → 宿务 → 薄荷岛 → 公主港 → 爱妮岛 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 7000–10000 ／ 标准 12000–18000 ／ 舒适 25000–38000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 确认免签资格/办 9A 签 ② 订 4 段国内航班（宿务太平洋/亚航） ③ 爱妮岛跳岛与地下河提前 2 周订</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11 月–次年 5 月旱季最佳；6–10 月雨季台风多，海岛段航班易延误</td>
+</tr>
+<tr>
+<td>支付与时差</td>
+<td>时差 0 小时；220V A/B 型插座；比索现金为主 + 部分刷卡，1 元 ≈ 7.8 比索</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证规则 2026 年刚改</strong>：中国普通护照免签只有 14 天且限马尼拉、宿务两口岸，本行程 15 天必须提前办 9A 旅游签（约 1–2 周），别指望落地签或免签硬闯。② 菲律宾国内航班多为廉航（宿务太平洋/亚航），<strong>基础票价不含托运行李</strong>，4 段航程建议统一买 20kg 行李额，比柜台现买便宜一半以上。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 15 天版</h2>
+
+    <p>以下为 15 天 14 晚的推荐节奏：马尼拉 2 天打底，长滩岛 4 天度假，宿务 4 天（含墨宝沙丁鱼+薄荷岛一日），巴拉望 4 天（地下河+爱妮岛跳岛）。每日主景点 ≤2 个，海岛段留足躺平时间。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵马尼拉</td>
+<td>北京✈马尼拉（直飞约 5h），入住马卡蒂/老城，傍晚罗哈斯大道看日落</td>
+<td>马尼拉</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>圣地亚哥堡 → 马尼拉大教堂 → 黎刹公园 → SM Mall of Asia</td>
+<td>马尼拉</td>
+<td>殖民老城</td>
+</tr>
+<tr>
+<td>D3 飞长滩</td>
+<td>马尼拉✈长滩（卡提克兰 MPH 或卡利博 KLO），车船进岛约 2.5–3h，入住白沙滩</td>
+<td>长滩岛</td>
+<td>进岛日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>白沙滩漫步 → 海上降落伞/香蕉船 → 傍晚日落帆船</td>
+<td>长滩岛</td>
+<td>白沙滩日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>水晶岛/魔幻岛跳岛浮潜 → 悬崖跳水</td>
+<td>长滩岛</td>
+<td>跳岛日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>普卡海滩（贝壳沙滩）→ 卢霍山观景台 → D'Mall 夜市</td>
+<td>长滩岛</td>
+<td>环岛日</td>
+</tr>
+<tr>
+<td>D7 飞宿务</td>
+<td>长滩✈宿务（直飞约 1h），入住市区，傍晚 SM 海滨散步</td>
+<td>宿务</td>
+<td>转场日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>麦哲伦十字架 → 圣婴教堂 → 卡邦市场 → 山顶观景台</td>
+<td>宿务</td>
+<td>老城日</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>宿务→墨宝（包车/巴士约 3h），Panagsama 沙丁鱼风暴浮潜</td>
+<td>墨宝</td>
+<td>沙丁鱼日</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>薄荷岛一日（快船 2h）：巧克力山 → 眼镜猴 或 Oslob 鲸鲨</td>
+<td>宿务</td>
+<td>薄荷/鲸鲨</td>
+</tr>
+<tr>
+<td>D11 飞巴拉望</td>
+<td>宿务✈公主港（直飞约 1h20m），下午本田湾跳岛（可选）</td>
+<td>公主港</td>
+<td>进岛日</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>沙邦地下河一日（UNESCO 世界遗产溶洞船游）</td>
+<td>公主港</td>
+<td>地下河日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>公主港→爱妮岛（车程 5–6h 或小飞机），傍晚爱妮岛镇</td>
+<td>爱妮岛</td>
+<td>转场日</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>爱妮岛跳岛 Tour A：大潟湖 → 小潟湖/秘密潟湖 → Simizu 岛 → 七勇士海滩</td>
+<td>爱妮岛</td>
+<td>跳岛日</td>
+</tr>
+<tr>
+<td>D15 返程</td>
+<td>爱妮岛✈马尼拉→北京（约 5h），或公主港回马尼拉转机返京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍薄荷岛一日（D10）改宿务市区休闲，或长滩缩为 3 天；潜水爱好者可把墨宝加为 2 天（沙丁鱼+大断层）。亲子家庭建议砍悬崖跳水和地下河（洞内较暗），改本田湾跳岛。12 月–2 月菲律宾南部偶有暴雨，出发前看台风路径。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 15 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达马尼拉</span>
+          <span class="d-desc">入住马卡蒂/老城</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:00–20:30</td><td class="t-what">北京✈马尼拉（直飞约 5h）。国航/菲律宾航空均有航班，抵达 NAIA 机场 1/2/3 航站楼，先换少量比索、买电话卡（Globe/Smart）</td></tr>
+          <tr><td class="t-time">20:30–22:00</td><td class="t-what">Grab 打车到马卡蒂或王城区附近入住（约 40 分钟，避开高峰），酒店周边便利店补给</td></tr>
+          <tr><td class="t-time">22:00–23:00</td><td class="t-what">罗哈斯大道（Roxas Blvd）海滨散步，看马尼拉湾夜色，宵夜菲律宾烧烤</td></tr>
+          <tr><td class="t-time">23:00</td><td class="t-what">回酒店休息，倒时差（时差 0h，基本无感）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">马尼拉堵车严重，机场到市区预留 1 小时以上；老城区（Intramuros）晚上偏乱，女生单独出行尽量用 Grab。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 殖民老城一日</span>
+          <span class="d-desc">圣地亚哥堡 + 黎刹公园</span>
+          <span class="d-tag ">🏰 老城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>圣地亚哥堡</b>（Fort Santiago，约 75 比索）：西班牙殖民要塞，民族英雄黎刹被囚禁之地，城墙与花园很出片</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>马尼拉大教堂</b>（免费）+ <b>圣奥古斯丁教堂</b>（世界遗产，约 200 比索）：王城区两大地标，欧式穹顶与石雕</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：王城区内菲律宾菜（Adobo 炖肉、Sisig、Halo-halo 冰品）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>黎刹公园</b>（免费）：菲律宾国父纪念公园，日落前常有人放风筝</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>SM Mall of Asia</b>（免费）：亚洲最大商场之一，马尼拉湾落日+商场美食街</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">王城区可以坐马车游览（约 500–800 比索/车），但价格要先谈好；圣奥古斯丁教堂门票含讲解地图。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 飞长滩岛</span>
+          <span class="d-desc">车船进岛</span>
+          <span class="d-tag alt">⛵ 进岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">马尼拉✈长滩：优先选降<strong>卡提克兰（MPH）</strong>（近，约 40 分钟车船）；卡利博（KLO）较便宜但需 2.5–3h 大巴+快艇</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what">卡提克兰码头→长滩岛 Cagban 码头快艇（约 10–15 分钟），登岛交环境税+码头税（约 150+100 比索）</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">乘三轮车/酒店接驳到白沙滩 S2/S3 区域（约 20 分钟），入住放行李</td></tr>
+          <tr><td class="t-time">14:00–18:00</td><td class="t-what"><b>白沙滩</b>（免费）：S1–S3 沙滩漫步，踩水游泳；S3 海水最平缓、浮潜点多</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">D'Mall 晚餐（Halo-halo、海鲜烧烤），白沙滩第一晚看灯光与夜市</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卡利博→长滩最后一班接驳约 17:00，落地晚务必提前订好接送；白沙滩 S2 是商业中心，S3 更安静。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 白沙滩 + 日落帆船</span>
+          <span class="d-desc">水上活动一日</span>
+          <span class="d-tag ">🏖 白沙滩日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:30</td><td class="t-what"><b>白沙滩</b>晨泳与拍照：上午人少水清，沙质如面粉（S1 最细）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">水上活动：香蕉船（约 250–350 比索）、海上降落伞（约 1500–2500 比索）、摩托艇，现场讲价</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：白沙滩路侧餐厅（烤鸡 Inasal、海鲜意面），人均 300–600 比索</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">下午 S2–S3 浮潜（免费）：小丑鱼、海星珊瑚；或预约落日帆船</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>日落帆船</b>（约 800–1200 比索/人，2 人可拼）：长滩经典日落体验，帆船看火烧云</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海上降落伞和香蕉船找正规店（有救生衣+保险），砍价对半还；日落帆船 17:00 前到 S1 码头排队。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 水晶岛跳岛</span>
+          <span class="d-desc">跳岛浮潜 + 悬崖跳水</span>
+          <span class="d-tag alt">🏝 跳岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:00</td><td class="t-what">码头集合，报<strong>水晶岛/魔幻岛跳岛</strong>拼船（约 1200–1800 比索/人，含午餐）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>水晶岛</b>（Crystal Cove）：两个洞穴+玻璃海浮潜，岸边海星很多</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what"><b>魔幻岛</b>（Magic Island）：悬崖跳水 3–8 米可选，跳台安全绳</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">船上午餐（烤鱼+米饭+水果），海水午餐是跳岛标配</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what">鳄鱼岛（Crocodile Island）浮潜：珊瑚礁与热带鱼群，返程回港</td></tr>
+          <tr><td class="t-time">16:30–19:00</td><td class="t-what">回白沙滩，S3 周边吃海鲜烧烤，看日落收尾</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">跳岛船 8–10 人拼，晕船提前吃晕船药；浮潜装备（面镜+呼吸管）自备更卫生，也可船上租（约 150–200 比索）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 普卡海滩 + 卢霍山</span>
+          <span class="d-desc">环岛北线一日</span>
+          <span class="d-tag ">🌴 环岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:00</td><td class="t-what">租摩托（约 400–500 比索/天，需驾照）或包三轮车环岛</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>普卡海滩</b>（Puka Shell Beach，免费）：北岸贝壳沙滩，人少浪清，长滩最美野滩</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">北岸午餐：海鲜烧烤或椰汁鸡肉，人均 300–500 比索</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>卢霍山</b>（Mt. Luho，观景台约 200 比索）：长滩最高点，俯瞰全岛+白沙滩全景</td></tr>
+          <tr><td class="t-time">16:00–19:00</td><td class="t-what">回白沙滩：D'Mall 逛街、做菲律宾按摩（约 400–600 比索/小时）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">长滩最后一晚：海鲜市场自选海鲜代加工（Coral View/Seafood market）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">普卡海滩周边浮潜也不错，回程可顺路去蝙蝠洞；卢霍山上山有台阶，穿运动鞋，日落前上去最出片。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 飞宿务</span>
+          <span class="d-desc">转场宿务市区</span>
+          <span class="d-tag alt">🛫 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">长滩✈宿务（直飞约 1h，宿务太平洋/菲航都有），麦克坦机场 Mactan 入境</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">Grab 到宿务市区（约 30–40 分钟），入住 IT Park / Ayala 商圈附近</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：宿务名物 Lechon 烤乳猪（Zubuchon / CNT 是本地连锁）</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what"><b>圣佩德罗堡</b>（Fort San Pedro，约 30 比索）+ 海滨步道：菲律宾最古老要塞之一</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what">SM City Cebu / Ayala Center 逛吃，补充防晒与浮潜装备</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">宿务市区到麦克坦机场过桥容易堵，回程留足 2 小时；IT Park 附近是年轻人聚集区，夜生活丰富。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 宿务老城一日</span>
+          <span class="d-desc">麦哲伦十字架 + 圣婴教堂</span>
+          <span class="d-tag ">🏯 老城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what"><b>麦哲伦十字架</b>（Magellan's Cross，免费）：1521 年麦哲伦登陆宿务竖立的十字架，彩色屋顶亭很上镜</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what"><b>圣婴教堂</b>（Basilica del Sto. Niño，免费）：菲律宾最古老教堂，圣婴像+礼拜堂，游客多但很神圣</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：卡邦市场附近小吃或菲律宾快餐（Jollibee 是国粹级体验）</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>卡邦市场</b>（Carbon Market）：宿务最大菜市场，水果（芒果/榴莲）、干货、手信扫货</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>宿务山顶观景台</b>（Tops Lookout）：俯瞰宿务海峡日落，回程夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣婴教堂参观需着装得体（遮肩遮膝），弥撒时段不开放参观；卡邦市场人多注意防盗，讨价对半开始。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 墨宝沙丁鱼风暴</span>
+          <span class="d-desc">宿务→墨宝一日</span>
+          <span class="d-tag alt">🐟 沙丁鱼日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–10:00</td><td class="t-what">宿务包车/拼车去墨宝（Moalboal，约 3h）；或 South Bus 巴士（约 250–350 比索）</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>Panagsama 海滩沙丁鱼风暴</b>（浮潜约 500–1000 比索/人含装备）：离岸 30 米就是千万条沙丁鱼，震撼</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：墨宝海边餐厅（烤鱼+海鲜汤），人均 400–600 比索</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">可选：沙丁鱼水肺体验潜（约 2500–3500 比索）或白沙滩（White Beach）浮潜看海龟</td></tr>
+          <tr><td class="t-time">16:00–19:00</td><td class="t-what">返程回宿务市区，晚餐海鲜市场或 IT Park 夜市</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">沙丁鱼风暴最佳观时间是早上 6–11 点，能见度最好；不下水的同伴在岸边餐厅就能看到鱼群，也很美。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 薄荷岛一日</span>
+          <span class="d-desc">巧克力山 + 眼镜猴</span>
+          <span class="d-tag ">🏔 薄荷日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–08:30</td><td class="t-what">宿务 1 号码头乘快船到薄荷岛塔比拉兰（约 2h，单程 800–1000 比索）</td></tr>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>巧克力山</b>（Chocolate Hills，观景台约 50–100 比索）：1268 座圆顶山丘，旱季呈巧克力色，薄荷名片</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：薄荷岛农家菜（炸鸡+海鲜）或<strong>眼镜猴保护区</strong>附近餐厅</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what"><b>眼镜猴保护区</b>（约 60–100 比索）：巴掌大的夜行灵长类，萌翻全场</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">返塔比拉兰码头，快船回宿务（末班约 17:00，注意留余量）</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">宿务晚餐：想吃鲸鲨的可在宿务市区报<strong>Oslob 鲸鲨一日游</strong>（凌晨 4 点出发，约 1500–2500 比索）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">薄荷一日较赶，体力一般可把鲸鲨（Oslob）改为主选项；巧克力山观景台台阶多，穿平底鞋。薄荷岛也可包车（含司机）约 2000–3000 比索/天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 飞巴拉望公主港</span>
+          <span class="d-desc">转入海岛秘境</span>
+          <span class="d-tag alt">🛫 进岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what">宿务✈公主港（直飞约 1h20m，宿务太平洋/菲航），公主港机场较小，出关快</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">入住公主港市区，午餐：Balinsasayaw 或海滨餐厅（招牌烤鸡+海鲜）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what">可选：<b>本田湾跳岛</b>（Honda Bay，约 1200–1800 比索含船）浮潜 2–3 岛，或市区蝴蝶园/殖民建筑闲逛</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">公主港 Baywalk 海滨夜市：烤海鲜+椰汁，看日落与本地生活</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">公主港是巴拉望门户，去沙邦地下河、本田湾、爱妮岛的枢纽；市区安静安全，Grab 或三轮车出行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 沙邦地下河</span>
+          <span class="d-desc">UNESCO 世界遗产</span>
+          <span class="d-tag ">🕳 地下河日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–09:30</td><td class="t-what">公主港出发去沙邦（Sabang，车程约 2h），可拼团或包车（含门票船票约 1500–2500 比索/人）</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>公主港地下河</b>（Puerto Princesa Underground River）：乘蟹船入洞，8km 地下河穿石灰岩，钟乳石+蝙蝠，世界新七大自然奇观</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">沙邦海滩午餐，白沙滩+椰林放松</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what">可选：沙邦红树林（Mangrove Paddleboat，约 400–600 比索）或直接返程</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what">回公主港市区，晚餐菲律宾烧烤+椰子布丁</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">地下河每天限流、需提前预约名额（向导/酒店可代订）；洞内不能带手机支架拍照，穿防滑鞋，相机防水袋备用。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 公主港→爱妮岛</span>
+          <span class="d-desc">5 小时山海公路</span>
+          <span class="d-tag alt">🚌 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">公主港出发：包车/拼车北上爱妮岛（约 5–6h，包车 2500–4000 比索/车，拼车 800–1200 比索/人）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what">沿途可在奎松（Quezon）或泰泰（Taytay）休息，吃烤物水果，山路风景极佳</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">抵达<strong>爱妮岛镇</strong>（El Nido），入住镇上或 Corong-Corong 海滩区</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>爱妮岛镇海滩</b>（免费）：碧绿海水+石灰岩背景，日落时分超美</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">镇上海鲜晚餐，提前订<strong>明日跳岛 Tour A</strong>（旺季当天订不到）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">公主港→爱妮岛有 2–3 小时是蜿蜒山路，晕车备药；也可选 AirSWIFT 小飞机（约 40 分钟但票价高且班次少）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 爱妮岛跳岛 Tour A</span>
+          <span class="d-desc">大小潟湖 + 七勇士</span>
+          <span class="d-tag alt">⛵ 跳岛日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–08:30</td><td class="t-what">码头集合：Tour A 拼船（约 1200–1800 比索/人，含午餐、向导，另付生态费约 200 比索）</td></tr>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>大潟湖</b>（Big Lagoon）：被石灰岩壁环抱的碧玉色海水，划独木舟（约 200 比索/人）进入最震撼</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what"><b>小潟湖/秘密潟湖</b>：游过岩缝进入隐秘水湾，碧蓝见底</td></tr>
+          <tr><td class="t-time">11:30–12:30</td><td class="t-what">船上午餐：烤鱼+米饭+水果，海水沙滩上用餐</td></tr>
+          <tr><td class="t-time">12:30–15:00</td><td class="t-what"><b>Simizu 岛</b>浮潜 + <b>七勇士海滩</b>（Seven Commandos）：白沙椰林、珊瑚鱼群，最后一站发呆</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">返爱妮岛镇，海鲜市场买海胆/龙虾代加工（旺季提前去）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">Tour A 是爱妮岛最经典一日，全天约 7–8 小时；独木舟（Kayak）进大潟湖必体验，怕晒穿水母衣+高倍防晒。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D15 · 返程</span>
+          <span class="d-desc">爱妮岛✈马尼拉→北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">爱妮岛经公主港或直接小飞机转马尼拉（AirSWIFT 飞马尼拉约 1.5h，班次少要提前订）</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what">马尼拉 NAIA 机场出境（建议提前 3 小时到，机场人多），免税店扫芒果干、椰子油</td></tr>
+          <tr><td class="t-time">12:30–18:00</td><td class="t-what">马尼拉✈北京（直飞约 5h），航班常为下午/傍晚，到家休息</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">结束 15 天千岛之旅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">若没订到爱妮岛直飞，可 D14 晚回公主港、D15 公主港✈马尼拉✈北京；旺季机票价格翻倍，返程机票务必提前 1 个月锁票。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-1.jpg" alt="长滩岛·白沙滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">长滩岛·白沙滩 <small>免费</small></div>
+          <div class="sc-feat">长滩灵魂。<b>4km 面粉级白沙 + 日落帆船</b>，S1–S3 三段各有风情。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3 天 · ⛵ 卡提克兰快艇 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-2.jpg" alt="爱妮岛·大潟湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">爱妮岛·大潟湖 <small>跳岛 1200–1800 比索</small></div>
+          <div class="sc-feat">巴拉望门面。<b>石灰岩壁环抱的翡翠海 + 独木舟</b>，Tour A 精华。</div>
+          <div class="sc-meta">📅 08:00–16:00 · ⏱ 半天 · 🚤 爱妮岛码头拼船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-3.jpg" alt="薄荷岛·巧克力山" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">薄荷岛·巧克力山 <small>观景台约 50–100 比索</small></div>
+          <div class="sc-feat">1268 座圆顶山丘。<b>旱季巧克力色奇观</b>，哈利路亚山同款。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚢 宿务快船 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-4.jpg" alt="墨宝·沙丁鱼风暴" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">墨宝·沙丁鱼风暴 <small>浮潜 500–1000 比索</small></div>
+          <div class="sc-feat">宿务水下名片。<b>离岸 30 米千万条沙丁鱼</b>，潜入即被鱼墙包围。</div>
+          <div class="sc-meta">📅 06:00–11:00 · ⏱ 3–4h · 🚌 宿务巴士 3h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-5.jpg" alt="巴拉望·地下河" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">巴拉望·地下河 <small>拼团 1500–2500 比索</small></div>
+          <div class="sc-feat">世界新七大自然奇观。<b>8km 可通航地下河 + 钟乳石</b>，秘境感拉满。</div>
+          <div class="sc-meta">📅 08:00–13:00 · ⏱ 半天 · 🚗 公主港车程 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-6.jpg" alt="马尼拉·圣地亚哥堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">马尼拉·圣地亚哥堡 <small>约 75 比索</small></div>
+          <div class="sc-feat">殖民老城地标。<b>西班牙要塞 + 黎刹囚室</b>，城墙花园超好拍。</div>
+          <div class="sc-meta">📅 08:00–17:00 · ⏱ 2h · 🚇 王城区 Intramuros</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-cover.jpg" alt="菲律宾·千岛航拍" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">菲律宾·千岛航拍 <small>免费</small></div>
+          <div class="sc-feat">7107 座岛屿。<b>薄荷绿海水 + 白云下的翡翠礁盘</b>，上帝视角的菲律宾。</div>
+          <div class="sc-meta">📅 全年 · ⏱ 视行程 · ✈️ 四段航程机窗都能拍</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/philippines/philippines-7.jpg" alt="菲律宾·海岛美食" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">菲律宾·海岛美食 <small>人均 300–600 比索</small></div>
+          <div class="sc-feat"><b>烤乳猪 Lechon + 沙丁鱼/海鲜 + Halo-halo</b>，热带岛国胃口大开。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 随餐 · 🍽 D'Mall / 墨宝海边 / 爱妮岛镇</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（长滩岛白沙滩、爱妮岛潟湖、薄荷岛巧克力山、沙丁鱼风暴、地下河、马尼拉等均为菲律宾实景），用于页面配图。更多免费景点：马尼拉黎刹公园、宿务麦哲伦十字架、爱妮岛镇海滩、本田湾、普卡海滩。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 7.8 菲律宾比索估算。往返国际机票按淡季 2500–4500 元计，国内 4 段按廉航含托运行李估算。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（7000–10000）</th>
+<th>标准（12000–18000）</th>
+<th>舒适（25000–38000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄马尼拉 2500–3500</td>
+<td>直飞+灵活时段 3500–5000</td>
+<td>含国内段联运 8000–12000</td>
+</tr>
+<tr>
+<td>住宿（14 晚）</td>
+<td>青旅/民宿 120–180/晚</td>
+<td>度假村/海景 400–800/晚</td>
+<td>五星海岛度假村 1500–3000/晚</td>
+</tr>
+<tr>
+<td>国内 4 段航班</td>
+<td>宿务太平洋特价 1500–2500</td>
+<td>含托运行李 2500–4000</td>
+<td>灵活时段+小飞机 5000–8000</td>
+</tr>
+<tr>
+<td>餐饮+活动</td>
+<td>跳岛/浮潜基础 2500–3500</td>
+<td>含薄荷一日/鲸鲨 4500–6500</td>
+<td>包船+潜水课程 12000–18000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 15000 元）</span>
+      往返机票 4000 + 国内 4 段航班 3000 + 住宿 14 晚 5000（平均 360/晚）+ 餐饮 2500 + 活动门票 1500 ≈ <strong>15000–16000 元</strong>。大头是机票与住宿；国内段提前 14–21 天订、避开周五周日，单程能省 1000+ 比索。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>15.1 只看海岛的 10 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D2 马尼拉（同主行程）</li>
+
+      <li>D3–D6 长滩岛</li>
+
+      <li>D7–D8 宿务市区+麦哲伦</li>
+
+      <li>D9 墨宝沙丁鱼一日</li>
+
+      <li>D10 返程（飞马尼拉转机）</li>
+
+    </ul>
+
+    <h3>15.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：长滩岛为主（浅滩安全），薄荷岛巧克力山+眼镜猴（动物友好），砍掉悬崖跳水、地下河（洞内黑暗潮湿）；宿务报 Oslob 鲸鲨或本田湾跳岛（船稳、鱼多）。长滩岛 S3 水质最平缓，适合孩子玩水。</p>
+
+    <h3>15.3 潜水进阶版（12 天）</h3>
+
+
+    <p>持证潜水员可把墨宝扩为 2 天（沙丁鱼+大断层 Pescador Island 深潜，体验潜约 2500–3500 比索/次），长滩缩到 3 天；时间再紧可跳过马尼拉直接飞宿务，入境口岸同样是 MCIA，享受免签政策。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 菲律宾 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→马尼拉约 5h</td>
+<td>往返 2500–4500 元</td>
+<td>国航/菲律宾航空，每日有班；返程多为下午</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>7–12h</td>
+<td>2000–3500 元</td>
+<td>经香港/上海/厦门/广州，便宜但费时</td>
+</tr>
+<tr>
+<td>飞宿务（免签入口）</td>
+<td>约 6–8h（多为转机）</td>
+<td>3000–5000 元</td>
+<td>MCIA 入境同样享 14 天免签，适合直入海岛</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 菲律宾境内交通核心提醒</span>
+      国内段<strong>宿务太平洋/菲律宾航空/亚航</strong>最实用，4 段航程建议提前 14–21 天订、选周二到周四出发最便宜；长滩进岛优先<strong>卡提克兰（MPH）</strong>（40 分钟车船），卡利博（KLO）虽便宜但要 2.5–3h 大巴+快艇；雨季（6–10 月）航班易延误，段间留缓冲。
+    </div>
+
+    <h3>19.2 菲律宾境内交通</h3>
+    <ul>
+      <li><strong>国内航班</strong>：马尼拉→长滩 1h、→宿务 1h20m、宿务→公主港 1h20m，单程 800–2500 比索</li>
+      <li><strong>长滩车船</strong>：卡利博机场→Caticlan 码头 1.5–2h 巴士/包车 + 快艇 10–15 分钟登岛</li>
+      <li><strong>宿务→墨宝</strong>：包车/拼车约 3h（包车 2500–3500 比索），South Bus 巴士 250–350 比索</li>
+      <li><strong>宿务→薄荷</strong>：快船约 2h（单程 800–1000 比索），塔比拉兰码头包车或摩托</li>
+      <li><strong>公主港→爱妮岛</strong>：包车 5–6h（2500–4000 比索/车）或小飞机 40 分钟（较贵）</li>
+      <li><strong>市内交通</strong>：吉普尼/三轮车（15–80 比索）、Grab 网约车（马尼拉/宿务/公主港）</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>马尼拉·马卡蒂/老城</td>
+<td>经济 150–250 / 标准 300–500</td>
+<td>转机方便，夜生活多</td>
+<td>老城区晚上较乱</td>
+</tr>
+<tr>
+<td>长滩岛·白沙滩 S2/S3</td>
+<td>经济 200–400 / 标准 500–900</td>
+<td>出门即白沙滩，餐饮酒吧多</td>
+<td>旺季贵，需提前订</td>
+</tr>
+<tr>
+<td>宿务·IT Park/Ayala</td>
+<td>经济 150–250 / 标准 300–600</td>
+<td>商圈安全，去机场近</td>
+<td>景点需打车</td>
+</tr>
+<tr>
+<td>墨宝·Panagsama</td>
+<td>经济 120–200 / 标准 250–450</td>
+<td>离沙丁鱼潜点步行可达</td>
+<td>设施简单，沙滩一般</td>
+</tr>
+<tr>
+<td>公主港·市区</td>
+<td>经济 150–250 / 标准 300–500</td>
+<td>去沙邦/本田湾方便</td>
+<td>城市面貌一般</td>
+</tr>
+<tr>
+<td>爱妮岛·镇上/Corong</td>
+<td>经济 250–400 / 标准 500–1000</td>
+<td>码头近，跳岛集合方便</td>
+<td>旺季一房难求</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍖 必吃经典</h3>
+        <ul>
+          <li>烤乳猪 Lechon（宿务 Zubuchon 是名店）</li>
+          <li>Adobo 阿多波炖肉（醋蒜酱油炖鸡猪）</li>
+          <li>Sisig 铁板猪头肉（配青柠）</li>
+          <li>烤鸡 Inasal（长滩/宿务路边店都有）</li>
+        </ul>
+        <h3>🦞 海岛海鲜</h3>
+        <ul>
+          <li>墨宝海边烤鱼大虾（现抓现烤）</li>
+          <li>爱妮岛海鲜市场代加工（海胆/龙虾）</li>
+          <li>Sinigang 酸汤（罗望子酸鱼汤）</li>
+          <li>Cebuano 柠檬生鱼片（Kinilaw）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍹 街头小吃</h3>
+        <ul>
+          <li>Halo-halo 冰品（什锦水果+炼乳碎冰）</li>
+          <li>芒果干（7D/Philippine 品牌当伴手礼）</li>
+          <li>Jollibee 炸鸡（菲律宾国民快餐）</li>
+          <li>Isaw 烤鸡肠 / Balut 毛蛋（猎奇挑战）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>长滩岛 D'Mall + S3 海鲜市场</li>
+          <li>宿务 IT Park 夜市 + Ayala 商圈</li>
+          <li>墨宝 Panagsama 海边一条街</li>
+          <li>公主港 Baywalk 夜市 + 爱妮岛镇海滨</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 海鲜代加工先问清「加工费+时价」，称重前拍照，防止调包；② 街头小吃肠胃敏感者慎吃生腌，备肠胃药；③ 菲律宾菜普遍偏甜偏咸、重油，吃不惯可选西餐/日料（海岛度假区很常见）；④ 芒果干/椰子油去 SM 超市买，比景区便宜 30% 以上。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 9A 旅游签 / 确认 14 天免签资格</li>
+        <li>打印往返机票+全程酒店预订单</li>
+        <li>比索现金（1.5–2 万，跳岛门票多为现金）</li>
+        <li>珊瑚友好防晒霜 + 浮潜面镜（卫生）</li>
+      </ul>
+      <ul>
+        <li>薄外套/雨衣（雨季备用）</li>
+        <li>转换插头（220V A/B 型两扁脚）</li>
+        <li>下载 Grab、离线地图、翻译 App</li>
+        <li>肠胃药/晕车药/创可贴（海岛磕碰多）</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>免签仅 14 天且限指定口岸</strong>，15 天行程务必提前办 9A 旅游签（约 1–2 周），别赌落地政策；② 菲律宾雨季台风（6–10 月）会让海岛航班大面积延误，行程留 1 天缓冲；③ 长滩/爱妮岛跳岛、地下河都要<strong>提前订</strong>，旺季当天基本没位；④ 打车优先 Grab 明码标价，机场出租车宰客普遍，吉普尼体验一次即可。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      菲律宾是「<strong>千岛之国、白沙天堂</strong>」——长滩的细白沙滩、墨宝的沙丁鱼风暴、薄荷的巧克力山、巴拉望的溶洞与爱妮岛喀斯特海山，15 天把海岛、潜水、世界遗产一网打尽。签证 2026 年刚开放免签 14 天，是近年性价比最高的一年，趁早出发。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#e8734a",
+    "d": 3,
+    "n": "主线 · 马尼拉→长滩→宿务→薄荷岛",
+    "pts": [
+      [
+        14.5995,
+        120.9842
+      ],
+      [
+        11.9674,
+        121.9248
+      ],
+      [
+        10.3157,
+        123.8854
+      ],
+      [
+        9.754,
+        124.017
+      ]
+    ]
+  },
+  {
+    "c": "#1772b4",
+    "d": 3,
+    "n": "巴拉望线 · 宿务→公主港→爱妮岛",
+    "pts": [
+      [
+        10.3157,
+        123.8854
+      ],
+      [
+        9.7392,
+        118.7353
+      ],
+      [
+        11.1796,
+        119.3944
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 14.5944,
+    "lng": 120.9706,
+    "name": "马尼拉·圣地亚哥堡",
+    "t": "D2 上午 · 2h",
+    "fee": "约 75 比索",
+    "note": "殖民要塞、黎刹囚禁地"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 11.96,
+    "lng": 121.92,
+    "name": "长滩岛·白沙滩",
+    "t": "D4 全天 · 1 天",
+    "fee": "免费",
+    "note": "面粉沙、日落帆船"
+  },
+  {
+    "num": 3,
+    "prio": "nice",
+    "lat": 11.998,
+    "lng": 121.925,
+    "name": "长滩岛·普卡海滩",
+    "t": "D6 上午 · 2h",
+    "fee": "免费",
+    "note": "贝壳沙滩、人少浪清"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 10.2932,
+    "lng": 123.9019,
+    "name": "宿务·麦哲伦十字架",
+    "t": "D8 上午 · 1.5h",
+    "fee": "免费",
+    "note": "圣婴教堂、卡邦市场"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 9.9448,
+    "lng": 123.387,
+    "name": "墨宝·沙丁鱼风暴",
+    "t": "D9 上午 · 3h",
+    "fee": "浮潜 500–1000 比索",
+    "note": "离岸 30m 鱼群风暴"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 9.754,
+    "lng": 124.017,
+    "name": "薄荷岛·巧克力山",
+    "t": "D10 上午 · 2h",
+    "fee": "约 50–100 比索",
+    "note": "1268 座圆顶山丘"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 10.1949,
+    "lng": 118.9183,
+    "name": "巴拉望·公主港地下河",
+    "t": "D12 上午 · 2.5h",
+    "fee": "拼团 1500–2500 比索",
+    "note": "8km 地下河、钟乳石"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 11.185,
+    "lng": 119.396,
+    "name": "爱妮岛·大潟湖",
+    "t": "D14 上午 · 2h",
+    "fee": "跳岛 1200–1800 比索",
+    "note": "石灰岩翡翠海、独木舟"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[9.0, 118.2], [15.4, 124.7]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#e8734a\"></span>主线（马尼拉→长滩→宿务→薄荷）<br><span class=\"sw\" style=\"background:#1772b4\"></span>巴拉望线（宿务→公主港→爱妮岛）<br><span class=\"sw dash\"></span>段间为国内航班/快船转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 突尼斯 8 天全景攻略 · 蓝白小镇与撒哈拉</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #a0522d;
+    --red-light: #b5654a;
+    --gold: #d4a017;
+    --ink: #2b3238;
+    --muted: #7a8a99;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e5e2d8;
+    --blue: #1e9fd0;
+    --cover1: #0f5d7a;
+    --ov1: rgba(15,93,122,.88);
+    --ov2: rgba(30,159,208,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(240,200,90,.20);
+    --key-bg: #fdf3d8;
+    --info-bg: #f1f6f8;
+    --head-bg: rgba(30,159,208,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/tunisia/tunisia-cover.jpg" alt="突尼斯旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 8 天环线 · 地中海 + 撒哈拉</div>
+      <h1>突尼斯 8 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 突尼斯城 · 迦太基 · 蓝白小镇 · 苏塞 · 马赫迪耶 · 杜兹撒哈拉</div>
+      <div class="meta">
+        <span>🛫 行程链：突尼斯城 → 迦太基 → 西迪布赛义德 → 苏塞 → 马赫迪耶 → 杜兹 → 返程</span>
+        <span>📅 时间窗口：8 天 7 晚</span>
+        <span>✈️ 北京⇄突尼斯城 转机约 14 小时（经巴黎/伊斯坦布尔/多哈）</span>
+        <span>🛂 签证：中国护照免签 90 天（需往返机票+酒店订单）</span>
+        <span>🕐 时差 -7 小时 · 🔌 电压 230V C/E 型插座（欧标）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 8 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 8 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">突尼斯城</span>
+      <span class="arrow">→</span>
+      <span class="node">迦太基</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">西迪布赛义德</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">苏塞</span>
+      <span class="arrow">→</span>
+      <span class="node">马赫迪耶</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">杜兹</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 8 天怎么安排最合理</span>
+      突尼斯是「<strong>地中海蓝 + 撒哈拉金</strong>」的两极之国：迦太基的古港与斗兽场、世界三大蓝白小镇之一的西迪布赛义德、保存完好的苏塞古城，再加上南部的撒哈拉之门杜兹。8 天把「<strong>古文明 + 蓝白海岸 + 沙漠骆驼</strong>」一次串完：北部用火车衔接，南部换成沙漠包车，节奏松弛、不走回头路。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照<strong>免签 90 天</strong>，但办理登机与入境需出示与停留期相符的<strong>往返机票</strong>与<strong>已付费酒店订单</strong>（Airbnb 等民宿订单可能被拒）</td>
+</tr>
+<tr>
+<td>时差与电源</td>
+<td>比北京慢 7 小时；电压 230V，插座为 <strong>C/E 型（欧标两脚圆插）</strong>，需带转换头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>突尼斯第纳尔（TND），<strong>1 元 ≈ 0.4 第纳尔</strong>；现金为主，第纳尔出镜不可兑换，换汇认准银行与官方兑换点</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>8 天双极环线：突尼斯城+迦太基→蓝白小镇→苏塞+马赫迪耶→杜兹撒哈拉</td>
+</tr>
+<tr>
+<td>交通方式</td>
+<td>北部以<strong>SNCFT 火车</strong>衔接（突尼斯城→苏塞约 2h），南部<strong>沙漠包车/当地团</strong>进杜兹</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 12000–18000 ／ 标准 22000–35000 ／ 舒适 45000–65000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 备免签入境材料（往返机票+付费酒店单） ② 订火车票与沙漠团 ③ 换少量美元/欧元备用</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>免签不等于零门槛</strong>：入境时移民官可能要求出示已付款至酒店的住宿凭证（Bon-voucher）与往返机票，民宿类订单可能被拒，<strong>入住正规酒店、订单付款后打印凭证</strong>最稳妥。② 第纳尔<strong>出入境均禁止携带</strong>，在境内换汇后离境前花完或换回外币；停留超 30 天还须在 <strong>sajalni.tn</strong> 注册手机 IMEI，否则手机无法正常通信。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 8 天版</h2>
+
+    <p>以下为 8 天 7 晚的推荐节奏：按「首都古城 → 蓝白海岸 → 萨赫勒海滨 → 撒哈拉」推进。北部城市间以 SNCFT 火车为主，杜兹段换沙漠包车/当地团，全程不自驾。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵突尼斯城</td>
+<td>北京转机约 14h 抵达，布尔吉巴大街漫步+倒时差</td>
+<td>突尼斯城</td>
+<td>抵达日</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>迦太基遗址（布匿港/安东尼浴场）→ 巴尔多博物馆 → 麦地那老城</td>
+<td>突尼斯城</td>
+<td>古文明日</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>TGM 城铁赴西迪布赛义德：蓝白小镇全日慢逛+悬崖日落</td>
+<td>西迪布赛义德</td>
+<td>蓝白小镇日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>火车赴苏塞（约 2h）：苏塞麦地那+苏塞城堡+海滨</td>
+<td>苏塞</td>
+<td>萨赫勒海滨</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>火车赴马赫迪耶一日：老城+大清真寺+白沙滩，晚返苏塞</td>
+<td>苏塞</td>
+<td>马赫迪耶日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>火车到加贝斯再转包车进杜兹，骆驼集市+沙漠博物馆</td>
+<td>杜兹</td>
+<td>撒哈拉之门</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>撒哈拉全日：日出骑骆驼+越野冲沙+可选温泉绿洲</td>
+<td>杜兹</td>
+<td>沙漠全日</td>
+</tr>
+<tr>
+<td>D8 返程</td>
+<td>杜兹→托泽尔✈突尼斯城，转机✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍马赫迪耶（D5）与巴尔多博物馆（D2 下午合并进迦太基）；对撒哈拉深度感兴趣可在杜兹加 1 晚沙漠露营（含篝火星空）。夏季（6–8 月）沙漠酷热，行程尽量安排在 10 月–次年 4 月。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 8 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达突尼斯城</span>
+          <span class="d-desc">转机抵达，老城初探</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">全天</td><td class="t-what">北京✈（巴黎/伊斯坦布尔/多哈转机）✈突尼斯城，全程约 14–18h</td></tr>
+          <tr><td class="t-time">入境</td><td class="t-what">出示往返机票+付费酒店订单（免签 90 天），换少量第纳尔（认准银行/官方兑换点）</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what">入住麦地那/布尔吉巴大街附近酒店，稍作休整</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what"><b>哈比卜·布尔吉巴大街</b>（免费）：突尼斯城香榭丽舍，法院/大剧院外观，晚餐突尼斯烤鱼</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">时差 -7h，北京晚上 9 点时突尼斯当地下午 2 点；转机航班经巴黎或伊斯坦布尔较多，选行李直挂的联程票省心。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 迦太基 + 巴尔多</span>
+          <span class="d-desc">古文明一日</span>
+          <span class="d-tag ">🏛 古文明日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>迦太基遗址</b>（联票约 8–12 第纳尔）：布匿港、安东尼浴场、圣路易教堂，1979 年世界遗产</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：La Goulette 海滨海鲜馆（当地烤鱼）</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>巴尔多博物馆</b>（约 11 第纳尔）：世界最大罗马马赛克收藏，可坐城铁往返</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>突尼斯麦地那老城</b>（免费）：宰图纳大清真寺外观、老城集市，夜色中逛苏克</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">迦太基遗址分散在沿海多个点，用 TGM 城铁串联最省力；巴尔多博物馆建议上午去（光线+人少），若时间紧可优先迦太基。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 蓝白小镇西迪布赛义德</span>
+          <span class="d-desc">悬崖蓝白小镇全日</span>
+          <span class="d-tag alt">💙 蓝白小镇日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–09:40</td><td class="t-what"><b>TGM 城铁</b>突尼斯城→西迪布赛义德（约 40min，票价 <2 第纳尔）</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><b>蓝白小镇漫逛</b>（免费，全天开放）：鹅卵石街巷、蓝门蓝窗，1915 年市政条例强制蓝白配色</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">午餐：悬崖餐厅海景（Café des Délices 一带）</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">海边露台下午茶（薄荷茶+烤松子），地中海日落；可步行下山到海港看渔船</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">西迪布赛义德是世界三大蓝白小镇之一，镇子很小但适合慢慢走；悬崖咖啡位 16 点后紧张，日落前来。城铁返程末班留意时刻。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 苏塞</span>
+          <span class="d-desc">火车赴萨赫勒海滨</span>
+          <span class="d-tag ">🚆 苏塞日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>SNCFT 火车</b>突尼斯城→苏塞（约 2h，7.6–15 第纳尔，二等/一等）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">入住苏塞麦地那附近，午餐库斯库斯</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>苏塞麦地那</b>（UNESCO，免费）+ <b>苏塞城堡 Ribat</b>（约 6 第纳尔）：海滨老城+瞭望塔</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">老城夜市：烤海鲜、椰枣甜点，滨海大道散步</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">苏塞麦地那是北非保存最完整的穆斯林古城之一，门票便宜的景点多；沿海度假区（Sousse Port El Kantaoui）较商业化，老城更地道。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 马赫迪耶一日</span>
+          <span class="d-desc">伊斯兰圣城 + 白沙滩</span>
+          <span class="d-tag alt">🏖 马赫迪耶日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">苏塞火车→马赫迪耶（约 1h，沿途莫纳斯提尔）</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>马赫迪耶老城</b>：白色老城、大清真寺、腓尼基/罗马遗址</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：海边烤鱼餐厅</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>马赫迪耶海滩</b>：白沙滩+蔚蓝港湾，午后游泳/发呆</td></tr>
+          <tr><td class="t-time">17:00–18:00</td><td class="t-what">火车返苏塞，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">马赫迪耶是法蒂玛王朝早期首都，圣城气质与海港风景并存；沙滩免费，救生设施集中在夏季。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 赴杜兹撒哈拉</span>
+          <span class="d-desc">撒哈拉之门</span>
+          <span class="d-tag ">🏜 杜兹日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–12:00</td><td class="t-what">苏塞火车→加贝斯（约 4h）或坐长途巴士</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">加贝斯转包车/巴士→杜兹（约 90km，1.5–2h）</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>杜兹小镇</b>：骆驼集市、撒哈拉沙漠博物馆（约 5 第纳尔）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">入住沙漠营地/酒店，撒哈拉之夜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">杜兹被称为「撒哈拉之门」，每年 12 月举办撒哈拉沙漠节（骑骆驼+赛马）；进沙漠前在镇上补给水与防晒。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 撒哈拉全日</span>
+          <span class="d-desc">骑骆驼 + 越野冲沙</span>
+          <span class="d-tag alt">🐪 沙漠全日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–08:30</td><td class="t-what"><b>日出骑骆驼</b>（Grand Dune 大沙丘，约 50–80 第纳尔含向导）</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>越野车冲沙/沙丘徒步</b>（四驱车约 150–300 第纳尔/车）</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：沙漠营地库斯库斯</td></tr>
+          <tr><td class="t-time">14:30–18:00</td><td class="t-what">可选：<b>Ksar Ghilane 温泉绿洲</b>（含向导包车，棕榈泉+罗马遗址）</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">沙漠篝火/星空晚餐（可选露营）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">撒哈拉活动务必通过当地旅行社/营地预订（含车+向导+保险），旺季提前 1 周；沙漠温差大，备外套。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 返程</span>
+          <span class="d-desc">杜兹→托泽尔✈突尼斯城✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">杜兹→托泽尔（包车约 1.5h）</td></tr>
+          <tr><td class="t-time">10:30–11:30</td><td class="t-what">托泽尔✈突尼斯城（Tunisair Express 约 1h，提前订）</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">抵达突尼斯城机场，国际航站楼</td></tr>
+          <tr><td class="t-time">16:00–次日</td><td class="t-what">突尼斯城✈（转机）✈北京，入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">托泽尔—突尼斯城有国内航班，返程最省力；也可杜兹→突尼斯城长途车（约 7h，较辛苦）。国际航班建议留足 5h 转机缓冲。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-cover.jpg" alt="西迪布赛义德·蓝白小镇" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">西迪布赛义德·蓝白小镇 <small>免费</small></div>
+          <div class="sc-feat">世界三大蓝白小镇。<b>白墙蓝门 + 悬崖地中海</b>，浪漫教科书。</div>
+          <div class="sc-meta">📅 全天开放 · ⏱ 半天–1 天 · 🚇 TGM 城铁 40min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-1.jpg" alt="蓝白小镇·石板街巷" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蓝白小镇·石板街巷 <small>免费</small></div>
+          <div class="sc-feat">鹅卵石窄巷与<b>蓝钉木门</b>，艺术家街区氛围。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 📍 镇中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-2.jpg" alt="迦太基·蓝白建筑" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">迦太基·蓝白建筑 <small>联票 8–12 第纳尔</small></div>
+          <div class="sc-feat">迦太基海岸的<b>地中海蓝白美学</b>，遗址与小镇交融。</div>
+          <div class="sc-meta">📅 8:30–17:30 · ⏱ 2h · 📍 迦太基遗址区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-3.jpg" alt="迦太基·地中海湾" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">迦太基·地中海湾 <small>免费（海边）</small></div>
+          <div class="sc-feat">腓尼基古港+罗马浴场的<b>海天一色</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 安东尼浴场附近</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-4.jpg" alt="迦太基·屋顶望海" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">迦太基·屋顶望海 <small>免费</small></div>
+          <div class="sc-feat"><b>棕榈+陶瓦屋顶+地中海</b>的北非黄昏机位。</div>
+          <div class="sc-meta">📅 日落 · ⏱ 1h · 📍 西迪布赛义德/迦太基</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-5.jpg" alt="杜兹·撒哈拉沙丘" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">杜兹·撒哈拉沙丘 <small>骑骆驼 50–80 第纳尔</small></div>
+          <div class="sc-feat">撒哈拉之门。<b>大沙丘 + 沙漠日出</b>，骆驼剪影。</div>
+          <div class="sc-meta">📅 日出最佳 · ⏱ 半天 · 📍 杜兹南</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-6.jpg" alt="埃尔杰姆·斗兽场" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">埃尔杰姆·斗兽场 <small>约 12 第纳尔</small></div>
+          <div class="sc-feat">世界第三大斗兽场。<b>地下兽笼通道</b>可走入，比罗马更完整。</div>
+          <div class="sc-meta">📅 8:00–18:00 · ⏱ 2h · 📍 苏塞西南 60km</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/tunisia/tunisia-7.jpg" alt="突尼斯城·麦地那" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">突尼斯城·麦地那 <small>免费</small></div>
+          <div class="sc-feat">千年老城。<b>宰图纳清真寺 + 老城苏克</b>，世界遗产。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 📍 老城中心</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（西迪布赛义德蓝白小镇、迦太基地中海湾、撒哈拉沙丘、埃尔杰姆斗兽场、突尼斯麦地那等均为突尼斯实景），用于页面配图。更多免费景点：布尔吉巴大街、马赫迪耶海滩、苏塞麦地那、塔巴尔卡海滨。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 0.4 突尼斯第纳尔、1 美元 ≈ 7.2 元估算。北京无直航，往返转机按淡季 5000–8000 元计，旺季（10 月–次年 4 月）上浮 1500–3000。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（12000–18000）</th>
+<th>标准（22000–35000）</th>
+<th>舒适（45000–65000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机往返 5000–8000（淡季促销）</td>
+<td>转机直挂 9000–13000</td>
+<td>含内陆段/灵活票 18000–25000</td>
+</tr>
+<tr>
+<td>住宿（7 晚）</td>
+<td>民宿/青旅 1000–1800</td>
+<td>中档酒店 3000–5000</td>
+<td>海滨度假村 10000–16000</td>
+</tr>
+<tr>
+<td>交通（境内）</td>
+<td>火车+巴士 1500–2500</td>
+<td>火车+沙漠包车 3000–5000</td>
+<td>全包车+内陆航班 7000–10000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础门票约 300–500</td>
+<td>含巴尔多/斗兽场 600–1000</td>
+<td>含沙漠活动 1500–2500</td>
+</tr>
+<tr>
+<td>餐饮（8 天）</td>
+<td>本地馆子+街头 800–1200</td>
+<td>正常餐厅 2000–3000</td>
+<td>海景餐厅+全包 5000–8000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 26000 元）</span>
+      往返机票 11000 + 住宿 7 晚 4200 + 火车与沙漠包车 3800 + 门票 800 + 餐饮 2500 + 杂费/换汇 1500 ≈ <strong>24000–26000 元</strong>。转机航班提前 2 个月订、选周二周三出发常能省 1500–2500；沙漠团与内陆航班也是价格洼地，货比三家。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>8.1 只走北部的 6 天精华版</h3>
+
+
+    <ul>
+
+      <li>D1–D3 突尼斯城+迦太基+蓝白小镇（同主行程）</li>
+
+      <li>D4 苏塞（同主行程）</li>
+
+      <li>D5 埃尔杰姆斗兽场+马赫迪耶（合并一日）</li>
+
+      <li>D6 返程</li>
+
+      <li>砍杜兹撒哈拉，适合假期短或怕热</li>
+
+    </ul>
+
+    <h3>8.2 撒哈拉深度版</h3>
+
+
+    <p>杜兹加到 2 晚：第一晚沙漠营地露营（篝火+星空），第二晚 Ksar Ghilane 温泉绿洲过夜；或改走西部线——突尼斯城✈托泽尔，玩托泽尔棕榈谷+星球大战取景地（马特马他穴居人小镇），再沙漠越野回杜兹。撒哈拉活动以当地团为核心，旺季提前 1–2 周订。</p>
+
+    <h3>8.3 亲子/休闲调整</h3>
+
+
+    <p>带娃推荐：迦太基减半、加哈马马特（Hammamet）海滨度假 1–2 天，海滩+水上乐园更轻松；蓝色小镇与麦地那步行多，推婴儿车不便，建议背带。突尼斯夏天炎热，午后安排室内（博物馆/海边）避暑。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 突尼斯 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（唯一）</td>
+<td>北京→突尼斯城约 14–18h</td>
+<td>往返 5000–11000 元</td>
+<td>经巴黎/伊斯坦布尔/多哈/迪拜，行李直挂选联程票</td>
+</tr>
+<tr>
+<td>直飞</td>
+<td>—</td>
+<td>—</td>
+<td>中突暂无直航</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>无陆路，只能飞机/游轮</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 突尼斯境内交通核心提醒</span>
+      北部用<strong>SNCFT 火车</strong>最省心（突尼斯城→苏塞约 2h，7.6–15 第纳尔），TGM 城铁串突尼斯城—迦太基—西迪布赛义德（约 40min，<2 第纳尔）；<strong>进撒哈拉（杜兹/托泽尔）一定要走当地旅行社包车或沙漠团</strong>，别自驾——沙漠路况与导航都不可靠。火车旺季（夏季/开斋节）座位紧张，官网提前 3 天订座或到站早买。
+    </div>
+
+    <h3>8.2 突尼斯境内交通</h3>
+    <ul>
+      <li><strong>SNCFT 火车</strong>：突尼斯城—苏塞 2h、苏塞—马赫迪耶 1h、突尼斯城—加贝斯约 4h，二等 7.6–25 第纳尔</li>
+      <li><strong>Carte Bleue 通票</strong>：7/15/21 天不限次数，2 等 30/60/90 第纳尔，长途旅行划算</li>
+      <li><strong>TGM 城铁</strong>：突尼斯城—迦太基—西迪布赛义德海岸线，约 40min、<2 第纳尔</li>
+      <li><strong>长途巴士/包车</strong>：加贝斯—杜兹约 90km、1.5–2h，南部标配包车/沙漠团</li>
+      <li><strong>内陆航班</strong>：托泽尔—突尼斯城约 1h（Tunisair Express），返程神器</li>
+      <li><strong>市内交通</strong>：突尼斯城出租车打表（起步约 0.5–1 第纳尔），Uber/Bolt 可用</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>突尼斯城·麦地那</td>
+<td>经济 150–350 / 标准 400–700</td>
+<td>老城氛围，清真寺步行</td>
+<td>巷窄拖行李累</td>
+</tr>
+<tr>
+<td>突尼斯城·布尔吉巴大街</td>
+<td>标准 400–800</td>
+<td>交通枢纽，餐饮多</td>
+<td>街面嘈杂</td>
+</tr>
+<tr>
+<td>西迪布赛义德</td>
+<td>民宿 300–600 / 精品 800–1500</td>
+<td>蓝白小镇过夜，日落加分</td>
+<td>选择少，提前订</td>
+</tr>
+<tr>
+<td>苏塞·老城</td>
+<td>经济 150–300 / 标准 400–700</td>
+<td>地道，火车站近</td>
+<td>夜间较安静</td>
+</tr>
+<tr>
+<td>马赫迪耶·海滨</td>
+<td>经济 200–350 / 标准 500–900</td>
+<td>白沙滩度假，度假村多</td>
+<td>老城住宿选择少</td>
+</tr>
+<tr>
+<td>杜兹·沙漠营区</td>
+<td>营地 300–800 / 四星 1000–2500</td>
+<td>沙漠日出星空</td>
+<td>旺季露营紧张</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍲 必吃经典</h3>
+        <ul>
+          <li>库斯库斯 couscous：周五传统主菜，配羊肉/鱼</li>
+          <li>突尼斯烤鱼与海鲜：沿海城市新鲜</li>
+          <li>塔吉锅炖菜：北非式慢炖</li>
+          <li>harissa 哈里萨辣酱：无辣不欢</li>
+        </ul>
+        <h3>🍵 饮品</h3>
+        <ul>
+          <li>薄荷茶：餐后标配，配烤松子</li>
+          <li>突尼斯咖啡与奶咖</li>
+          <li>鲜榨果汁：橙汁/石榴汁</li>
+          <li>棕榈酒/无花果酒（可选）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥧 街头小吃</h3>
+        <ul>
+          <li>brik 炸蛋卷：酥皮裹蛋与金枪鱼</li>
+          <li>椰枣（Deglet Nour）：世界名产</li>
+          <li>makroudh 椰枣粗麦甜点</li>
+          <li>橄榄与橄榄油：地中海味道</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>突尼斯城：布尔吉巴大街与麦地那老店</li>
+          <li>苏塞：老城海鲜夜市</li>
+          <li>马赫迪耶：海边烤鱼店</li>
+          <li>杜兹：沙漠营地铁板库斯库斯</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 麦地那/旅游区餐厅有「游客双菜单」，先看本地价格再点；② 海鲜问清「时价」与份量，标注 per kilo 的按公斤算；③ 街头小摊卫生参差，冰与生冷谨慎；④ 斋月（2026 年约 2–3 月）白天餐厅关门，备干粮并尊重习俗；⑤ 第纳尔花不完别硬花，出镜不能带。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上有效期）+ 往返机票打印件</li>
+        <li>已付费酒店订单（Bon-voucher，民宿单可能被拒）</li>
+        <li>欧标转换插头（C/E 型两脚圆插）</li>
+        <li>防晒霜+帽子+薄外套（沙漠温差）</li>
+      </ul>
+      <ul>
+        <li>少量美元/欧元备用（第纳尔出境禁带）</li>
+        <li>SNCFT 火车票与沙漠团提前订</li>
+        <li>下载 Google 地图 + Bolt 打车 APP</li>
+        <li>查沙漠活动天气，夏季避开正午</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>免签材料要齐全</strong>：往返机票+付费酒店订单，移民官可能抽查，民宿订单可能被拒；② 第纳尔出入境禁止携带，换汇认准官方点，离境前花完；③ 停留超 30 天须在 sajalni.tn 注册手机 IMEI，否则断网；④ 麦地那与旅游区防推销与小偷，背包背前、拒绝带路党。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      突尼斯是「<strong>地中海的门槛 + 撒哈拉的开场</strong>」——迦太基的海风穿过两千年的废墟，西迪布赛义德的蓝白街巷盛着薄荷茶的香气，火车一路向南，就能在杜兹的沙丘上等到一场金色的日出。免签 90 天让说走就走成为可能，材料备齐、火车订好，剩下的交给蓝与金。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#1e9fd0",
+    "d": 3,
+    "n": "主线 · 突尼斯城→迦太基→西迪布赛义德→苏塞→马赫迪耶→杜兹",
+    "pts": [
+      [
+        36.806,
+        10.181
+      ],
+      [
+        36.852,
+        10.324
+      ],
+      [
+        36.87,
+        10.347
+      ],
+      [
+        35.828,
+        10.641
+      ],
+      [
+        35.502,
+        11.062
+      ],
+      [
+        33.463,
+        9.022
+      ]
+    ]
+  },
+  {
+    "c": "#d4a017",
+    "d": 2,
+    "n": "返程 · 杜兹→托泽尔✈突尼斯城转机回国",
+    "pts": [
+      [
+        33.463,
+        9.022
+      ],
+      [
+        36.806,
+        10.181
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 36.806,
+    "lng": 10.181,
+    "name": "突尼斯城·麦地那老城",
+    "t": "D2 傍晚 · 2h",
+    "fee": "免费",
+    "note": "宰图纳清真寺、老城苏克"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 36.852,
+    "lng": 10.324,
+    "name": "迦太基·考古遗址",
+    "t": "D2 上午 · 3h",
+    "fee": "联票 8–12 第纳尔",
+    "note": "布匿港、安东尼浴场"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 36.8703,
+    "lng": 10.347,
+    "name": "蓝白小镇·西迪布赛义德",
+    "t": "D3 全天 · 1 天",
+    "fee": "免费",
+    "note": "蓝门蓝窗、悬崖咖啡馆"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 35.828,
+    "lng": 10.641,
+    "name": "苏塞·麦地那",
+    "t": "D4 下午 · 3h",
+    "fee": "免费（城堡 6 第纳尔）",
+    "note": "古城+海滨大道"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 35.502,
+    "lng": 11.062,
+    "name": "马赫迪耶·老城与海滩",
+    "t": "D5 上午 · 4h",
+    "fee": "免费",
+    "note": "大清真寺、白沙滩"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 33.463,
+    "lng": 9.022,
+    "name": "杜兹·撒哈拉之门",
+    "t": "D6–D7 · 2 天",
+    "fee": "骆驼 50–80 第纳尔",
+    "note": "大沙丘、越野冲沙"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 35.2964,
+    "lng": 10.7069,
+    "name": "埃尔杰姆·斗兽场",
+    "t": "D4/5 可选 · 2h",
+    "fee": "约 12 第纳尔",
+    "note": "世界第三大斗兽场"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 36.8088,
+    "lng": 10.1347,
+    "name": "突尼斯城·巴尔多博物馆",
+    "t": "D2 下午 · 2.5h",
+    "fee": "约 11 第纳尔",
+    "note": "世界最大马赛克收藏"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[32.8, 8.8], [37.4, 11.4]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#1e9fd0\"></span>主线（突尼斯城→杜兹，北部火车+南部沙漠包车）<br><span class=\"sw\" style=\"background:#d4a017\"></span>返程（杜兹→托泽尔✈突尼斯城转机回国）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

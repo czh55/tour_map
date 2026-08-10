@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 比利时 7 天全景攻略 · 巧克力与古城</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #5d3a1a;
+    --red-light: #8a5a2b;
+    --gold: #d4a017;
+    --ink: #2b2118;
+    --muted: #8a7a6f;
+    --bg: #f7f4ec;
+    --card: #ffffff;
+    --line: #e8ddc9;
+    --blue: #1b6fb5;
+    --cover1: #3a2410;
+    --ov1: rgba(58,36,16,.88);
+    --ov2: rgba(93,58,26,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(230,170,60,.20);
+    --key-bg: #fdf3dd;
+    --info-bg: #f3ece0;
+    --head-bg: rgba(93,58,26,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/belgium/belgium-cover.jpg" alt="比利时旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 7 天环线 · 布鲁塞尔 + 古城带</div>
+      <h1>比利时 7 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 布鲁塞尔 · 布鲁日根特 · 安特卫普 · 巧克力与古城</div>
+      <div class="meta">
+        <span>🛫 行程链：布鲁塞尔 → 布鲁日 → 根特 → 安特卫普 → 返程</span>
+        <span>📅 时间窗口：7 天 6 晚</span>
+        <span>✈️ 北京⇄布鲁塞尔 直飞约 10.5 小时（海航/国航）</span>
+        <span>🛂 签证：申根签（C 类）需办理，90 欧元 + 服务费 187 元</span>
+        <span>🕐 时差 -7 小时（冬）/-6 小时（夏）· 🔌 电压 230V C/E 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 7 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 7 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">布鲁塞尔</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">布鲁日</span>
+      <span class="arrow">→</span>
+      <span class="node">根特</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">安特卫普</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 7 天怎么安排最合理</span>
+      比利时是「<strong>小国大密度</strong>」的目的地——国土面积比海南还小，却挤着布鲁塞尔、布鲁日、根特、安特卫普四座风格迥异的城市，城际火车 30–60 分钟直达。7 天节奏是「<strong>3+2+1+1</strong>」：前 3 天布鲁塞尔（都市+巧克力+漫画），中间 2 天布鲁日（中世纪水城+运河），最后各 1 天根特与安特卫普，全程以布鲁塞尔和布鲁日为落脚点，几乎不用挪行李。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办<strong>申根签（C 类）</strong>。2026 年 5 月起费用 90 欧元 + 签证中心服务费 187 元，审理 2–15 个工作日，建议提前 1–3 个月办理</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>布鲁塞尔 3 天 + 布鲁日 2 天 + 根特 1 天 + 安特卫普 1 天，全程 SNCB 城际火车串城</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 7 天从布鲁塞尔返程；北京⇄布鲁塞尔直飞（海南航空 HU491 / 国航 CA963）约 10.5 小时，凌晨起飞清晨抵达，返程亦然</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 布鲁塞尔 → 布鲁日 → 根特 → 安特卫普 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 8000–12000 ／ 标准 14000–20000 ／ 舒适 30000–42000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办申根签 ② 订往返机票（提前 6–8 周）③ 布鲁日钟楼、原子球塔等热门门票官网预约</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>4–10 月最舒服；5–6 月布鲁日运河游船旺季、8 月啤酒节、12 月圣诞集市；11–2 月阴冷多雨但人少价低</td>
+</tr>
+<tr>
+<td>支付与消费</td>
+<td>欧元现金 + 芯片卡（带 PIN），多数店可刷 Visa/Mastercard，支持 Apple Pay；部分博物馆只收卡不收现金</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>申根签是最大门槛</strong>：需要往返机票订单、全程酒店订单、覆盖全行程的旅行保险（保额≥3 万欧元）与余额 5 万以上的银行流水，材料务必一次备齐，拒签再约要重新排队。② 布鲁日钟楼<strong>限流且强制预约时段</strong>，旺季现场排队 1 小时以上，务必提前 1 周官网买票；运河游船不支持线上订票，只能现场排队。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 7 天版</h2>
+
+    <p>以下为 7 天 6 晚的推荐节奏：前 3 天以布鲁塞尔为基地逛透都市核心，D4–D5 移师布鲁日慢游中世纪古城，D6 根特一日、D7 安特卫普收尾。每日主景点 ≤2 个，城际交通均靠 SNCB 城际火车。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵布鲁塞尔</td>
+<td>北京✈布鲁塞尔（直飞约 10.5h，清晨到），入住大广场附近，下午大广场+撒尿小童+圣于贝尔长廊</td>
+<td>布鲁塞尔</td>
+<td>抵达+都市初印象</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>原子球塔+迷你欧洲（半天）→ 漫画博物馆（丁丁/蓝精灵）→ 圣于贝尔长廊巧克力店</td>
+<td>布鲁塞尔</td>
+<td>现代布鲁塞尔</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>大广场深度+城市博物馆（登市政厅塔可选）→ 皇家美术馆（可选）→ 傍晚啤酒吧体验</td>
+<td>布鲁塞尔</td>
+<td>艺术与美食</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>火车到布鲁日（约 1h）：运河游船 → 市集广场钟楼登顶 → 圣血教堂+市政厅</td>
+<td>布鲁日</td>
+<td>中世纪水城</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>布鲁日慢游：圣母教堂+爱之湖 → 巧克力工坊 → 弗兰德啤酒博物馆（可选）</td>
+<td>布鲁日</td>
+<td>古城慢日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>火车到根特（约 30min）：圣巴夫大教堂（《神秘的羔羊》）→ 伯爵城堡 → 黄昏 Graslei 运河，晚回布鲁日</td>
+<td>布鲁日</td>
+<td>根特一日</td>
+</tr>
+<tr>
+<td>D7 返程</td>
+<td>火车到安特卫普（约 1h）：中央车站 → 钻石区 → 鲁本斯故居 → 午后返布鲁塞尔机场飞北京</td>
+<td>—</td>
+<td>安特卫普+收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍根特（D6）直接布鲁日往返安特卫普；安特卫普与根特在同一条铁路线上，也可 D6 安特卫普、D7 根特顺路返程。带娃家庭优先原子球塔+迷你欧洲+漫画博物馆（孩子最爱），砍掉皇家美术馆；冬季 12 月可选布鲁日/布鲁塞尔圣诞集市替换 D3。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 7 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达布鲁塞尔</span>
+          <span class="d-desc">大广场+撒尿小童初印象</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">02:30–06:50</td><td class="t-what">北京✈布鲁塞尔（海南航空 HU491，约 10h20m，凌晨起飞清晨降落），入境+取行李</td></tr>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">机场城际火车（Airport Express）约 20 分钟到布鲁塞尔中央/南站，入住大广场周边酒店</td></tr>
+          <tr><td class="t-time">10:00–12:30</td><td class="t-what"><b>大广场（Grand-Place）</b>（免费，世界遗产）：市政厅哥特塔楼、黄金广场、行会楼群，注意脚下马赛克地面</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">午餐：大广场旁 Rue des Bouchers 或圣于贝尔长廊 café，先看菜单标价</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>撒尿小童（Manneken Pis）</b>（免费）→ <b>圣于贝尔长廊（Galeries Royales）</b>：拱顶玻璃廊道+巧克力橱窗</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what">晚餐：比利时青口（Moules-frites），餐后大广场灯光夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">时差 6–7 小时，第一天午后容易困，建议 15:00 前只安排步行项目，靠散步撑到晚上 21 点再睡，第二天就能基本倒过来。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 原子球塔 + 漫画博物馆</span>
+          <span class="d-desc">现代布鲁塞尔一日</span>
+          <span class="d-tag ">🏙 现代日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">地铁 6 号线至 Heysel 站，抵达原子球塔园区</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>原子球塔（Atomium）</b>（成人 17 欧元，含设计博物馆）：1958 世博会标志，登上 92m 顶部球体俯瞰布鲁塞尔，必坐透明观景电梯</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what"><b>迷你欧洲（Mini-Europe）</b>（成人 19 欧左右，可买联票）：1/25 比例缩微欧盟地标，1.5 小时逛完</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">返回市中心：<b>比利时漫画博物馆（Belgian Comic Strip Center）</b>（成人 13 欧元）：新艺术建筑+丁丁、蓝精灵、Lucky Luke 原稿展</td></tr>
+          <tr><td class="t-time">17:00–19:00</td><td class="t-what"><b>圣于贝尔长廊</b>扫货：Pierre Marcolini、Neuhaus、Mary 手工巧克力，广场旁找家店吃华夫饼</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：比利时薯条+啤酒，可选弗兰德炖牛肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">原子球塔门票含设计博物馆；迷你欧洲+原子球塔联票更划算。周一漫画博物馆闭馆，行程尽量避开周一安排此点。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 大广场深度 + 皇家美术馆</span>
+          <span class="d-desc">艺术与美食一日</span>
+          <span class="d-tag alt">🎨 艺术日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>布鲁塞尔城市博物馆（Maison du Roi）</b>（成人约 8 欧元）：原版撒尿小童雕像+城市历史，位于大广场东侧</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">登市政厅哥特塔楼（季节限定，约 6–8 欧元）：俯瞰大广场最正机位</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：布鲁塞尔华夫饼（waffle）当甜点，主餐选当地 Trattoria</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>皇家美术馆（Royal Museums of Fine Arts）</b>（成人约 10 欧元）：老馆藏鲁本斯/勃鲁盖尔，新馆为马格里特超现实主义，两馆通票约 15 欧元</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what"><b>Delirium 啤酒村</b>：2000+ 种啤酒，点经典 Tripel/Kriek 樱桃啤酒配小食</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">皇家美术馆周一闭馆，老馆与新馆分开购票；对绘画无感的可换成圣休伯特公园漫步或巧克力博物馆（成人约 13 欧元，含现场制作演示）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 移师布鲁日</span>
+          <span class="d-desc">运河游船+钟楼登顶</span>
+          <span class="d-tag ">🏰 水城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">布鲁塞尔中央站乘 SNCB 城际火车到布鲁日（约 1h，€14.8），入住古城内酒店</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what"><b>运河游船</b>（成人 15 欧元，30 分钟）：五家公司统一价，现场码头排队购票，建议去 Rozenhoedkaai 玫瑰码头</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>市集广场（Markt）</b>：彩色行会楼+马车，拍钟楼全景</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：布鲁日薯条+淡菜</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what"><b>布鲁日钟楼（Belfort）登顶</b>（成人 16 欧元）：366 级旋转台阶，登顶俯瞰红瓦古城+运河；限流需提前预约</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what"><b>圣血教堂（Basilica of the Holy Blood）</b>（免费，博物馆约 2 欧元）：基督圣血圣物+双色大理石，<b>市政厅</b>哥特外墙</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：运河边餐厅吃青口锅，傍晚玫瑰码头灯光夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">钟楼旺季限流严格，务必提前 1 周官网预约登塔时段；运河游船现场排队 15–45 分钟属正常。布鲁日古城全步行可达，无需市内交通。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 布鲁日慢游</span>
+          <span class="d-desc">圣母教堂+巧克力工坊</span>
+          <span class="d-tag alt">🍫 古城慢日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>圣母教堂（Church of Our Lady）</b>（免费，塔楼约 6 欧元）：米开朗基罗《布鲁日圣母》雕像，仅次圣彼得大教堂的 122m 砖塔</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>爱之湖（Minnewater）</b>（免费）：天鹅+古桥+修道院，布鲁日最上镜角落之一</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：法兰德斯炖牛肉（Stoofvlees）+樱桃啤酒</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>巧克力工坊</b>（约 15–20 欧元）：亲手做比利时松露巧克力，或逛格鲁修瑟博物馆（成人 8 欧元）</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>弗兰德啤酒博物馆（Bruges Beer Museum）</b>（约 15 欧元）或回到市集广场听钟琴音乐会</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：运河游船夜景+华夫饼夜宵</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣母教堂《布鲁日圣母》米开朗基罗雕像是布鲁日必看；爱之湖清晨或日落人最少。周二许多博物馆闭馆，行程注意调整。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 根特一日</span>
+          <span class="d-desc">圣巴夫大教堂+伯爵城堡</span>
+          <span class="d-tag ">⛪ 根特日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">布鲁日乘火车到根特 Sint-Pieters 站（约 30min，€6.8），换乘电车 1 路进老城</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>圣巴夫大教堂（St. Bavo's Cathedral）</b>：<b>《神秘的羔羊》祭坛画</b>（全票 12.5 欧元含 AR 平板，只看祭坛 6 欧元）+ 鲁本斯《圣巴夫入教》</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：Graslei 河畔露天座，Waterzooi 白汁炖鸡</td></tr>
+          <tr><td class="t-time">13:30–16:00</td><td class="t-what"><b>伯爵城堡（Gravensteen）</b>（成人 15 欧元，含语音导览）：中世纪伯爵堡垒，登上城头俯瞰运河与红瓦老城</td></tr>
+          <tr><td class="t-time">16:00–17:30</td><td class="t-what"><b>Graslei/Korenlei 河岸</b>（免费）：中世纪行会楼群+圣尼古拉斯教堂，黄昏光线最佳</td></tr>
+          <tr><td class="t-time">17:30–18:00</td><td class="t-what">乘火车返回布鲁日，晚餐在当地</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣巴夫大教堂《神秘的羔羊》祭坛画是「欧洲最伟大的油画」之一，AR 平板免费借用；伯爵城堡周二闭馆。根特老城很小，3 小时足够，圣米歇尔桥是经典机位。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 安特卫普 + 返程</span>
+          <span class="d-desc">中央车站+钻石区+鲁本斯</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30</td><td class="t-what">布鲁日乘火车到安特卫普中央站（约 1h，中途经根特/布鲁塞尔）</td></tr>
+          <tr><td class="t-time">09:00–10:00</td><td class="t-what"><b>安特卫普中央车站（Antwerpen-Centraal）</b>（免费）：「世界最美火车站」，玻璃穹顶+大理石大厅，必拍角度在二楼月台层</td></tr>
+          <tr><td class="t-time">10:00–11:00</td><td class="t-what"><b>钻石区</b>（免费）：中央车站旁 Hoveniersstraat，全球钻石交易中心，可看橱窗与加工</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>鲁本斯故居（Rubenshuis）</b>（成人 12 欧元）：巴洛克画家工作室+巴洛克花园；主体馆正翻新，Rubens Experience 展仍开放</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：安特卫普薯条（排名欧洲第一的 Frites Atelier）</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">安特卫普中央站乘火车回布鲁塞尔机场（约 1h）</td></tr>
+          <tr><td class="t-time">17:00–23:30</td><td class="t-what">布鲁塞尔✈北京（约 10.5h），到家休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">安特卫普中央车站本身免费且值得 40 分钟慢慢看；钻石区只在白天逛。留足返程时间——布鲁塞尔机场安检+退税排队旺季可达 1 小时，提前 2.5 小时到机场。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-cover.jpg" alt="布鲁塞尔·大广场" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布鲁塞尔·大广场 <small>免费（世界遗产）</small></div>
+          <div class="sc-feat">比利时心脏。<b>哥特市政厅 + 金色行会楼</b>，白天金碧辉煌、夜晚灯光璀璨。</div>
+          <div class="sc-meta">📅 全天开放 · ⏱ 1–2h · 🚇 地铁 Gare Centrale 步行 5min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-1.jpg" alt="原子球塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">原子球塔 <small>成人 17 欧</small></div>
+          <div class="sc-feat">1958 世博会遗物。<b>92m 顶端球体全景 + 透明电梯</b>，科幻感十足。</div>
+          <div class="sc-meta">📅 10:00–18:00 · ⏱ 2–3h · 🚇 地铁 6 号线 Heysel</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-2.jpg" alt="撒尿小童" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">撒尿小童 <small>免费</small></div>
+          <div class="sc-feat">布鲁塞尔幽默象征。<b>1619 年铜像 + 节日换装</b>，全城流传一千套衣服。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 15min · 🚶 大广场步行 3min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-3.jpg" alt="布鲁日·运河游船" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布鲁日·运河游船 <small>成人 15 欧</small></div>
+          <div class="sc-feat">中世纪水城精华。<b>30 分钟运河水道</b>，穿行石桥与红瓦古宅。</div>
+          <div class="sc-meta">📅 10:00–17:00 · ⏱ 30min · 🚶 玫瑰码头排队即乘</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-4.jpg" alt="布鲁日·钟楼" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布鲁日·钟楼 <small>成人 16 欧</small></div>
+          <div class="sc-feat">83m 中世纪钟楼。<b>366 级台阶 + 47 座钟琴</b>，登顶俯瞰红瓦运河全景。</div>
+          <div class="sc-meta">📅 9:30–18:00 · ⏱ 1h · 🚶 市集广场旁，需预约</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-5.jpg" alt="根特·圣巴夫大教堂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">根特·圣巴夫大教堂 <small>全票 12.5 欧</small></div>
+          <div class="sc-feat"><b>《神秘的羔羊》祭坛画</b>——凡·艾克兄弟杰作，欧洲油画起点。</div>
+          <div class="sc-meta">📅 8:30–18:00 · ⏱ 1.5–2h · 🚋 电车 1 路 Sint-Baafsplein</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-6.jpg" alt="安特卫普·中央车站" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">安特卫普·中央车站 <small>免费</small></div>
+          <div class="sc-feat">「世界最美火车站」。<b>大理石大厅 + 玻璃穹顶</b>，一站看尽新哥特与钢铁浪漫。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 30–60min · 🚇 安特卫普中央站本体</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/belgium/belgium-7.jpg" alt="比利时·巧克力与啤酒" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">比利时·巧克力与啤酒 <small>华夫饼约 5 欧起</small></div>
+          <div class="sc-feat">美食双名片。<b>手工巧克力 + 2000 种啤酒</b>，华夫饼配焦糖酱是街头标配。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 逛吃 1h · 📍 大广场/圣于贝尔长廊</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（大广场、原子球塔、布鲁日运河、根特河岸、安特卫普中央车站等均为比利时实景），用于页面配图。更多免费景点：布鲁日爱之湖、根特 Graslei 河岸、安特卫普中央车站大厅、布鲁塞尔五十周年纪念公园。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 欧元 ≈ 7.8 元人民币估算。往返机票按淡季直飞 6000–9000 元计，转机可省 1500 元左右；冬季（11–2 月）价格整体低一档。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（8000–12000）</th>
+<th>标准（14000–20000）</th>
+<th>舒适（30000–42000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机 4500–5500</td>
+<td>直飞（海航/国航）6000–7500</td>
+<td>直飞+灵活时段/升舱 12000–18000</td>
+</tr>
+<tr>
+<td>住宿（6 晚）</td>
+<td>青旅/民宿 350–500/晚</td>
+<td>三星酒店 800–1200/晚</td>
+<td>精品/四星 2000–3500/晚</td>
+</tr>
+<tr>
+<td>交通（境内）</td>
+<td>SNCB 城际+市内卡 800–1200</td>
+<td>城际火车+公交+打车少量 1500–2200</td>
+<td>城际一等座+包车 4000–6000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点 1000–1500</td>
+<td>全含（原子球塔/钟楼/圣巴夫/鲁本斯）2500–3500</td>
+<td>全含+讲解/演出/体验课 4000–6500</td>
+</tr>
+<tr>
+<td>餐饮（7 天）</td>
+<td>超市+薯条简餐 2000–2800</td>
+<td>正常下馆子+啤酒 4000–6000</td>
+<td>米其林/青口大餐 9000–14000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 17500 元）</span>
+      往返机票 6800 + 住宿 6 晚 6300（平均 1050/晚）+ 境内交通 1800 + 门票 3000 + 餐饮 5000 + 签证/杂费 1200 ≈ <strong>16000–18000 元</strong>。大头是机票与住宿，直飞提前 6–8 周订通常能省 1500–2500 元；比利时境内火车不贵，全程城际总花费约 1000 元内。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>7.1 亲子版调整</h3>
+
+
+    <p>带娃推荐：原子球塔+迷你欧洲+漫画博物馆三连（孩子最爱），布鲁日运河游船必坐，砍掉皇家美术馆与鲁本斯故居；安特卫普动物园紧邻中央车站，可加 2 小时。比利时城市间全是短途火车，节奏天然友好。</p>
+
+    <h3>7.2 紧凑 5 天版</h3>
+
+
+    <ul>
+
+      <li>D1 布鲁塞尔大广场+撒尿小童+长廊</li>
+
+      <li>D2 原子球塔+漫画博物馆</li>
+
+      <li>D3 布鲁日一日游（运河+钟楼）当晚回布鲁塞尔</li>
+
+      <li>D4 根特+安特卫普双城一日往返</li>
+
+      <li>D5 购物+返程</li>
+
+    </ul>
+
+    <h3>7.3 冬季圣诞版（12 月）</h3>
+
+
+    <p>12 月布鲁塞尔与布鲁日都有圣诞集市（木屋+热红酒+巧克力），布鲁日运河两岸挂满灯饰；冬季机票与酒店便宜 30% 左右，但阴冷多雨，羽绒服与防水鞋必备。布鲁日钟楼冬季票价 15 欧元，比夏季便宜 1 欧。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 比利时 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→布鲁塞尔约 10.5h</td>
+<td>往返 6000–9000 元</td>
+<td>海南航空 HU491 / 国航 CA963，波音 787，凌晨起飞清晨到</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>13–18h</td>
+<td>4500–6000 元</td>
+<td>经上海/广州/香港/迪拜转机，便宜但费时</td>
+</tr>
+<tr>
+<td>欧洲联游</td>
+<td>—</td>
+<td>视线路</td>
+<td>布鲁塞尔机场有欧洲之星/Thalys 高铁接巴黎、阿姆斯特丹，可顺带串游</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 比利时境内交通核心提醒</span>
+      城市间全靠<strong>SNCB 城际火车（IC）</strong>：布鲁塞尔—布鲁日 1h（€14.8）、布鲁塞尔—根特 45min（€9.3）、根特—布鲁日 30min（€6.8）、布鲁塞尔—安特卫普 45min（€9–15）。下载 <strong>SNCB App</strong> 提前购票，班次密（布鲁塞尔—安特卫普每 15 分钟一班），全部电子票闸机扫码进站。火车晚点率偏高，跨城换乘留 15 分钟缓冲。
+    </div>
+
+    <h3>8.2 比利时境内交通</h3>
+    <ul>
+      <li><strong>城际火车（SNCB/IC）</strong>：四城串联主力，布鲁日—根特仅 30 分钟，票价 €6.8–15，App 购票有折扣</li>
+      <li><strong>布鲁塞尔市内</strong>：地铁/电车/公交 STIB 一票通用，单程 €2.1，24h 日票 €7.5，机场往返可坐火车约 €11</li>
+      <li><strong>布鲁日市内</strong>：古城极小全程步行；火车站到古城坐公交 2 站或步行 15 分钟</li>
+      <li><strong>根特市内</strong>：Sint-Pieters 站换电车 1 路进老城；Graslei 河岸步行可达</li>
+      <li><strong>安特卫普</strong>：中央车站→钻石区步行 3 分钟→鲁本斯故居 10 分钟；车站旁租车点也多</li>
+      <li><strong>出租车/Uber</strong>：起步价约 €5，仅在深夜或拖行李时用；比利时路窄古城多，不推荐自驾</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>布鲁塞尔·大广场/中央站</td>
+<td>经济 450–650 / 标准 900–1500</td>
+<td>景点步行可达，机场火车直达</td>
+<td>游客多，旺季贵</td>
+</tr>
+<tr>
+<td>布鲁塞尔·圣凯瑟琳区</td>
+<td>经济 400–600 / 标准 800–1300</td>
+<td>美食街区，安静宜居</td>
+<td>离大广场步行约 10 分钟</td>
+</tr>
+<tr>
+<td>布鲁日·古城内</td>
+<td>经济 550–750 / 标准 1000–1600</td>
+<td>推窗即运河，童话氛围</td>
+<td>石板路拖行李累，隔音一般</td>
+</tr>
+<tr>
+<td>布鲁日·火车站旁</td>
+<td>经济 400–600 / 标准 800–1200</td>
+<td>性价比高，赶早班车方便</td>
+<td>离古城步行 15 分钟</td>
+</tr>
+<tr>
+<td>安特卫普·中央站旁</td>
+<td>经济 450–650 / 标准 850–1300</td>
+<td>交通枢纽，钻石区边上</td>
+<td>晚间街区偏静</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍽 必吃经典</h3>
+        <ul>
+          <li>青口锅（Moules-frites）：比利时国菜，配薯条+白葡萄酒</li>
+          <li>华夫饼：布鲁塞尔华夫+布鲁日华夫，现烤+焦糖酱</li>
+          <li>薯条（Frites）：安特卫普 Frites Atelier 曾被评为欧洲第一</li>
+          <li>手工巧克力：Pierre Marcolini、Neuhaus、Mary 都是本地百年老牌</li>
+        </ul>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>薯条蘸蛋黄酱：街头薯条店才是正宗吃法</li>
+          <li>华夫饼配莓果与鲜奶油：长廊边咖啡馆</li>
+          <li>Speculoos 焦糖饼干：比利时特色伴手礼</li>
+          <li>巧克力喷泉与松露试吃：布鲁日巧克力店免费试吃</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍺 啤酒与名菜</h3>
+        <ul>
+          <li>Trappist 修道院啤酒：Westmalle/Chimay，酒精度高</li>
+          <li>Kriek 樱桃啤酒：酸味果啤，配餐很妙</li>
+          <li>法兰德斯炖牛肉（Stoofvlees）：啤酒慢炖</li>
+          <li>Waterzooi：根特白汁炖鸡/炖鱼</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>布鲁塞尔 Rue des Bouchers 美食巷（先看菜单）</li>
+          <li>布鲁日市集广场与玫瑰码头沿岸</li>
+          <li>根特 Graslei/Korenlei 河畔露天座</li>
+          <li>安特卫普 Meir 购物街与 Het Eilandje 港口区</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 布鲁塞尔 Rue des Bouchers 美食巷游客价高，先看菜单明码标价再入座；② 比利时餐厅多数 18:00 后开晚市，17 点前想吃正餐找咖啡馆/薯条店；③ 菜单多为荷兰语/法语，认准「moules」（青口）、「frites」（薯条）、「stoofvlees」（炖牛肉）；④ 小费非强制，给整数凑零即可，账单已含 21% 增值税。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期超回国后 6 个月）+ 申根签证</li>
+        <li>申根旅行保险（保额≥3 万欧元，办签必备）</li>
+        <li>欧元现金（300–500 欧备用）+ 芯片信用卡（带 PIN）</li>
+        <li>电源转接头（欧标 C/E，230V）</li>
+      </ul>
+      <ul>
+        <li>SNCB App + Google 地图（离线下载比利时地图）</li>
+        <li>机票/酒店/景点订单打印或存手机</li>
+        <li>预约：布鲁日钟楼、原子球塔、圣巴夫教堂时段</li>
+        <li>查天气：比利时多雨，带轻便雨衣与防水鞋</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>布鲁日钟楼限流且只收预约时段</strong>，提前 1 周官网买票，旺季晚了就没位置；② 比利时火车晚点率高，跨城换乘留 15 分钟缓冲，赶飞机留 2.5 小时以上；③ 布鲁塞尔大广场周边有「三明治陷阱」拉客与扒手，贵重物品贴身；④ 公共厕所大多收费（€0.5），进咖啡馆消费可借用洗手间。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      比利时是「<strong>小国大密度</strong>」的典范——7 天刚好把布鲁塞尔的现代与前卫、布鲁日的中世纪水城童话、根特的运河艺术与安特卫普的钻石和鲁本斯串成一条环线。签证与机票是两大前置门槛，办妥之后，剩下的就是在巧克力香气与钟楼钟声里慢慢走。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#5d3a1a",
+    "d": 3,
+    "n": "古城主线 · 布鲁塞尔→布鲁日→根特→安特卫普",
+    "pts": [
+      [
+        50.8467,
+        4.3525
+      ],
+      [
+        51.2093,
+        3.2247
+      ],
+      [
+        51.0543,
+        3.7174
+      ],
+      [
+        51.2194,
+        4.4025
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 50.8467,
+    "lng": 4.3525,
+    "name": "布鲁塞尔·大广场",
+    "t": "D1 全天 · 2h",
+    "fee": "免费",
+    "note": "世界遗产、市政厅、行会楼"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 50.895,
+    "lng": 4.3416,
+    "name": "原子球塔",
+    "t": "D2 上午 · 2–3h",
+    "fee": "17 欧",
+    "note": "1958 世博会、顶端全景"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 50.845,
+    "lng": 4.35,
+    "name": "撒尿小童",
+    "t": "D1 下午 · 15min",
+    "fee": "免费",
+    "note": "1619 铜像、节日换装"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 51.2093,
+    "lng": 3.2247,
+    "name": "布鲁日·运河游船",
+    "t": "D4 上午 · 30min",
+    "fee": "15 欧",
+    "note": "玫瑰码头、中世纪水道"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 51.2086,
+    "lng": 3.2246,
+    "name": "布鲁日·钟楼",
+    "t": "D4 下午 · 1h",
+    "fee": "16 欧",
+    "note": "366 级台阶、钟琴"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 51.0531,
+    "lng": 3.7271,
+    "name": "根特·圣巴夫大教堂",
+    "t": "D6 上午 · 1.5h",
+    "fee": "12.5 欧",
+    "note": "《神秘的羔羊》祭坛画"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 51.057,
+    "lng": 3.7206,
+    "name": "根特·伯爵城堡",
+    "t": "D6 下午 · 2h",
+    "fee": "15 欧",
+    "note": "中世纪堡垒、城头全景"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 51.217,
+    "lng": 4.4212,
+    "name": "安特卫普·中央车站",
+    "t": "D7 上午 · 1h",
+    "fee": "免费",
+    "note": "最美车站、钻石区、鲁本斯"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[49.5, 2.5], [51.5, 6.4]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#5d3a1a\"></span>古城主线（布鲁塞尔→布鲁日→根特→安特卫普）<br><span class=\"sw dash\"></span>北京段为直飞航班（约 10.5h）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

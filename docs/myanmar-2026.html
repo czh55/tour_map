@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 缅甸 10 天全景攻略 · 佛塔金与茵莱湖</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #d4a017;
+    --red-light: #e0b83b;
+    --gold: #d4a017;
+    --ink: #2d2a24;
+    --muted: #8a8578;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e0d0;
+    --blue: #2a9d8f;
+    --cover1: #6b4a1e;
+    --ov1: rgba(107,74,30,.88);
+    --ov2: rgba(212,160,23,.72);
+    --ov3: rgba(42,157,143,.38);
+    --ov4: rgba(138,90,46,.20);
+    --key-bg: #fdf3e0;
+    --info-bg: #f0f7f5;
+    --head-bg: rgba(212,160,23,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/myanmar/myanmar-cover.jpg" alt="缅甸旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天 · 仰光 ⇄ 蒲甘 ⇄ 曼德勒 ⇄ 茵莱湖</div>
+      <h1>缅甸 10 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 仰光 · 万塔之城蒲甘 · 曼德勒柚木古桥 · 高原水乡茵莱湖</div>
+      <div class="meta">
+        <span>🛫 行程链：仰光 → 蒲甘 → 曼德勒 → 茵莱湖 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚（凉季 11 月–次年 2 月最佳）</span>
+        <span>✈️ 北京⇄仰光 直飞约 5 小时（国航 CA 执飞）</span>
+        <span>🛂 签证：电子签证 e-Visa 约 50 美元，停留 28 天</span>
+        <span>🕐 时差 -1.5 小时 · 🔌 电压 230V A/C/D/F/G 型插座</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">仰光</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">蒲甘</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">曼德勒</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">茵莱湖</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      缅甸是「<strong>手指之处必有浮屠</strong>」的万塔佛国：蒲甘平原两千多座佛塔看日出日落，曼德勒有世界最长柚木桥，茵莱湖是海拔 970 米的高原水乡，仰光的瑞光大金塔金光耀目。10 天刚好走完「<strong>三城一湖</strong>」主线：城市之间以境内航班串联（每段 20 分钟–1 小时），把时间留给佛塔与湖光，不赶路、不重复。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照办<strong>旅游电子签证 e-Visa（约 50 美元，停留 28 天）</strong>，官网 evisa.moip.gov.mm 在线申请，约 3 个工作日批出，90 天有效，支持支付宝付款</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>仰光 2 天 → 蒲甘 3 天 → 曼德勒 2 天 → 茵莱湖 2 天 → 返程 1 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 10 天从茵莱湖海霍机场飞回仰光转机返京；返程段国内航班需提前 2 周订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>仰光 → 蒲甘 → 曼德勒 → 茵莱湖（黑河/海霍机场）</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 10000–16000 ／ 标准 18000–28000 ／ 舒适 40000–60000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办 e-Visa ② 订境内航班（蒲甘段）③ 凉季 11–2 月锁定蒲甘日出热气球</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>凉季（11–2 月）晴朗干燥最佳；3–5 月热季 40℃+，6–10 月雨季泥泞</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>缅币现金为主（1 元 ≈ 460 缅币），大城市少量 ATM，备美元零钱</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>佛塔脱鞋是硬规矩</strong>：进入所有佛塔寺院必须脱鞋赤脚，蒲甘平原地面烫，建议穿好脱的凉鞋/拖鞋，袜子可穿；瑞光大金塔平台全程赤脚走约 1 小时。② 缅甸<a>国内航班与汇率变动频繁</a>：价格政策波动大，境内段机票、包车、门票尽量出发前 1 个月订好并随身备美元现金备用（部分门票只收现金）。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏：按「仰光—中—北—高原」推进，城市之间以境内航班（约 1 小时）为主，大巴/船为备选。每日主景点 ≤2 个，蒲甘 3 天足够看日出日落与热气球。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵仰光</td>
+<td>北京✈仰光（约 5h 直飞），入住市中心，傍晚瑞光大金塔看夜景</td>
+<td>仰光</td>
+<td>抵达+金塔</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>瑞光大金塔 → 乔达基卧佛寺 → 皇家湖卡拉威宫 → 唐人街夜市</td>
+<td>仰光</td>
+<td>佛国名片</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>仰光✈蒲甘（约 1h10min），入住良乌/老蒲甘，下午瑞喜宫塔+马车巡游</td>
+<td>蒲甘</td>
+<td>飞入万塔</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>瑞山陀塔日出 → 阿南达寺 → 达玛央吉寺 → 伊洛瓦底江日落</td>
+<td>蒲甘</td>
+<td>塔林经典</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>热气球日出（可选）→ 波巴山一日 或 佛塔骑行+新蒲甘市集</td>
+<td>蒲甘</td>
+<td>气球/火山</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>蒲甘✈曼德勒（约 20min），因瓦古城 → 曼德勒山日落</td>
+<td>曼德勒</td>
+<td>古都慢游</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>乌本桥日出 → 马哈伽纳扬僧院千人僧饭 → 固都陶佛塔 → 敏贡古城</td>
+<td>曼德勒</td>
+<td>柚木与僧饭</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>曼德勒✈海霍 → 娘水镇，茵莱湖包船游：水上浮田、跳猫寺</td>
+<td>茵莱湖</td>
+<td>高原水乡</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>彭都奥佛塔 → 伊瓦玛水上市场 → 单脚划船捕鱼 → 茵汀村古塔群</td>
+<td>茵莱湖</td>
+<td>湖上人家</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>海霍✈仰光转机✈北京（直飞约 5h），到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可把蒲甘缩为 2 天（砍波巴山）；带老人小孩建议全程包车+减少上下塔；雨季（6–10 月）茵莱湖水涨、曼德勒–蒲甘快船班次少，优先选航班。想去海滩可把第 5 天换去额布里（Ngapali）海滩，但需多留 1 天转场。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达仰光</span>
+          <span class="d-desc">入住市中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">14:40–20:20</td><td class="t-what">北京首都 T3✈仰光国际（国航 CA905，约 5h 直飞；时差 -1.5h）。入境走 e-Visa 通道，出示电子签打印件+返程机票</td></tr>
+          <tr><td class="t-time">20:30–21:30</td><td class="t-what">入住市中心酒店（苏雷塔周边或唐人街附近），兑换缅币（机场汇率略低，够 2 天开销即可）</td></tr>
+          <tr><td class="t-time">21:30–22:30</td><td class="t-what">苏雷塔周边步行夜游：殖民建筑灯光、街边奶茶摊，感受仰光夜生活</td></tr>
+          <tr><td class="t-time">23:00</td><td class="t-what">回酒店休息，准备第二天金塔日</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">仰光机场到市区约 14 公里，打车 30–40 分钟约 8000–12000 缅币；也可以让酒店接机。e-Visa 记得打印纸质版。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 大金塔 + 卧佛 + 夜市</span>
+          <span class="d-desc">佛国名片一日</span>
+          <span class="d-tag ">🕌 金塔日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">早餐后打车前往<strong>瑞光大金塔</strong>（正门在东侧），门票 10000 缅币，入口处寄存鞋子</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><strong>瑞光大金塔</strong>：中央金塔高 99 米，塔身贴金 7000 多公斤，绕塔顺时针走一圈，看四面佛龛与信众礼拜，静坐观诵</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">金塔附近午餐：缅甸鱼汤米粉（Mohinga）、街边沙嗲串</td></tr>
+          <tr><td class="t-time">13:30–15:00</td><td class="t-what"><strong>乔达基卧佛寺</strong>（免费/少量）：世界最大卧佛之一，足底 108 格佛教图案</td></tr>
+          <tr><td class="t-time">15:30–17:30</td><td class="t-what"><strong>皇家湖 + 卡拉威宫</strong>：湖心金色贡多拉船形建筑，湖边草坪日落散步</td></tr>
+          <tr><td class="t-time">18:30–21:00</td><td class="t-what"><strong>唐人街夜市</strong>（19 街）：烧烤、奶茶、椰子冻，本地人宵夜天堂</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">瑞光大金塔 4:00–22:00 开放，周五晚与月圆日人流最多；平台务必赤脚，可穿袜子。女性不可触碰僧侣或佛像区域。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 飞往蒲甘</span>
+          <span class="d-desc">飞入万塔之城</span>
+          <span class="d-tag ">✈️ 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:30</td><td class="t-what">退房，仰光✈蒲甘良乌机场（NYU，约 1h10min，单程约 80 美元），缅航/KBZ 等执飞</td></tr>
+          <tr><td class="t-time">09:30–10:30</td><td class="t-what">抵达良乌，入住老蒲甘/良乌酒店（蒲甘考古区门票 25000 缅币，5 日有效，在进城路口购买）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">午餐：蒲甘庭院餐厅（缅式咖喱自助 Mote Hin ），补充体力</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><strong>瑞喜宫塔</strong>（Shwezigon）：蒲甘最古老的佛塔之一，金塔+四面坛城；随后<strong>乘马车</strong>沿土路巡游周边小塔（马车约 25000 缅币/天，可坐 3 人）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><strong>伊洛瓦底江边日落</strong>：老蒲甘码头看河上金光与帆影，晚餐江边餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">良乌机场到老蒲甘约 15 分钟车程；租电动摩托（约 10000 缅币/天）或自行车（5000 缅币/天）是老城最自由玩法，但务必带头盔并避让马车。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 塔林日出与经典</span>
+          <span class="d-desc">万塔之城精华</span>
+          <span class="d-tag ">🏛 蒲甘经典日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:00–07:00</td><td class="t-what">早起看<strong>瑞山陀塔（Shwesandaw）日出</strong>：五层平台正对塔林日出，是全城最经典机位（部分时段开放受文物管理影响，备选布勒迪塔）</td></tr>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what">回酒店早餐休整，避开正午暴晒</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><strong>阿南达寺</strong>（Ananda）：蒲甘最美的完美比例寺庙，四尊站立大佛；随后<strong>达玛央吉寺</strong>（Dhammayangyi）：砖石巨塔，结构谜团</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：凉季推荐缅甸咖喱饭+漆器餐厅（蒲甘以漆器闻名）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><strong>他冰瑜塔</strong>（Thatbyinnyu）外观 + 老蒲甘城墙遗址漫步，逛漆器工坊看拉丝工艺</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><strong>伊洛瓦底江日落船</strong>（可选）：乘船看日落与河边村落，或回瑞山陀塔再看一次日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蒲甘日出胜在塔林剪影与热气球同框；观看日出请勿攀爬文物塔体（2019 年世界遗产后部分塔禁止攀爬），改看官方开放塔。凉季清晨温差不小，带薄外套。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 热气球或波巴山</span>
+          <span class="d-desc">空中俯瞰或火山朝圣</span>
+          <span class="d-tag alt">🎈 气球/火山日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:00–07:30</td><td class="t-what"><strong>热气球日出</strong>（可选，Balloons over Bagan 等，每人约 320–380 美元，含接送与香槟早餐）：清晨升空俯瞰两千佛塔，是蒲甘最贵但最震撼的体验，务必提前 1 个月预订</td></tr>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">不坐气球的话：清晨沿<strong>良乌–老蒲甘环线骑行</strong>，看晨雾中的塔林与农田</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what">早餐休整后出发<strong>波巴山（Mt. Popa）</strong>一日：火山孤峰上的僧院，爬 777 级台阶，悬崖寺院与猴子，往返约 2.5h 车程</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">波巴山脚午餐：当地酒酿甜品与椰香咖喱</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">返程途中参观<strong>新蒲甘市集</strong>：漆器、木偶、棉织品，砍价对半起</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：蒲甘老城缅式火锅（可选），或早点休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">热气球受天气影响大，凉季 11–2 月成功率最高；坐完气球当天不建议再爬高塔。波巴山猴子多，看管好随身物品与墨镜。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 飞曼德勒</span>
+          <span class="d-desc">因瓦古城与曼德勒山</span>
+          <span class="d-tag ">✈️ 古都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:00</td><td class="t-what">退房，蒲甘✈曼德勒（约 20min，单程约 40 美元）</td></tr>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">抵达曼德勒，入住市区酒店，寄存行李</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what"><strong>因瓦古城</strong>（Inwa）：乘渡船过河（约 4000 缅币/往返），坐马车逛柚木寺（Bagaya Kyaung）与南明瞭望塔，斜塔废墟超上镜</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">因瓦河边午餐：河鱼料理与缅式炒粉</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">曼德勒皇宫（外围城墙+护城河）外观，<strong>马哈木尼佛塔</strong>（Mahamuni）：全缅最受尊崇的大佛贴金处</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><strong>曼德勒山日落</strong>：沿 S 形廊道登顶（约 20 分钟），俯瞰全城与伊洛瓦底江</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：曼德勒夜市烧烤+奶茶</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">曼德勒节奏比蒲甘热闹，交通靠出租车/三轮；因瓦渡口与马车价格事先谈好。马哈木尼佛塔只允许男性贴金。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 乌本桥与僧院</span>
+          <span class="d-desc">柚木桥日出+千人僧饭</span>
+          <span class="d-tag alt">🌉 乌本桥日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">05:00–07:00</td><td class="t-what"><strong>乌本桥（U Bein）日出</strong>：世界最长柚木桥（1.2 公里，全柚木榫卯结构），日出与剪影是经典画面；可租小船到桥下拍摄</td></tr>
+          <tr><td class="t-time">07:30–09:00</td><td class="t-what"><strong>马哈伽纳扬僧院（Mahagandayon）</strong>千人僧饭：约 9:30 僧侣列队用膳，场面壮观，请保持安静、不要挡路、不喂食</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">回酒店早餐休整，参观<strong>固都陶佛塔</strong>（Kuthodaw）：「世界最大书」，729 块刻经石碑</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：曼德勒传统缅餐（咖喱羊腿+酸汤）</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><strong>敏贡古城（Mingun）</strong>：乘船渡伊洛瓦底江（约 1h 往返），看敏贡大钟（世界最大悬挂钟）与欣毕梅白色佛塔「奶油蛋糕塔」</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返回市区，晚餐：街边烤鱼+缅甸啤酒</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">乌本桥最佳拍摄位在桥西端栈道与船上；僧饭时段参观请穿长裤/长裙遮肩。敏贡渡船班次少，14:00 前出发较稳妥。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 飞往茵莱湖</span>
+          <span class="d-desc">高原水乡初体验</span>
+          <span class="d-tag ">🏞 茵莱日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:30</td><td class="t-what">曼德勒✈海霍机场（HEH，约 45min，单程约 70–90 美元），转车 45 分钟到<strong>娘水镇</strong>（Nyaungshwe）</td></tr>
+          <tr><td class="t-time">09:30–10:30</td><td class="t-what">入住娘水镇酒店（在湖入口购买茵莱湖区通票，约 10000–15000 缅币，5 日有效，随身携带）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><strong>茵莱湖包船半日</strong>：长尾机动船（一船 1–4 人约 20000–30000 缅币/全天）：看<strong>水上浮田</strong>——番茄与鲜花种在漂浮的水草岛上</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">湖上餐厅午餐：茵莱特色炸鱼+竹笋咖喱</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">继续船游：<strong>跳猫寺</strong>（Nga Phe Kyaung 柚木寺）→ 传统织布作坊 → 雪茄手工坊，最后回码头看日落</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">娘水镇晚餐：河畔餐厅 + 逛镇中心夜市</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">茵莱湖海拔约 970 米，早晚凉，带外套；湖区通票随身带，湖上检查站会查验。包船码头在娘水镇南端，下午 3 点后风浪大，长线行程尽量上午出发。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 湖上人家</span>
+          <span class="d-desc">佛塔、水市与单脚划船</span>
+          <span class="d-tag ">🛶 湖上日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:30–08:30</td><td class="t-what">早起船游看<strong>单脚划船捕鱼</strong>表演：茵达人单腿站立摇橹捕鱼，清晨光线最佳</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><strong>彭都奥佛塔（Phaung Daw Oo）</strong>：茵莱湖最神圣的佛塔，五尊小金佛已被贴金包成球状</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><strong>伊瓦玛水上市场</strong>（Ywama，逢五天一集）：湖心集市，卖蔬果、银器、长颈族纪念品</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">湖上餐厅午餐</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><strong>茵汀村（Indein）</strong>：西岸古塔群，千座佛塔遗迹+山顶小塔林，值得一爬</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返程娘水镇，晚餐：茵莱湖烤鱼+咖喱，早点休息准备返程</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">水上市场每 5 天轮换地点，出发前问酒店/船夫当天是否有市；茵汀村古塔群入口有小贩兜售围裙（进塔群需脱鞋）。长颈族村落参观另收费，可自行决定。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">海霍✈仰光✈北京</span>
+          <span class="d-tag return">🛬 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–09:00</td><td class="t-what">退房，娘水镇→海霍机场（45min），海霍✈仰光（约 1h，衔接转机，留足 3h 缓冲）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">若转机时间宽裕：仰光市区补购物（昂山市场：缅甸玉、漆器、木偶、沙笼布），午餐昂山市场小吃</td></tr>
+          <tr><td class="t-time">14:00–15:30</td><td class="t-what">回机场办理出境，免税店补货</td></tr>
+          <tr><td class="t-time">16:00–21:00</td><td class="t-what">仰光✈北京（直飞约 5h），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程务必给国内段+国际段留 3 小时以上转机时间；缅甸出境无离境税。昂山市场 17:00 闭市，且部分摊主报价虚高，砍价按三分之一走。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-cover.jpg" alt="蒲甘·万塔之城" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒲甘·万塔之城 <small>通票 25000 缅币/5天</small></div>
+          <div class="sc-feat">东南亚三大佛教遗址之一。<b>两千佛塔 + 日出热气球</b>，世界遗产级塔林。</div>
+          <div class="sc-meta">📅 全天开放 · ⏱ 2–3 天 · ✈️ 良乌机场 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-1.jpg" alt="仰光·瑞光大金塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">仰光·瑞光大金塔 <small>10000 缅币</small></div>
+          <div class="sc-feat">99 米金塔，贴金 7 吨。<b>夜灯倒影最震撼</b>，缅甸精神象征。</div>
+          <div class="sc-meta">📅 4:00–22:00 · ⏱ 2–3h · 🚕 市中心打车 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-2.jpg" alt="茵莱湖·单脚划船" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">茵莱湖·单脚划船 <small>湖区通票约 1 万缅币</small></div>
+          <div class="sc-feat">高原水乡。<b>茵达族单脚划船捕鱼</b>、水上浮田与湖心佛塔。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2 天 · 🛶 娘水镇包船</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-3.jpg" alt="曼德勒·乌本桥" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">曼德勒·乌本桥 <small>免费</small></div>
+          <div class="sc-feat">世界最长柚木桥（1.2km）。<b>日出剪影 + 桥上生活</b>，全柚木榫卯。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚕 曼德勒东南 15min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-4.jpg" alt="蒲甘·热气球日出" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒲甘·热气球日出 <small>约 320–380 美元</small></div>
+          <div class="sc-feat">清晨升空俯瞰塔林。<b>佛塔+热气球同框</b>，缅甸最贵体验之一。</div>
+          <div class="sc-meta">📅 清晨 · ⏱ 1.5h · 🎈 提前 1 个月订</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-5.jpg" alt="仰光·殖民老城" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">仰光·殖民老城 <small>免费</small></div>
+          <div class="sc-feat">苏雷塔周边英殖民建筑群。<b>红色砖墙+绿荫街巷</b>，旧时光氛围。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚶 苏雷塔步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-6.jpg" alt="茵莱湖·水上浮田" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">茵莱湖·水上浮田 <small>含湖区通票</small></div>
+          <div class="sc-feat">漂浮水草岛种菜种花。<b>藤架菜田与湖面村落</b>，独一无二。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 🛶 船游途经</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/myanmar/myanmar-7.jpg" alt="蒲甘·瑞山陀塔日落" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蒲甘·瑞山陀塔日落 <small>含蒲甘通票</small></div>
+          <div class="sc-feat">五层平台看日落。<b>塔林剪影 + 晚霞金光</b>，经典机位。</div>
+          <div class="sc-meta">📅 傍晚 · ⏱ 1–1.5h · 🚶 老蒲甘步行</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（蒲甘佛塔、瑞光大金塔、茵莱湖单脚划船、乌本桥等均为缅甸实景），用于页面配图。更多免费景点：苏雷塔周边街区、曼德勒皇宫护城河、昂山市场、茵雅湖、皇家湖。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 460 缅币估算，缅甸物价随汇率波动明显。往返机票按直飞往返 3200–4500 元计，境内航班按 3 段合计约 2000 元计。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（10000–16000）</th>
+<th>标准（18000–28000）</th>
+<th>舒适（40000–60000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄仰光 3200–4000</td>
+<td>直飞+灵活时段 4500–6000</td>
+<td>直飞商务/延误无忧 10000–15000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/民宿 80–150/晚</td>
+<td>三星/精品酒店 250–450/晚</td>
+<td>湖上度假村/老蒲甘精品 900–2000/晚</td>
+</tr>
+<tr>
+<td>境内交通</td>
+<td>夜巴+公交混搭 800–1200</td>
+<td>3 段境内航班+包车 2000–2800</td>
+<td>全程航班+专车司机 6000–9000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>大金塔+蒲甘通票约 150–200</td>
+<td>含热气球外全部景点 300–500</td>
+<td>含热气球/茵莱直升机等 4000–6000</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>街边摊+缅餐 800–1200</td>
+<td>正常下馆子 2000–3000</td>
+<td>精品餐厅+江畔晚宴 6000–10000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 22000 元）</span>
+      往返机票 5000 + 住宿 9 晚 3200（平均 355/晚）+ 境内航班与包车 2500 + 门票 400 + 餐饮 2500 + e-Visa 360 + 杂费/小费 600 ≈ <strong>15000–18000 元</strong>。若加蒲甘热气球（约 2600 元）则逼近 22000 元。大头是机票与境内航班，提前 2 个月订能省 1500–3000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>10.1 亲子/带老人版调整</h3>
+
+
+    <p>全程包车+减少上下塔：蒲甘只看地面经典三塔（瑞喜宫/阿南达/达玛央吉），热气球换成马车巡游；曼德勒敏贡渡船保留但缩短停留；茵莱湖只坐半天船。整体节奏放缓 1 天，砍掉波巴山。</p>
+
+    <h3>10.2 海滩延伸版（12–14 天）</h3>
+
+
+    <ul>
+
+      <li>D5 后改飞额布里（Ngapali）海滩 3 天：孟加拉湾白沙滩+海鲜</li>
+
+      <li>回程经仰光衔接国际航班</li>
+
+      <li>适合想「佛塔+海滩」一次搞定的人</li>
+
+      <li>额外预算约 3000–5000 元/人</li>
+
+    </ul>
+
+    <h3>10.3 雨季备选（6–10 月）</h3>
+
+
+    <p>雨季蒲甘清晨常多云，日出机位打折；建议把蒲甘热气球移到 11–2 月，雨季则以室内寺庙与茵莱湖船游为主，曼德勒–蒲甘快船班次减少，务必改用航班。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>12.1 北京 ⇄ 缅甸 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→仰光约 5h</td>
+<td>往返 3200–4500 元</td>
+<td>国航 CA 执飞，首都 T3 出发</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>经曼谷/昆明/广州 7–10h</td>
+<td>2800–4000 元</td>
+<td>春秋/东航经停，票价浮动大</td>
+</tr>
+<tr>
+<td>陆路</td>
+<td>—</td>
+<td>—</td>
+<td>中国与缅甸无陆路口岸直通（瑞丽口岸仅边民通行），一般不考虑</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 缅甸境内交通核心提醒</span>
+      城市间<strong>境内航班是首选</strong>：仰光–蒲甘约 1h10min（约 80 美元）、蒲甘–曼德勒 20min（约 40 美元）、曼德勒–茵莱（海霍）45min（约 70–90 美元），四段合计约 2000 元。夜巴（仰光–蒲甘 14h）与火车太慢，除非预算极紧不建议。航班班次与价格变动频繁，出发前 1 个月订最稳。
+    </div>
+
+    <h3>12.2 缅甸境内交通</h3>
+    <ul>
+      <li><strong>境内航班</strong>：缅航（MNA）/KBZ/ Air Thanlwin 执飞四城环线，提前订 40–90 美元/段</li>
+      <li><strong>包车/出租车</strong>：仰光市区短途 2000–5000 缅币，全天包车约 50000–80000 缅币</li>
+      <li><strong>马车</strong>：蒲甘巡塔首选，25000 缅币/天可坐 3 人，司机兼导游</li>
+      <li><strong>电动车/自行车</strong>：蒲甘租车 5000–10000 缅币/天，良乌老城骑行自由</li>
+      <li><strong>湖上长尾船</strong>：茵莱湖全天包船 20000–30000 缅币（1–4 人/船）</li>
+      <li><strong>夜巴</strong>：仰光–蒲甘 14h / 曼德勒–茵莱 8h，20000–40000 缅币，仅预算党选择</li>
+    </ul>
+
+    <h3>12.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>仰光·苏雷塔/唐人街</td>
+<td>经济 80–150 / 标准 250–450</td>
+<td>景点步行可达，夜市热闹</td>
+<td>老城区夜间略嘈杂</td>
+</tr>
+<tr>
+<td>蒲甘·老蒲甘</td>
+<td>标准 300–600 / 精品 900–2000</td>
+<td>紧邻塔林，日出日落方便</td>
+<td>餐厅选择少</td>
+</tr>
+<tr>
+<td>蒲甘·良乌</td>
+<td>经济 100–200 / 标准 250–400</td>
+<td>交通枢纽，市集丰富</td>
+<td>离主要塔林 15 分钟车程</td>
+</tr>
+<tr>
+<td>曼德勒·皇宫周边</td>
+<td>经济 100–200 / 标准 250–450</td>
+<td>景点集中，打车方便</td>
+<td>区域较闷热</td>
+</tr>
+<tr>
+<td>茵莱·娘水镇</td>
+<td>经济 80–150 / 标准 300–600</td>
+<td>包船码头近，餐饮多</td>
+<td>湖边度假村需乘船抵达</td>
+</tr>
+<tr>
+<td>茵莱·湖上度假村</td>
+<td>标准 600–1200 / 舒适 1500+</td>
+<td>水上木屋，晨雾湖景</td>
+<td>出入全靠船，价格高</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍜 必吃经典</h3>
+        <ul>
+          <li>缅甸鱼汤米粉 Mohinga：国民早餐，米线+鱼汤+炸豆饼</li>
+          <li>缅式咖喱饭：肉类咖喱+配菜小碟自助</li>
+          <li>茶叶沙拉 Laphet Thoke：发酵茶叶拌坚果，缅甸国菜</li>
+          <li>椰奶鸡肉/咖喱鱼：香茅姜黄味足</li>
+        </ul>
+        <h3>🥢 在地名物</h3>
+        <ul>
+          <li>蒲甘漆器与庭院餐厅自助</li>
+          <li>茵莱湖炸鱼+竹笋咖喱</li>
+          <li>曼德勒马哈木尼佛塔旁街边咖喱羊腿</li>
+          <li>波巴山椰酒与甜点</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>沙嗲烤串（唐人街 19 街夜市）</li>
+          <li>Mont Lin Ma Yar：豆粉糯米小煎饼</li>
+          <li>椰香糯米糕 Mont Kyal Thee</li>
+          <li>街边奶茶与炼乳咖啡</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>仰光唐人街 19 街夜市、皇家湖周边</li>
+          <li>蒲甘老城庭院餐厅、良乌市场</li>
+          <li>曼德勒夜市与马哈木尼周边</li>
+          <li>娘水镇河畔餐厅与夜市</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 缅甸菜普遍偏油偏辣，肠胃弱先点 Mild；② 生水不喝，买瓶装水（500 缅币左右）；③ 夜市烧烤注意熟度，海鲜类慎选；④ 街边水果摊价格随口报，先问价再买；⑤ 佛寺周边小贩兜售「祈福香烛」，不需可直接拒绝。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上有效期）+ e-Visa 打印件</li>
+        <li>返程机票与酒店预订凭证（e-Visa 需附）</li>
+        <li>缅币现金+美元零钱（门票多收现金）</li>
+        <li>拖鞋/凉鞋（佛塔脱鞋必备）+长裤长裙</li>
+      </ul>
+      <ul>
+        <li>蒲甘热气球/乌本桥日出提前订</li>
+        <li>下载 Grab/Ola（部分城市可用）</li>
+        <li>防晒霜、帽子、薄外套（早晚温差大）</li>
+        <li>查汇率：1 元 ≈ 460 缅币</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>脱鞋规矩别忘</strong>：蒲甘、大金塔、乌本桥一带所有佛塔寺院都须赤脚，裙子/裤子过膝、不露肩是基本礼貌；② 换汇认准银行与正规兑换点，街边黑市有假钞风险；③ 国内航班常因天气/军事管制临时取消，行程至少留半天缓冲；④ 拍照时对僧人、小孩先微笑示意，部分村落（长颈族）拍照要收费。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      缅甸是「<strong>慢下来的佛国</strong>」——蒲甘的塔林日出、曼德勒的柚木桥、茵莱湖的浮田与单脚划船，再加仰光大金塔的千年金光，10 天刚好把最经典的三城一湖走完。办一张 e-Visa、订好四段境内航班，剩下的交给佛塔、湖泊与街边的缅式奶茶。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#d4a017",
+    "d": 3,
+    "n": "主线 · 仰光→蒲甘→曼德勒→茵莱湖（境内航班/包车）",
+    "pts": [
+      [
+        16.866,
+        96.1951
+      ],
+      [
+        21.173,
+        94.859
+      ],
+      [
+        21.959,
+        96.089
+      ],
+      [
+        20.581,
+        96.914
+      ]
+    ]
+  },
+  {
+    "c": "#8a5a2e",
+    "d": 2,
+    "n": "返程 · 茵莱湖（海霍）✈仰光转机返京",
+    "pts": [
+      [
+        20.581,
+        96.914
+      ],
+      [
+        16.866,
+        96.1951
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 16.7983,
+    "lng": 96.1492,
+    "name": "仰光·瑞光大金塔",
+    "t": "D2 上午 · 2–3h",
+    "fee": "10000 缅币",
+    "note": "99 米金塔、绕塔礼拜、夜灯倒影"
+  },
+  {
+    "num": 2,
+    "prio": "nice",
+    "lat": 16.764,
+    "lng": 96.156,
+    "name": "仰光·乔达基卧佛寺",
+    "t": "D2 下午 · 1h",
+    "fee": "约 3000 缅币",
+    "note": "世界最大卧佛之一"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 21.173,
+    "lng": 94.859,
+    "name": "蒲甘·瑞喜宫塔",
+    "t": "D3 下午 · 1.5h",
+    "fee": "含蒲甘通票",
+    "note": "最古老佛塔之一、四面坛城"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 21.1707,
+    "lng": 94.8683,
+    "name": "蒲甘·阿南达寺",
+    "t": "D4 上午 · 1.5h",
+    "fee": "含蒲甘通票",
+    "note": "完美比例、四尊大佛"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 21.9932,
+    "lng": 96.0584,
+    "name": "曼德勒·乌本桥",
+    "t": "D7 清晨 · 1–2h",
+    "fee": "免费",
+    "note": "1.2km 柚木桥、日出剪影"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 22.0083,
+    "lng": 96.1107,
+    "name": "曼德勒·曼德勒山",
+    "t": "D6 傍晚 · 1.5h",
+    "fee": "免费（缆车另计）",
+    "note": "S 形廊道登顶俯瞰全城"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 20.6519,
+    "lng": 96.928,
+    "name": "茵莱湖·娘水镇",
+    "t": "D8–D9 · 2 天",
+    "fee": "湖区通票约 1 万缅币",
+    "note": "包船游湖、水上浮田、单脚划船"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 20.583,
+    "lng": 96.927,
+    "name": "茵莱湖·彭都奥佛塔",
+    "t": "D9 上午 · 1h",
+    "fee": "含湖区通票",
+    "note": "五尊贴金小金佛"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[15.5, 93.8], [23.2, 98.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#d4a017\"></span>主线（仰光→蒲甘→曼德勒→茵莱湖）<br><span class=\"sw\" style=\"background:#8a5a2e\"></span>返程（茵莱湖✈仰光转机）<br><span class=\"sw dash\"></span>城市间为境内航班/包车转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

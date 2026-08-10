@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 墨西哥 14 天全景攻略 · 玛雅文明与加勒比海</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #d4a017;
+    --red-light: #e0a83a;
+    --gold: #f0c860;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e0cf;
+    --blue: #4a7c59;
+    --cover1: #6b4a10;
+    --ov1: rgba(107,74,16,.88);
+    --ov2: rgba(212,160,23,.72);
+    --ov3: rgba(224,122,63,.38);
+    --ov4: rgba(240,170,90,.20);
+    --key-bg: #fdf3d8;
+    --info-bg: #f1f4ee;
+    --head-bg: rgba(212,160,23,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/mexico/mexico-cover.jpg" alt="墨西哥旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 14 天环线 · 高原文明 + 尤卡坦海岸</div>
+      <h1>墨西哥 14 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 墨西哥城 · 特奥蒂瓦坎 · 瓜纳华托 · 坎昆图卢姆</div>
+      <div class="meta">
+        <span>🛫 行程链：墨西哥城 → 特奥蒂瓦坎 → 瓜纳华托 → 瓦哈卡 → 坎昆 → 图卢姆</span>
+        <span>📅 时间窗口：14 天 13 晚 · 最佳 11 月–次年 4 月旱季</span>
+        <span>✈️ 北京⇄墨西哥城 多经转机约 15–20 小时</span>
+        <span>🛂 签证：中国护照需墨西哥签证；持有效美国签证可免签入境</span>
+        <span>🕐 时差 -14h · 🔌 电压 127V A/B 型插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 14 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 14 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">墨西哥城</span>
+      <span class="arrow">→</span>
+      <span class="node">特奥蒂瓦坎</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">瓜纳华托</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">瓦哈卡</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">坎昆</span>
+      <span class="arrow">→</span>
+      <span class="node">图卢姆</span>
+      <span class="arrow">→</span>
+      <span class="node">奇琴伊察</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 14 天怎么安排最合理</span>
+      墨西哥是「<strong>文明的层叠</strong>」：阿兹特克与玛雅的金字塔、西班牙殖民的巴洛克教堂、现代大都会与加勒比海。14 天分成两段——<strong>中部文化线 8 天</strong>（墨城+特奥蒂瓦坎+瓜纳华托+瓦哈卡）与<strong>尤卡坦海岸线 6 天</strong>（坎昆+奇琴伊察+图卢姆），中段用一次约 1.5 小时航班衔接。持美签免签入境，是这条线最省心的打开方式。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需办墨西哥签证；<strong>持有效美国签证（B1/B2）可免签入境</strong>，最省心</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>中部文化线（墨城/特奥蒂瓦坎/瓜纳华托/瓦哈卡）+ 尤卡坦海岸线（坎昆/图卢姆/奇琴伊察）</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>第 14 天从坎昆返程，无直飞，需经墨西哥城/美国/东京转机，提前 1–2 个月订</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>墨西哥城 → 特奥蒂瓦坎 → 瓜纳华托 → 瓦哈卡 → 坎昆 → 图卢姆</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 15000–25000 ／ 标准 30000–45000 ／ 舒适 60000–90000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 确认美签免签路线 ② 订内陆航班（瓦哈卡—坎昆）③ 金字塔清晨票提前预约</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11 月–次年 4 月旱季最佳；5–10 月雨季下午雷阵雨；11 月初亡灵节氛围最浓</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>比索现金 + 信用卡；小餐馆/市场只收现金，机场换汇不如市区</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 三个容易忽略的点</span>
+      ① <strong>签证捷径</strong>：持有效美国 B1/B2 签证可免签入境墨西哥，有美签就不用办墨签；② <strong>高原反应</strong>：墨西哥城海拔 2240 米，落地第一晚少运动多喝水；③ <strong>饮用水</strong>：只喝瓶装水，街头冰块确认过滤水，肠胃敏感者备常用药。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 14 天版</h2>
+
+    <p>以下为 14 天 13 晚的推荐节奏：先中部文化 8 天，再飞坎昆转尤卡坦海岸 6 天。金字塔与遗址都安排在上午（开门即入避开暴晒），海岸段节奏放缓。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵墨西哥城</td>
+<td>北京✈墨西哥城（转机全程约 15–20h），入住历史中心，晚看索卡洛广场</td>
+<td>墨西哥城</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>宪法广场 + 大教堂 + 国家宫壁画 → 阿兹特克大神庙 → 老城漫步</td>
+<td>墨西哥城</td>
+<td>历史中心</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>人类学博物馆 → 查普尔特佩克城堡 → 改革大道</td>
+<td>墨西哥城</td>
+<td>博物馆日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>特奥蒂瓦坎：太阳金字塔登顶 + 月亮金字塔 + 亡灵大道</td>
+<td>墨西哥城</td>
+<td>金字塔日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>大巴到瓜纳华托：皮皮拉山全景 + 圣母大教堂 + 接吻巷</td>
+<td>瓜纳华托</td>
+<td>彩色山城</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>木乃伊博物馆 + 彩色阶梯；晚✈瓦哈卡</td>
+<td>瓦哈卡</td>
+<td>山城漫游</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>瓦哈卡：圣多明各教堂 + 市场 + 彩色街区</td>
+<td>瓦哈卡</td>
+<td>瓦哈卡初探</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>蒙特阿尔班遗址 + 陶器村</td>
+<td>瓦哈卡</td>
+<td>文明遗迹</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>✈坎昆：酒店区白沙滩 + 日落</td>
+<td>坎昆</td>
+<td>加勒比海</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>奇琴伊察库库尔坎金字塔 + 伊克基尔天坑</td>
+<td>坎昆</td>
+<td>玛雅奇观</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>图卢姆：海边玛雅遗址 + 海滩</td>
+<td>图卢姆</td>
+<td>悬崖玛雅</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>天坑浮潜 + 图卢姆村漫步</td>
+<td>图卢姆</td>
+<td>天坑日</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>女人岛：自行车环岛 + 浮潜（自由日）</td>
+<td>坎昆</td>
+<td>自由日</td>
+</tr>
+<tr>
+<td>D14 返程</td>
+<td>坎昆✈北京（经转机），到家休息</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍瓦哈卡陶器村（D8）与女人岛（D13），把海岸段缩为 4 天；带娃家庭建议减少金字塔登顶改为遗址地面参观，加一天水上乐园（Xcaret）。亡灵节（10 月底–11 月初）期间墨城与瓦哈卡住宿紧张，提前 2 个月订。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 14 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达墨西哥城</span>
+          <span class="d-desc">入住历史中心</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–13:00</td><td class="t-what">北京✈墨西哥城（无直飞，多经东京/首尔/北美转机，全程约 15–20h）</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what">入境取行李，Uber/打车到历史中心酒店（机场距市区约 12km）</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what">入住后宪法广场索卡洛 Zócalo 初逛：国家宫、大教堂外观</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：历史中心塔可小摊或市场边，早休息适应海拔</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">墨西哥城海拔 2240 米，落地第一晚少运动多喝水，防高原反应；机场到市区 Uber 约 200–250 比索。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 历史中心</span>
+          <span class="d-desc">宪法广场 + 大神庙</span>
+          <span class="d-tag ">🏛 老城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>宪法广场 Zócalo</b>（免费）：世界最大城市广场之一，墨西哥城大教堂外观</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>国家宫</b>（免费，需护照登记）：里维拉《墨西哥历史》巨幅壁画</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">午餐：阿兹特克菜或 La Casa de Toño 连锁</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>阿兹特克大神庙 Templo Mayor</b>（成人约 90 比索）：阿兹特克首都核心遗址</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what">老城漫步（免费）：邮局宫、美术馆宫外观；晚餐：塔可 El Huequito</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国家宫壁画周一闭馆，行程避开周一；大神庙就在大教堂旁，一起逛完刚好半天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 博物馆日</span>
+          <span class="d-desc">人类学博物馆 + 城堡</span>
+          <span class="d-tag alt">🏺 博物馆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what"><b>人类学博物馆</b>（成人约 90 比索）：阿兹特克太阳历石、玛雅展馆，拉美最顶级博物馆</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：查普尔特佩克公园附近墨西哥菜</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>查普尔特佩克城堡</b>（成人约 90 比索）：山顶城堡俯瞰改革大道</td></tr>
+          <tr><td class="t-time">17:00–18:30</td><td class="t-what"><b>改革大道 Paseo de la Reforma</b>（免费）：独立天使纪念碑拍照</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：Polanco 区高档墨西哥餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">人类学博物馆周日对本国人免费但人极多，游客购票入内不受影响；建议租中文导览器。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 特奥蒂瓦坎</span>
+          <span class="d-desc">太阳金字塔登顶</span>
+          <span class="d-tag ">🗿 金字塔日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">墨西哥城乘大巴/打车到特奥蒂瓦坎（约 1h，早起避开暴晒与旅行团）</td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what"><b>太阳金字塔</b>（遗址成人约 90 比索）：登顶 248 级台阶俯瞰亡灵大道</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>月亮金字塔 + 亡灵大道</b>：从月亮广场回望全城最好拍</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">午餐：遗址出口餐厅/仙人掌塔可</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what"><b>羽蛇神庙</b>（含票）：浮雕与配色最华丽的一座</td></tr>
+          <tr><td class="t-time">16:30</td><td class="t-what">返墨西哥城，晚餐休息</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">特奥蒂瓦坎正午暴晒且台阶陡，穿运动鞋、戴帽防晒；早上 7 点开门即入最理想。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 瓜纳华托</span>
+          <span class="d-desc">皮皮拉山 + 接吻巷</span>
+          <span class="d-tag alt">🎨 彩色山城</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">墨西哥城北站乘 ETN/ADO 一等大巴到瓜纳华托（约 4h）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">入住山谷酒店，午餐：瓜纳华托市场</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>皮皮拉山</b>（缆车往返约 90 比索或徒步）：俯瞰彩色山城全景，瓜纳华托名片</td></tr>
+          <tr><td class="t-time">16:30–18:00</td><td class="t-what"><b>圣母大教堂 + 联合广场</b>（免费）：黄墙教堂与热闹广场</td></tr>
+          <tr><td class="t-time">18:30–20:00</td><td class="t-what"><b>接吻巷 Callejón del Beso</b>（免费）：爱情传说小巷，晚餐：烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">瓜纳华托石板路多、坡度大，拖行李很累，酒店选靠近联合广场的；皮皮拉山日落前后最出片。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 山城漫游 → 飞瓦哈卡</span>
+          <span class="d-desc">木乃伊 + 彩色阶梯</span>
+          <span class="d-tag ">🏚 山城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>木乃伊博物馆</b>（成人约 90 比索）：保存完好的自然木乃伊，猎奇但震撼</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>彩色阶梯 + 迭戈·里维拉博物馆</b>（外观免费/门票约 60 比索）：山城最美涂鸦阶梯</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：瓜纳华托大学旁餐厅</td></tr>
+          <tr><td class="t-time">14:30</td><td class="t-what">返墨西哥城（大巴约 4h）或直接去机场</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">墨西哥城✈瓦哈卡（约 1h10min，廉航提前订约 300–600 元），宿瓦哈卡</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">瓦哈卡航班少，建议提前 2 周订；若赶不上晚班机，可次日一早飞，行程顺延半天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 瓦哈卡</span>
+          <span class="d-desc">圣多明各 + 彩色街区</span>
+          <span class="d-tag alt">🏺 瓦哈卡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>圣多明各教堂</b>（免费）：巴洛克金顶 + 相邻文化中心博物馆</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>瓦哈卡彩色街区</b>（免费）：鹅卵石路 + 蓝黄民居，拍照绝佳</td></tr>
+          <tr><td class="t-time">13:00–14:30</td><td class="t-what">午餐：20 Noviembre 市场烤肉（塔可 + 烤仙人掌）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>瓦哈卡市场</b>（免费）：梅斯卡尔酒、陶器、辣椒集市</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">晚餐：瓦哈卡七色莫雷 Mole 餐厅</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣多明各教堂金顶内部不能拍照；瓦哈卡是梅斯卡尔 Mezcal 原产地，可预约酒厂参观品鉴。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 蒙特阿尔班</span>
+          <span class="d-desc">山顶古城 + 陶器村</span>
+          <span class="d-tag ">🏛 文明遗迹</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">瓦哈卡乘小巴/打车到蒙特阿尔班（约 30min，山顶古城）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>蒙特阿尔班遗址</b>（成人约 90 比索）：萨波特克文明山顶都城，球场 + 观星台</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：山脚餐厅或返城</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>陶器村</b>（免费）：黑陶与彩陶手工村（如 San Bartolo Coyotepec）</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返瓦哈卡，晚餐：市场小吃/烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">蒙特阿尔班上午顺光、下午顶光，建议上午前往；陶器村距市区约 20–30min 车程。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 飞坎昆</span>
+          <span class="d-desc">酒店区白沙滩</span>
+          <span class="d-tag alt">🌊 加勒比海</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">瓦哈卡✈坎昆（约 1.5h，廉航 Volaris/VivaAerobus 提前订约 300–800 元）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">入住坎昆酒店区（Zona Hotelera）或市区，午餐：海鲜</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>酒店区白沙滩</b>（免费）：加勒比海果冻色海水，日光浴 + 游泳</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：酒店区海边餐厅看日落，夜生活可选（Coco Bongo 等）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">酒店区沙滩公共开放，可免费进入；坎昆全年 26–30°C，防晒 SPF50+ 必备。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 奇琴伊察</span>
+          <span class="d-desc">库库尔坎金字塔</span>
+          <span class="d-tag ">🗿 玛雅奇观</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00</td><td class="t-what">坎昆乘大巴/自驾到奇琴伊察（约 2h，早到避开大团与暴晒）</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>奇琴伊察库库尔坎金字塔</b>（成人约 614 比索）：玛雅世界新七大奇迹，春秋分蛇影奇观</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">午餐：遗址门口餐厅</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>圣井天坑 Ik Kil</b>（成人约 80 比索）：藤蔓天坑跳水游泳</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返坎昆，晚餐：塔可/海鲜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">奇琴伊察非本国人门票约 614 比索（含税），可用信用卡；伊克基尔天坑需穿泳衣。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D11 · 图卢姆</span>
+          <span class="d-desc">悬崖玛雅 + 海滩</span>
+          <span class="d-tag alt">🏝 图卢姆日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">坎昆自驾/collectivo 到图卢姆（约 1.5h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>图卢姆玛雅遗址</b>（成人约 90 比索）：悬崖上的玛雅城堡 + 加勒比海背景</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：图卢姆海滩餐厅（网红素食/海鲜）</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what"><b>图卢姆海滩</b>（免费）：果冻色海水浮潜 + 吊床休息</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">宿图卢姆村或返坎昆</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">图卢姆遗址上午太阳直射但海风凉爽；遗址入口附近有公共海滩，网红洞穴海滩多需住店。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D12 · 天坑浮潜</span>
+          <span class="d-desc">地下水世界</span>
+          <span class="d-tag ">💧 天坑日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>天坑浮潜</b>（如 Dos Ojos/Suytun，门票约 150–300 比索）：钟乳石地下水世界</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：图卢姆村塔可</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>图卢姆村漫步</b>（免费）：精品店 + 咖啡店，网红打卡</td></tr>
+          <tr><td class="t-time">16:00</td><td class="t-what">返坎昆（约 1.5h），晚餐 + 打包行李</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">天坑水温常年 24–26°C，下水记得带防水袋；Dos Ojos 双天坑水下光影绝美。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D13 · 女人岛自由日</span>
+          <span class="d-desc">自行车环岛 + 浮潜</span>
+          <span class="d-tag alt">🚲 自由日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what"><b>女人岛 Isla Mujeres</b>（渡轮往返约 220 比索）：自行车环岛 + 海滩俱乐部</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">午餐：女人岛海鲜</td></tr>
+          <tr><td class="t-time">13:30–17:00</td><td class="t-what">女人岛沙滩/浮潜（MUSA 水下博物馆可选，约 500 比索）</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返坎昆，晚餐：告别晚餐，购物补货</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">女人岛渡轮从酒店区码头出发，末班约 19:00；带娃也可改去坎昆水上乐园（Xcaret 等）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D14 · 返程</span>
+          <span class="d-desc">坎昆✈北京</span>
+          <span class="d-tag return">🚀 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">自由活动 + 退房，前往坎昆机场</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">免税店扫货：龙舌兰/梅斯卡尔、玛雅手工艺品、咖啡</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐：机场</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">坎昆✈北京（经墨西哥城/美国/加拿大转机，总耗时约 20–24h）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">坎昆回国无直飞，转机点留意美国签证需求（持美签可免签过境，否则选墨城—东京线）；比索小额现金回国前花完。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-cover.jpg" alt="特奥蒂瓦坎·太阳金字塔" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">特奥蒂瓦坎·太阳金字塔 <small>遗址约 90 比索</small></div>
+          <div class="sc-feat">中美洲最大金字塔。<b>登顶俯瞰亡灵大道</b>，清晨无暴晒。</div>
+          <div class="sc-meta">📅 7:00–18:00 · ⏱ 3–4h · 🚌 墨城大巴 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-1.jpg" alt="墨西哥城·独立天使" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">墨西哥城·独立天使 <small>免费（登塔另计）</small></div>
+          <div class="sc-feat">改革大道地标。<b>独立天使纪念碑</b> + 宪法广场老城。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚇 地铁 Reforma/Bellas Artes</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-2.jpg" alt="瓜纳华托·圣母大教堂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓜纳华托·圣母大教堂 <small>免费</small></div>
+          <div class="sc-feat">彩色山城。<b>皮皮拉山全景 + 黄墙教堂</b>，最出片机位。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2h · 🚶 联合广场旁</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-3.jpg" alt="瓦哈卡·彩色街区" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">瓦哈卡·彩色街区 <small>免费</small></div>
+          <div class="sc-feat">原住民美食与色彩。<b>圣多明各金顶 + 蓝黄街巷</b>。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 2–3h · 🚶 市中心步行</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-4.jpg" alt="坎昆·酒店区白沙滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">坎昆·酒店区白沙滩 <small>免费</small></div>
+          <div class="sc-feat">加勒比海名片。<b>果冻色海水 + 白沙滩</b>，日落绝美。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚌 酒店区公交</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-5.jpg" alt="图卢姆·玛雅遗址" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">图卢姆·玛雅遗址 <small>约 90 比索</small></div>
+          <div class="sc-feat">悬崖上的玛雅城堡。<b>遗址 + 加勒比海</b>同框。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 2–3h · 🚗 坎昆 1.5h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-6.jpg" alt="奇琴伊察·库库尔坎" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">奇琴伊察·库库尔坎 <small>约 614 比索</small></div>
+          <div class="sc-feat">玛雅新七大奇迹。<b>春分秋分蛇影</b>，金字塔声学奇观。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 3–4h · 🚗 坎昆 2h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/mexico/mexico-7.jpg" alt="尤卡坦·天坑" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">尤卡坦·天坑 <small>80–300 比索</small></div>
+          <div class="sc-feat">玛雅圣井。<b>藤蔓天坑 + 水下浮潜</b>，清凉奇观。</div>
+          <div class="sc-meta">📅 9:00–17:00 · ⏱ 2h · 🚗 奇琴伊察/图卢姆旁</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（特奥蒂瓦坎金字塔、墨西哥城独立天使、瓜纳华托圣母大教堂、瓦哈卡街区、坎昆海滩、图卢姆遗址、奇琴伊察、尤卡坦天坑均为墨西哥实景）。更多免费景点：墨城宪法广场、改革大道、瓜纳华托接吻巷、瓦哈卡市场。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 人民币 ≈ 2.8 墨西哥比索估算。往返机票按转机 6000–12000 元计，旺季（12–1 月、复活节）上浮 20–40%。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（15000–25000）</th>
+<th>标准（30000–45000）</th>
+<th>舒适（60000–90000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄墨西哥城/坎昆 6000–9000</td>
+<td>含内陆段 8000–12000</td>
+<td>直飞商务/灵活 15000–25000</td>
+</tr>
+<tr>
+<td>住宿（13 晚）</td>
+<td>民宿/青旅 250–450/晚</td>
+<td>三星/连锁 600–1200/晚</td>
+<td>度假村/精品 1500–3500/晚</td>
+</tr>
+<tr>
+<td>交通（内陆航班+巴士）</td>
+<td>大巴+廉航 1500–2500</td>
+<td>内陆航班+巴士 2500–4000</td>
+<td>包车+直飞 6000–10000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础遗址约 800–1500</td>
+<td>含奇琴伊察等约 2000–3500</td>
+<td>全含+体验 5000–8000</td>
+</tr>
+<tr>
+<td>餐饮（14 天）</td>
+<td>街头小吃+市场 2500–4000</td>
+<td>正常下馆子 5000–8000</td>
+<td>高档餐厅/酒厂 12000–20000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 36000 元）</span>
+      往返机票 10000 + 住宿 13 晚 12000（平均 900/晚）+ 内陆航班与巴士 3500 + 门票 3000 + 餐饮 6500 + 签证杂费 1000 ≈ <strong>34000–38000 元</strong>。坎昆度假村比市区贵 2–3 倍，预算紧可住市区、白天泡公共沙滩。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>18.1 只看中部的 10 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D4 墨西哥城+特奥蒂瓦坎</li>
+
+      <li>D5–D6 瓜纳华托</li>
+
+      <li>D7–D8 瓦哈卡+蒙特阿尔班</li>
+
+      <li>D9–D10 返程</li>
+
+    </ul>
+
+    <h3>18.2 尤卡坦海岸版（10 天）</h3>
+
+
+    <p>墨城只留 2 天，重点放坎昆周边：坎昆海滩 3 天 + 奇琴伊察/伊克基尔 1 天 + 图卢姆/天坑 2 天 + 女人岛或科苏梅尔 1 天。适合海滩度假型玩家，节奏最轻松。</p>
+
+    <h3>18.3 亡灵节限定版（10 月底–11 月初）</h3>
+
+
+    <p>把时间压到墨城与瓦哈卡：亡灵节期间两地有盛大庆典（万寿菊花桥、骷髅游行、祭坛大赛），瓦哈卡氛围最地道。住宿提前 2–3 个月订，体验值拉满，但机票酒店翻倍，适合预算充足的深度玩家。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>19.1 北京 ⇄ 墨西哥 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（经转）</td>
+<td>北京→墨西哥城约 15–20h</td>
+<td>往返 6000–12000 元</td>
+<td>多经东京/首尔/洛杉矶/多伦多转机</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>18–24h</td>
+<td>5000–9000 元</td>
+<td>留意航站楼衔接与过境签证</td>
+</tr>
+<tr>
+<td>境内航班</td>
+<td>墨城—坎昆 2.5h、瓦哈卡—坎昆 1.5h</td>
+<td>单程 300–800 元</td>
+<td>Volaris/VivaAerobus 廉航提前订</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 墨西哥境内交通核心提醒</span>
+      墨西哥内陆交通性价比极高：<strong>一等长途巴士（ADO/ETN）舒适有 WiFi</strong>，中短途（墨城—瓜纳华托 4h）优先巴士；长途（瓦哈卡—坎昆）用廉航；尤卡坦半岛（坎昆—奇琴伊察—图卢姆）<strong>租车自驾最自由</strong>，租车前确认保险与收费站现金。城际小巴 Collectivo 是尤卡坦省钱神器。
+    </div>
+
+    <h3>19.2 墨西哥境内交通</h3>
+    <ul>
+      <li><strong>内陆航班</strong>：墨西哥城—坎昆 2.5h、瓦哈卡—坎昆 1.5h，廉航提前订单程 300–800 元</li>
+      <li><strong>长途巴士</strong>：ADO/ETN 一等车，墨城—瓜纳华托约 4h，舒适有 WiFi</li>
+      <li><strong>Uber/出租车</strong>：墨城 Uber 普及价廉；小城打车讲价，起步约 30–50 比索</li>
+      <li><strong>地铁（墨城）</strong>：5 比索随便坐（约 1.8 元），1 号线到人类学博物馆/改革大道</li>
+      <li><strong>Collectivo 小巴</strong>：尤卡坦半岛坎昆—图卢姆—普拉亚德尔卡曼，80–120 比索</li>
+      <li><strong>自驾（尤卡坦）</strong>：坎昆租车，坎昆—奇琴伊察 2h、—图卢姆 1.5h，收费站备现金</li>
+    </ul>
+
+    <h3>19.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>墨西哥城·历史中心/改革大道</td>
+<td>经济 200–400 / 标准 500–900</td>
+<td>景点步行可达</td>
+<td>老城夜晚人流复杂</td>
+</tr>
+<tr>
+<td>瓜纳华托·联合广场周边</td>
+<td>经济 250–450 / 标准 600–1100</td>
+<td>彩色山城核心</td>
+<td>石板路拖行李难</td>
+</tr>
+<tr>
+<td>瓦哈卡·市中心</td>
+<td>经济 200–400 / 标准 500–900</td>
+<td>市场教堂步行</td>
+<td>周末人多</td>
+</tr>
+<tr>
+<td>坎昆·酒店区/市区</td>
+<td>经济 300–500 / 标准 800–1800</td>
+<td>白沙滩度假感</td>
+<td>酒店区价格翻倍</td>
+</tr>
+<tr>
+<td>图卢姆·海滩/村</td>
+<td>生态小屋 500–1200 / 度假村 2000+</td>
+<td>网红风格，海滩近</td>
+<td>部分民宿停电</td>
+</tr>
+<tr>
+<td>省钱建议</td>
+<td>墨城/瓦哈卡民宿普遍 300–600 元含早</td>
+<td>性价比高于酒店</td>
+<td>需提前订（亡灵节爆满）</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🌮 必吃经典</h3>
+        <ul>
+          <li>塔可 Taco：猪肉/牛舌/烤仙人掌</li>
+          <li>墨西哥卷饼 Burrito + 玉米片蘸鳄梨酱</li>
+          <li>烤仙人掌 Nopales 沙拉</li>
+          <li>墨西哥煎蛋/早餐玉米卷</li>
+        </ul>
+        <h3>🥤 街饮甜品</h3>
+        <ul>
+          <li>鲜榨果汁（橙汁一杯 20 比索）</li>
+          <li>Churros 糖油条 + 热可可</li>
+          <li>龙舌兰 Tequila / 梅斯卡尔 Mezcal</li>
+          <li>瓦哈卡手冲咖啡</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍗 特色大菜</h3>
+        <ul>
+          <li>瓦哈卡七色莫雷 Mole（原产地）</li>
+          <li>烤肉 Carne Asada（北部风味）</li>
+          <li>海鲜 Ceviche 酸橘汁腌鱼（坎昆）</li>
+          <li>烤童子鸡 Pollo Asado</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>墨城 La Merced/圣胡安市场</li>
+          <li>瓦哈卡 20 Noviembre 市场</li>
+          <li>坎昆酒店区海边餐厅</li>
+          <li>图卢姆村网红餐厅</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 街头食物选排队长的摊，卫生相对有保障；② 饮用水只喝瓶装水，冰块确认是过滤水；③ 墨西哥辣度对中国人友好，但重辣要提前说；④ 瓦哈卡莫雷酱分量大，一份可两人 share；⑤ 市场果汁摊留意用水来源，肠胃敏感者买瓶装果汁更稳。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 墨西哥签证（或有美签免签）</li>
+        <li>比索现金（小城现金为王）+ 信用卡</li>
+        <li>电源转接头（127V A/B 美标插头）</li>
+        <li>防晒霜 SPF50+ + 防蚊液（尤卡坦）</li>
+      </ul>
+      <ul>
+        <li>内陆航班（瓦哈卡—坎昆）提前订</li>
+        <li>金字塔/遗址清晨票提前预约</li>
+        <li>尤卡坦租车确认保险（如自驾）</li>
+        <li>下载 Google 离线地图 + 西语翻译 App</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证优先走美签免签路线</strong>，办墨签周期 2–4 周且材料繁琐；② 墨城海拔 2240 米易高原反应，落地首日少动多喝水；③ 金字塔与玛雅遗址正午暴晒，清晨 7–8 点开园即入；④ 打车用 Uber 避免黑车，现金备小钞（20/50 比索）方便找零。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      墨西哥是「<strong>彩色的玛雅与殖民</strong>」——特奥蒂瓦坎的太阳金字塔、瓜纳华托的彩色山城、瓦哈卡的原住民美食，再到坎昆与图卢姆的果冻色加勒比海。14 天从高原文明走向海岸，持美签免签入境，喝瓶装水、搭 Uber、金字塔赶早，就能轻松逛完这个拉丁美洲的调色盘。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#d4a017",
+    "d": 3,
+    "n": "中部主线 · 墨西哥城→特奥蒂瓦坎→瓜纳华托→瓦哈卡",
+    "pts": [
+      [
+        19.4326,
+        -99.1332
+      ],
+      [
+        19.6925,
+        -98.8438
+      ],
+      [
+        21.017,
+        -101.2568
+      ],
+      [
+        17.0594,
+        -96.7216
+      ]
+    ]
+  },
+  {
+    "c": "#e07a3f",
+    "d": 3,
+    "n": "尤卡坦半岛 · 坎昆→奇琴伊察→图卢姆",
+    "pts": [
+      [
+        21.1614,
+        -86.8513
+      ],
+      [
+        20.6843,
+        -88.5678
+      ],
+      [
+        20.2148,
+        -87.4294
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 19.4326,
+    "lng": -99.1332,
+    "name": "墨西哥城·宪法广场",
+    "t": "D2 上午 · 2h",
+    "fee": "免费",
+    "note": "大教堂、国家宫壁画"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 19.6925,
+    "lng": -98.8438,
+    "name": "特奥蒂瓦坎·太阳金字塔",
+    "t": "D4 上午 · 3h",
+    "fee": "遗址约 90 比索",
+    "note": "登顶亡灵大道全景"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 21.017,
+    "lng": -101.2568,
+    "name": "瓜纳华托·圣母大教堂",
+    "t": "D5 下午 · 2h",
+    "fee": "免费",
+    "note": "皮皮拉山、接吻巷"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 17.0619,
+    "lng": -96.7254,
+    "name": "瓦哈卡·圣多明各教堂",
+    "t": "D7 上午 · 2h",
+    "fee": "免费",
+    "note": "金顶巴洛克、彩色街区"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 21.1614,
+    "lng": -86.8513,
+    "name": "坎昆·酒店区海滩",
+    "t": "D9 下午 · 半天",
+    "fee": "免费",
+    "note": "加勒比海白沙滩"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 20.6843,
+    "lng": -88.5678,
+    "name": "奇琴伊察·库库尔坎",
+    "t": "D10 上午 · 3h",
+    "fee": "约 614 比索",
+    "note": "蛇影金字塔、圣井"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 20.2148,
+    "lng": -87.4294,
+    "name": "图卢姆·玛雅遗址",
+    "t": "D11 上午 · 2.5h",
+    "fee": "约 90 比索",
+    "note": "悬崖城堡、海滩浮潜"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 20.6694,
+    "lng": -88.5489,
+    "name": "尤卡坦·天坑",
+    "t": "D12 上午 · 2.5h",
+    "fee": "80–300 比索",
+    "note": "藤蔓天坑、水下浮潜"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[15.5, -102.0], [23.0, -86.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#d4a017\"></span>中部主线（墨西哥城→特奥蒂瓦坎→瓜纳华托→瓦哈卡）<br><span class=\"sw\" style=\"background:#e07a3f\"></span>尤卡坦半岛（坎昆→奇琴伊察→图卢姆）<br><span class=\"sw dash\"></span>瓦哈卡—坎昆为航班转场</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

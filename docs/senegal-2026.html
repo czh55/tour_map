@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 塞内加尔 7 天全景攻略 · 玫瑰湖与殖民老城</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #2a9d8f;
+    --red-light: #45b5a6;
+    --gold: #e8b923;
+    --ink: #22333b;
+    --muted: #7a8b8f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e2eae6;
+    --blue: #d4718b;
+    --cover1: #0e5c54;
+    --ov1: rgba(14,92,84,.88);
+    --ov2: rgba(42,157,143,.72);
+    --ov3: rgba(232,176,35,.38);
+    --ov4: rgba(212,113,139,.20);
+    --key-bg: #fdf6e3;
+    --info-bg: #eef7f5;
+    --head-bg: rgba(42,157,143,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/senegal/senegal-cover.jpg" alt="塞内加尔旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 7 天海岸线 · 达喀尔 + 玫瑰湖 + 圣路易斯</div>
+      <h1>塞内加尔 7 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 达喀尔 · 玫瑰湖粉盐 · 圣路易斯老城 · 萨卢姆三角洲</div>
+      <div class="meta">
+        <span>🛫 行程链：达喀尔 → 玫瑰湖/雷特巴岛 → 圣路易斯 → 萨卢姆三角洲 → 返程</span>
+        <span>📅 时间窗口：7 天 6 晚（11 月–次年 5 月旱季最佳）</span>
+        <span>✈️ 北京⇄达喀尔 转机约 20 小时（经巴黎/迪拜/布鲁塞尔）</span>
+        <span>🛂 签证：中国护照需塞内加尔签证（evisa.senegal.gouv.sn 电子签，提前 1 个月办）</span>
+        <span>🕐 时差 -8 小时 · 🔌 电压 230V C/D/E 型插座</span>
+        <span>🗓 版本：2026-08-10</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 7 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 7 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">达喀尔</span>
+      <span class="arrow">→</span>
+      <span class="node">玫瑰湖</span>
+      <span class="arrow">→</span>
+      <span class="node">雷特巴岛</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">圣路易斯</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">萨卢姆</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 7 天怎么安排最合理</span>
+      塞内加尔是西非「<strong>海岸线上的颜色拼图</strong>」：达喀尔的都市活力、玫瑰湖的粉盐奇观、圣路易斯的殖民老城、萨卢姆的红树林水道。7 天沿大西洋北上再南下：<strong>达喀尔做轴心，包车串联</strong>，把戈雷岛的历史、粉湖的盐田、法式老城的黄昏一次看完。节奏紧凑但每段不赶，是西非旅行的最佳入门。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国内地护照<strong>需提前办塞内加尔签证</strong>：官方 evisa.senegal.gouv.sn 电子签（旅游单次约 50 美元起，3–10 个工作日出签）；达喀尔机场有落地签通道但政策不稳，<strong>建议电子签到手再飞</strong></td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>7 天：达喀尔 2 天 → 玫瑰湖&雷特巴岛 1 天 → 圣路易斯 2 天 → 萨卢姆三角洲 1 天 → 返程 1 天</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>达喀尔 → 玫瑰湖/雷特巴岛 → 圣路易斯 → 萨卢姆三角洲 → 达喀尔返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 12000–18000 ／ 标准 22000–35000 ／ 舒适 45000–65000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办电子签 ② 打黄热病疫苗（入境必查小黄本）③ 包车+船游提前订（戈雷岛渡轮、萨卢姆独木舟）</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>11 月–次年 5 月旱季干燥凉爽最佳；玫瑰湖旱季（1–3 月）盐度最高、粉色最浓；6–10 月雨季湿热</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>西非法郎（XOF）现金为主，大城市酒店可刷卡；1 元 ≈ 80 西非法郎</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>黄热病疫苗是硬门槛</strong>：入境塞内加尔必查黄热病疫苗接种证书（小黄本），出发前 10 天到国旅/口岸卫生检疫打针；没证可能被拒入境或现场强制接种。② <strong>玫瑰湖的颜色看季节</strong>：2022 年暴雨后湖水一度褪色，2025 年起逐渐恢复；想看最浓的粉色要在旱季（11–6 月）正午光线下去，别被网图误导以为全年粉。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 7 天版</h2>
+
+    <p>以下为 7 天 6 晚的推荐节奏：以达喀尔为轴心，包车沿大西洋北上圣路易斯再南下萨卢姆，全程约 1200km。每日移动 ≤4h，景点集中在上午凉爽时段，午后海边发呆。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵达达喀尔</td>
+<td>转机约 20h 抵达，入住市中心，科尔尼什海滨日落</td>
+<td>达喀尔</td>
+<td>抵达日</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>戈雷岛渡轮半日 → 非洲复兴纪念碑 → 达喀尔市区</td>
+<td>达喀尔</td>
+<td>历史与都市</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>玫瑰湖&雷特巴岛一日：粉湖盐田 + 盐工村落</td>
+<td>达喀尔</td>
+<td>粉湖一日</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>达喀尔→圣路易斯（约 4h），午后老城殖民建筑漫步</td>
+<td>圣路易斯</td>
+<td>驶向老城</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>圣路易斯：费伊德桥+渔港 → 巴巴里沙嘴灯塔</td>
+<td>圣路易斯</td>
+<td>法式老城日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>圣路易斯→萨卢姆三角洲（约 5h），独木舟红树林巡游</td>
+<td>萨卢姆</td>
+<td>三角洲日</td>
+</tr>
+<tr>
+<td>D7 返程</td>
+<td>萨卢姆→达喀尔机场（约 3h），达喀尔✈北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍萨卢姆（D6）直接返程，把多出来的一天留给圣路易斯北部的朱贾鸟保护区（Djoudj）；观鸟爱好者 11–3 月鸟类最多。带娃家庭推荐缩短车程：戈雷岛+玫瑰湖拆成两天，圣路易斯宿 2 晚纯休闲。达喀尔堵车严重，市内行程尽量步行+短途打车。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 7 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达达喀尔</span>
+          <span class="d-desc">机场入城，初见大西洋</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">全天</td><td class="t-what">北京✈（经巴黎/迪拜/布鲁塞尔转机约 20h）✈达喀尔布莱兹·迪亚涅国际机场</td></tr>
+          <tr><td class="t-time">13:00–15:00</td><td class="t-what">入境：出示电子签+黄热病小黄本+返程机票，换汇点换西非法郎</td></tr>
+          <tr><td class="t-time">16:00–18:30</td><td class="t-what">入住市中心，<b>科尔尼什海滨大道 Corniche</b>散步：大西洋日落+灯塔</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：达喀尔海鲜餐厅（塞内加尔海鲜在西非数一数二）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">机场距市区约 40km，官方出租车约 1.5–2 万西非法郎，用酒店接机或机场官方柜台；晚上 8 点后市区避免独行。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 戈雷岛与纪念碑</span>
+          <span class="d-desc">历史与都市一日</span>
+          <span class="d-tag ">🏛 历史都市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">前往达喀尔港乘<b>戈雷岛渡轮</b>（往返约 5500 西非法郎，20 分钟）</td></tr>
+          <tr><td class="t-time">09:00–12:00</td><td class="t-what"><b>戈雷岛 Île de Gorée</b>（世界遗产）：奴隶屋博物馆、彩色殖民小楼、艺术家街区</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">岛上餐厅午餐（法式+塞内加尔菜）</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>非洲复兴纪念碑</b>（门票约 5000 西非法郎）：49m 铜像，可登顶看达喀尔全景</td></tr>
+          <tr><td class="t-time">18:00–19:30</td><td class="t-what">达喀尔市中心：总统府外街、马德莱纳市场</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">戈雷岛下午 4 点后渡轮班次变少，尽量上午上岛；奴隶屋门票约 1000 西非法郎，导游讲解有英文场次。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 玫瑰湖一日</span>
+          <span class="d-desc">粉盐湖与盐工</span>
+          <span class="d-tag alt">🌸 玫瑰湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">达喀尔出发（约 1h 车程）前往<b>玫瑰湖 Lac Rose / 雷特巴岛</b></td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>玫瑰湖</b>（免费）：粉红色湖水+盐田，看盐工划桨收盐、白盐堆成山；正午光线粉最浓</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">湖边餐厅午餐（Chez Salim 等，尝塞内加尔烤鱼）</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what">雷特巴岛村落漫步：盐业小村、可试「死海式」漂浮（湖水含盐量高达 40%）</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">返达喀尔</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">玫瑰湖漂游后务必用清水冲洗，湖水盐分极高伤皮肤；旱季 1–3 月盐度最高、粉最浓，雨季颜色偏灰。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 驶向圣路易斯</span>
+          <span class="d-desc">法式老城前奏</span>
+          <span class="d-tag ">🚗 北上老城</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">达喀尔出发北上（约 260km，4h，沿 N2 国道）</td></tr>
+          <tr><td class="t-time">12:30</td><td class="t-what">途中午餐（小镇餐厅）</td></tr>
+          <tr><td class="t-time">14:00</td><td class="t-what">抵达<b>圣路易斯 Saint-Louis</b>（世界遗产）：入住老城（Ndar 岛）酒店</td></tr>
+          <tr><td class="t-time">15:30–18:30</td><td class="t-what">老城漫步：殖民建筑、费伊德桥（铁桥）、河边街道画廊</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：老城河边餐厅（尝 Yassa 柠檬洋葱鸡肉饭）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣路易斯住宿老城（Ndar 岛）最有味道但条件一般；旺季（12–2 月）法国家庭多，提前 2 周订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 圣路易斯老城</span>
+          <span class="d-desc">渔港与沙嘴灯塔</span>
+          <span class="d-tag ">🏚 法式老城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–10:30</td><td class="t-what">圣路易斯<b>渔港</b>晨景：彩色独木舟返航、晒鱼市场，摄影人天堂</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what"><b>费伊德桥 + 主教堂</b>：1876 年建的铁桥横跨塞内加尔河</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：老城海鲜</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what">租车/打车到<b>巴巴里沙嘴 Langue de Barbarie</b>：灯塔+沙丘+大西洋交汇，日落绝美</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：河边爵士酒吧（圣路易斯是西非爵士之乡）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">巴巴里沙嘴去程需过河渡船（约 1000 西非法郎）+司机，出发前谈好往返价；日落前 1h 到最出片。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 萨卢姆三角洲</span>
+          <span class="d-desc">红树林独木舟</span>
+          <span class="d-tag alt">🛶 三角洲日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00</td><td class="t-what">圣路易斯出发南下（约 300km，5h，经达喀尔绕行）</td></tr>
+          <tr><td class="t-time">13:00</td><td class="t-what">抵达<b>萨卢姆三角洲 Sine-Saloum</b>（世界遗产）：入住生态旅馆</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>独木舟/皮划艇红树林巡游</b>（约 1.5–2h）：红树林水道、白鹭与苍鹭、贝壳岛</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：河边烤鱼+日落</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">萨卢姆三角洲最佳体验是宿生态旅馆+船游；车程长，司机中途在达喀尔补油补给。时间紧可砍此段改为返程。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 返程</span>
+          <span class="d-desc">萨卢姆✈北京</span>
+          <span class="d-tag return">✈️ 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:00–09:30</td><td class="t-what">萨卢姆早餐+退房，出发回达喀尔（约 180km，3h）</td></tr>
+          <tr><td class="t-time">11:00–12:30</td><td class="t-what">抵达机场，办理值机</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what">机场免税店补货（西非腰果、塞内加尔咖啡）</td></tr>
+          <tr><td class="t-time">16:00–次日</td><td class="t-what">达喀尔✈（转机）✈北京，入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">达喀尔机场安检前可买西非特色伴手礼；返程联程留足 3h 缓冲，达喀尔市区到机场堵车常见，提前 4h 出发。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-cover.jpg" alt="玫瑰湖·粉盐湖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">玫瑰湖·粉盐湖 <small>免费（船游另计）</small></div>
+          <div class="sc-feat">世界最上镜的粉湖之一。<b>粉色湖水+白色盐山+彩船</b>。</div>
+          <div class="sc-meta">📅 旱季正午 · ⏱ 半天 · 🚗 达喀尔 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-1.jpg" alt="达喀尔·清真寺" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">达喀尔·清真寺 <small>免费外观</small></div>
+          <div class="sc-feat"><b>大西洋边的白色清真寺</b>，达喀尔海滨地标。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 30min · 📍 Ouakam 区</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-2.jpg" alt="戈雷岛·彩色街巷" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">戈雷岛·彩色街巷 <small>渡轮往返约 5500 西非法郎</small></div>
+          <div class="sc-feat"><b>奴隶屋+殖民彩屋+艺术家街</b>，历史最沉重的一课。</div>
+          <div class="sc-meta">📅 上午渡轮 · ⏱ 3h · 🚢 达喀尔港 20min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-3.jpg" alt="塞内加尔·海滨彩船" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塞内加尔·海滨彩船 <small>免费</small></div>
+          <div class="sc-feat"><b>国旗色独木舟与白沙滩</b>，大西洋渔村日常。</div>
+          <div class="sc-meta">📅 清晨 · ⏱ 1h · 📍 圣路易斯/达喀尔渔港</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-4.jpg" alt="戈雷岛·殖民红屋" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">戈雷岛·殖民红屋 <small>免费</small></div>
+          <div class="sc-feat"><b>红瓦彩墙的殖民小楼</b>，西非的「小法国」。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 戈雷岛</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-5.jpg" alt="萨卢姆·红树林水道" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">萨卢姆·红树林水道 <small>独木舟 1.5–2h 约 1–2 万西非法郎</small></div>
+          <div class="sc-feat"><b>红树林迷宫+观鸟</b>，白鹭苍鹭与贝壳岛。</div>
+          <div class="sc-meta">📅 上午/日落 · ⏱ 2h · 📍 三角洲生态旅馆</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-6.jpg" alt="达喀尔·非洲复兴纪念碑" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">达喀尔·非洲复兴纪念碑 <small>约 5000 西非法郎</small></div>
+          <div class="sc-feat"><b>49m 青铜巨像</b>，登顶看达喀尔全景与大西洋。</div>
+          <div class="sc-meta">📅 9:00–19:00 · ⏱ 1h · 📍 城西高地</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/senegal/senegal-7.jpg" alt="圣路易斯·沙嘴灯塔" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">圣路易斯·沙嘴灯塔 <small>免费</small></div>
+          <div class="sc-feat"><b>沙丘+灯塔+大西洋</b>，日落神机位。</div>
+          <div class="sc-meta">📅 日落 · ⏱ 1.5h · 📍 巴巴里沙嘴</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（玫瑰湖、达喀尔清真寺、戈雷岛、塞内加尔海岸与红树林等均为塞内加尔实景或同主题），用于页面配图。更多免费看点：达喀尔科尔尼什海滨、圣路易斯渔港、朱贾鸟保护区（观鸟收费）。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 80 西非法郎、1 欧元 ≈ 655.9 西非法郎（固定汇率）估算。往返机票按淡季转机 8000–11000 元计，境内包车按 2 人分摊估算。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（12000–18000）</th>
+<th>标准（22000–35000）</th>
+<th>舒适（45000–65000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>转机往返 8000–11000</td>
+<td>直挂转机 12000–16000</td>
+<td>灵活票/商务 20000–28000</td>
+</tr>
+<tr>
+<td>境内交通（包车+船游）</td>
+<td>拼车+渡轮 1500–2500</td>
+<td>包车+船游 3500–5500</td>
+<td>专车+私人船 8000–12000</td>
+</tr>
+<tr>
+<td>住宿（6 晚）</td>
+<td>旅馆/民宿 300–500/晚</td>
+<td>中档酒店 800–1300/晚</td>
+<td>生态旅馆/海边度假 2000–3200/晚</td>
+</tr>
+<tr>
+<td>门票+活动</td>
+<td>基础门票约 800–1200</td>
+<td>含戈雷岛/纪念碑/船游 2000–3200</td>
+<td>含私人向导+全程船游 5000–7500</td>
+</tr>
+<tr>
+<td>餐饮（7 天）</td>
+<td>街摊+快餐 1200–2000</td>
+<td>餐厅+街摊结合 3000–4500</td>
+<td>全餐厅+酒水 7000–10000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 30000 元）</span>
+      往返机票 14000 + 包车船游 4500（2 人分摊）+ 住宿 6 晚 6500（平均 1100/晚）+ 门票活动 2600 + 餐饮 3800 + 签证与疫苗杂费 1200 ≈ <strong>28000–34000 元</strong>。大头是机票与包车，两人同行分摊最划算；戈雷岛渡轮+纪念碑联票能省 500 西非法郎。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>6.1 5 天精简版（砍萨卢姆）</h3>
+
+
+    <ul>
+
+      <li>D1 达喀尔</li>
+
+      <li>D2 戈雷岛+市区</li>
+
+      <li>D3 玫瑰湖一日</li>
+
+      <li>D4 圣路易斯老城</li>
+
+      <li>D5 返程</li>
+
+      <li>适合时间紧或对红树林兴趣一般，少一次 5h 长途车</li>
+
+    </ul>
+
+    <h3>6.2 观鸟延伸版</h3>
+
+
+    <p>对鸟类感兴趣，把圣路易斯延长为 2.5 天，去<b>朱贾国家鸟类保护区 Djoudj</b>（11–3 月候鸟季）：火烈鸟、鹈鹕、白鹭成群，船游约 1.5–2 万西非法郎。萨卢姆三角洲可顺延或砍掉。</p>
+
+    <h3>6.3 亲子/度假调整</h3>
+
+
+    <p>带娃推荐砍掉长途段：达喀尔 3 天（戈雷岛+海滩）+玫瑰湖 1 天+圣路易斯 2 天纯休闲；萨卢姆车程太长儿童易累。圣路易斯海滨酒店有泳池的优先，达喀尔选市中心步行可达的酒店减少打车。西非法语区，会点简单法语沟通更顺。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 塞内加尔 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>转机（唯一）</td>
+<td>北京→达喀尔约 20h</td>
+<td>往返 8000–16000 元</td>
+<td>经巴黎/迪拜/布鲁塞尔，塞内加尔航空经巴黎的班次多</td>
+</tr>
+<tr>
+<td>直飞</td>
+<td>—</td>
+<td>—</td>
+<td>中塞暂无直航</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>无陆路铁路连接中国，只能飞机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 塞内加尔境内交通核心提醒</span>
+      <strong>包车是最现实的境内方式</strong>：城际长途巴士（sept-place 小巴）便宜但拥挤，推荐酒店代订包车（约 7–12 万西非法郎/天，含司机油费，2–3 人分摊）。戈雷岛靠渡轮（达喀尔港 20 分钟），玫瑰湖打车往返约 1–1.5 万西非法郎。达喀尔市内用黄色出租车，先谈价再上车；圣路易斯去沙嘴要过河渡船。偏远区域只收现金，换好零钱。
+    </div>
+
+    <h3>8.2 塞内加尔境内交通</h3>
+    <ul>
+      <li><strong>包车（核心）</strong>：含司机约 7–12 万西非法郎/天，长途段提前约</li>
+      <li><strong>城际小巴 sept-place</strong>：达喀尔—圣路易斯约 1 万西非法郎/人，便宜但挤</li>
+      <li><strong>戈雷岛渡轮</strong>：达喀尔港往返约 5500 西非法郎，20 分钟一班</li>
+      <li><strong>达喀尔市内出租车</strong>：黄色出租车不打表先谈价，短途 1000–3000 西非法郎</li>
+      <li><strong>圣路易斯渡船</strong>：过塞内加尔河去沙嘴约 1000 西非法郎/人</li>
+      <li><strong>萨卢姆船游</strong>：生态旅馆/码头可订独木舟 1–2 万西非法郎/2h</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>达喀尔·市中心/科尔尼什</td>
+<td>经济 300–550 / 标准 700–1300</td>
+<td>海滨日落、餐厅密集</td>
+<td>堵车、旺季贵</td>
+</tr>
+<tr>
+<td>达喀尔·机场区</td>
+<td>标准 600–1000</td>
+<td>转机过夜方便</td>
+<td>距市区 40km</td>
+</tr>
+<tr>
+<td>圣路易斯·老城 Ndar 岛</td>
+<td>经济 350–600 / 标准 800–1500</td>
+<td>殖民老城氛围</td>
+<td>设施偏老</td>
+</tr>
+<tr>
+<td>圣路易斯·海边</td>
+<td>标准 800–1500</td>
+<td>泳池度假，法式风情</td>
+<td>离老城需打车</td>
+</tr>
+<tr>
+<td>萨卢姆·生态旅馆</td>
+<td>标准 800–2000</td>
+<td>红树林环绕、观鸟</td>
+<td>位置偏，全包餐为主</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍲 必吃经典</h3>
+        <ul>
+          <li>Thiéboudienne：鱼+米饭+蔬菜的国菜</li>
+          <li>Yassa：柠檬洋葱鸡肉/鱼肉饭</li>
+          <li>Maafé：花生炖肉配米饭</li>
+          <li>炭烤鱼与烤海鲜（大西洋渔获）</li>
+        </ul>
+        <h3>🍹 在地名物</h3>
+        <ul>
+          <li>Bissap：洛神花冰饮</li>
+          <li>当地啤酒 Gazelle</li>
+          <li>西非腰果（伴手礼首选）</li>
+          <li>塞内加尔咖啡</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥖 街头小吃</h3>
+        <ul>
+          <li>Fataya：油炸咖喱三角</li>
+          <li>Beignet 炸面球</li>
+          <li>烤鱼串与烤玉米</li>
+          <li>新鲜椰子与热带水果</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>达喀尔：海鲜餐厅+市场街</li>
+          <li>圣路易斯：老城河边餐厅</li>
+          <li>玫瑰湖：Chez Salim 湖边餐厅</li>
+          <li>萨卢姆：生态旅馆烤鱼晚餐</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 生水与冰块慎喝，只喝瓶装水；② 街边水果/烤串先问价再买，砍价从一半起；③ 塞内加尔菜偏辣偏咸，点菜可要求少辣；④ 圣路易斯与达喀尔餐厅普遍接受刷卡，小摊只收现金；⑤ 洛神花饮 bissap 要喝现做的，瓶装成品糖分超高。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上）+ 电子签批准函打印件</li>
+        <li>黄热病疫苗接种证书（小黄本，入境必查）</li>
+        <li>往返机票+全程酒店预订单打印件</li>
+        <li>防蚊用品+驱蚊液（疟疾区）</li>
+      </ul>
+      <ul>
+        <li>西非法郎现金（偏远只收现金）</li>
+        <li>C/D/E 型转换插头（230V）</li>
+        <li>防晒霜+帽子+薄外套（沙漠风大）</li>
+        <li>下载离线地图+法语常用句 App</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>电子签提前办，别赌落地签</strong>：塞内加尔落地签政策时有变动，visa 到手再买机票；② 玫瑰湖颜色看季节，旱季正午最粉，网图滤镜要打折；③ 达喀尔/圣路易斯打车先谈价，司机加价直接拒绝；④ 圣路易斯老城桥头人流混杂，财物贴身；⑤ 出门尽量走大道，夜间不独行，官方导游与司机认准酒店推荐。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      塞内加尔是「<strong>西非海岸线的颜色教科书</strong>」——达喀尔的大西洋落日、玫瑰湖的粉色盐田、戈雷岛沉重的殖民史、圣路易斯的法式老城黄昏，7 天沿大西洋串成一幅高饱和度的拼图。电子签+小黄本准备好，包一辆车，就能把西非最上镜的一段海岸收进相机。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#2a9d8f",
+    "d": 3,
+    "n": "主线 · 达喀尔→玫瑰湖→圣路易斯→萨卢姆三角洲",
+    "pts": [
+      [
+        14.716,
+        -17.468
+      ],
+      [
+        14.832,
+        -17.23
+      ],
+      [
+        16.03,
+        -16.49
+      ],
+      [
+        13.833,
+        -16.75
+      ]
+    ]
+  },
+  {
+    "c": "#d4718b",
+    "d": 2,
+    "n": "返程 · 萨卢姆→达喀尔机场转机回国",
+    "pts": [
+      [
+        13.833,
+        -16.75
+      ],
+      [
+        14.716,
+        -17.468
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 14.716,
+    "lng": -17.468,
+    "name": "达喀尔·市中心",
+    "t": "D1 傍晚 · 2h",
+    "fee": "免费",
+    "note": "科尔尼什海滨、灯塔日落"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 14.7224,
+    "lng": -17.4983,
+    "name": "达喀尔·非洲复兴纪念碑",
+    "t": "D2 下午 · 1h",
+    "fee": "5000 西非法郎",
+    "note": "49m 青铜巨像登顶"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 14.667,
+    "lng": -17.397,
+    "name": "达喀尔·戈雷岛",
+    "t": "D2 上午 · 3h",
+    "fee": "渡轮往返 5500 西非法郎",
+    "note": "奴隶屋、彩色街巷"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 14.832,
+    "lng": -17.23,
+    "name": "玫瑰湖·Lac Rose",
+    "t": "D3 上午 · 2.5h",
+    "fee": "免费（船游另计）",
+    "note": "粉湖、盐田、漂浮体验"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 16.03,
+    "lng": -16.49,
+    "name": "圣路易斯·老城",
+    "t": "D4 下午 · 3h",
+    "fee": "免费",
+    "note": "费伊德桥、殖民建筑"
+  },
+  {
+    "num": 6,
+    "prio": "nice",
+    "lat": 15.953,
+    "lng": -16.543,
+    "name": "圣路易斯·巴巴里沙嘴",
+    "t": "D5 下午 · 2h",
+    "fee": "渡船+司机约 1000 西非法郎",
+    "note": "灯塔、沙丘、日落"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 13.833,
+    "lng": -16.75,
+    "name": "萨卢姆三角洲·红树林",
+    "t": "D6 下午 · 2h",
+    "fee": "独木舟 1–2 万西非法郎",
+    "note": "红树林水道、观鸟"
+  },
+  {
+    "num": 8,
+    "prio": "nice",
+    "lat": 14.167,
+    "lng": -16.833,
+    "name": "若阿勒-法迪乌斯·贝壳岛",
+    "t": "D6 途中 · 1h",
+    "fee": "免费",
+    "note": "贝壳铺路的小镇"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[13.3, -17.9], [16.6, -15.8]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#2a9d8f\"></span>主线（达喀尔→玫瑰湖→圣路易斯→萨卢姆，全程包车）<br><span class=\"sw\" style=\"background:#d4718b\"></span>返程（萨卢姆→达喀尔机场转机回国）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

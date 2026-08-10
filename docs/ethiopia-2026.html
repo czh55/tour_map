@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 埃塞俄比亚 8 天全景攻略 · 咖啡起源与岩石教堂</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #6f4e37;
+    --red-light: #8a6248;
+    --gold: #c9a24b;
+    --ink: #2f2a26;
+    --muted: #8a7a6f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e8e0d2;
+    --blue: #4a7c59;
+    --cover1: #3d2b1f;
+    --ov1: rgba(61,43,31,.88);
+    --ov2: rgba(111,78,55,.72);
+    --ov3: rgba(201,162,75,.38);
+    --ov4: rgba(228,196,130,.20);
+    --key-bg: #f6efdd;
+    --info-bg: #f1ede2;
+    --head-bg: rgba(111,78,55,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/ethiopia/ethiopia-cover.jpg" alt="埃塞俄比亚旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 8 天环线 · 北部圣地古迹</div>
+      <h1>埃塞俄比亚 8 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 亚的斯亚贝巴 · 拉利贝拉岩石教堂 · 阿克苏姆 · 塔纳湖 · 贡德尔</div>
+      <div class="meta">
+        <span>🛫 行程链：亚的斯亚贝巴 → 拉利贝拉 → 阿克苏姆 → 巴赫达尔 → 贡德尔 → 返程</span>
+        <span>📅 时间窗口：8 天 7 晚</span>
+        <span>✈️ 北京⇄亚的斯亚贝巴 直飞约 12 小时（ET605）</span>
+        <span>🛂 签证：中国护照电子签（推荐）或亚的斯机场落地签</span>
+        <span>🕐 时差 -5 小时 · 🔌 电压 220V C/F 型插座（欧标圆脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 8 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 8 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">亚的斯亚贝巴</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">拉利贝拉</span>
+      <span class="arrow">→</span>
+      <span class="node">阿克苏姆</span>
+      <span class="arrow">→</span>
+      <span class="node">巴赫达尔</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">贡德尔</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 8 天怎么安排最合理</span>
+      埃塞俄比亚是「<strong>非洲屋脊 + 人类摇篮</strong>」的复合体：世界最早的咖啡文化、13 座整石凿刻的拉利贝拉岩石教堂、阿克苏姆帝国的方尖碑、青尼罗河源头的塔纳湖。8 天走北部一线，把<strong>宗教圣城、帝国遗址与高原湖光</strong>一次串起，城市间用埃塞航空短途航班衔接，节奏松弛不赶。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照推荐<strong>电子签（evisa.gov.et，约 52–72 美元，1–3 个工作日，停留 30 天单次）</strong>；落地签仅限亚的斯亚贝巴机场、约 50–64 美元，2023 年后政策时有收紧，优先电子签</td>
+</tr>
+<tr>
+<td>时差与电源</td>
+<td>比北京慢 5 小时；电压 220V，插座为 <strong>C/F 型（欧标两脚圆插）</strong>，需带转换头</td>
+</tr>
+<tr>
+<td>货币</td>
+<td>埃塞俄比亚比尔（ETB），<strong>1 元 ≈ 15 比尔</strong>；现金为主，美元最好用，机场/酒店可换汇</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>8 天北部圣地环线：亚的斯亚贝巴→拉利贝拉→阿克苏姆→巴赫达尔→贡德尔</td>
+</tr>
+<tr>
+<td>交通方式</td>
+<td>国内段以<strong>埃塞航空短途航班</strong>衔接（亚的斯→拉利贝拉约 1h，单程 60–120 美元）</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 12000–18000 ／ 标准 22000–35000 ／ 舒适 45000–65000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办电子签 ② 订国内航班与住宿（旺季 10 月–次年 3 月） ③ 备美元现金与欧标转换插头</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>落地签并不稳</strong>：虽然中国护照可在亚的斯亚贝巴机场办落地签，但 2023 年以来埃塞加强边检，移民官有裁量权，高峰期可能出现收紧甚至暂停，<strong>强烈建议出发前在 evisa.gov.et 办好电子签并打印携带</strong>。② 埃塞有<strong>独立的埃塞俄比亚历法与时钟制</strong>（一年 13 个月、白天从早 6 点起算），航班时刻通常用国际标准时间，但当地服务（教堂开放、车辆接送）可能按当地时间，预订时务必和对方反复确认时间口径。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 8 天版</h2>
+
+    <p>以下为 8 天 7 晚的推荐节奏：按「首都 → 岩石教堂 → 帝国遗址 → 湖光 → 古堡」的北部大环线推进。每日主景点 ≤2 个，城市间以埃塞航空短途航班+一段公路为主，全程不用自驾。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵亚的斯亚贝巴</td>
+<td>ET605 凌晨起飞约 12h，清晨落地休整，换汇+市区初探</td>
+<td>亚的斯亚贝巴</td>
+<td>抵达+倒时差</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>国家博物馆（露西化石）→ 圣三一大教堂 → 咖啡仪式 → 梅尔卡托集市</td>
+<td>亚的斯亚贝巴</td>
+<td>首都人文</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>亚的斯✈拉利贝拉（约 1h）：北部教堂群（Bete Medhane Alem 等）</td>
+<td>拉利贝拉</td>
+<td>飞抵圣地</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>南部教堂群 + 圣乔治教堂 Bete Giyorgis，拉利贝拉博物馆</td>
+<td>拉利贝拉</td>
+<td>岩石教堂全日</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>飞阿克苏姆：方尖碑公园、圣母锡安教堂、地下陵墓</td>
+<td>阿克苏姆</td>
+<td>帝国遗址</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>飞巴赫达尔：蓝尼罗河瀑布 Tis Abay + 塔纳湖游船湖中修道院</td>
+<td>巴赫达尔</td>
+<td>塔纳湖日</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>公路赴贡德尔：法西尔盖比城堡群、德布雷伯汉教堂</td>
+<td>贡德尔</td>
+<td>城堡之城</td>
+</tr>
+<tr>
+<td>D8 返程</td>
+<td>贡德尔✈亚的斯亚贝巴转机✈北京，结束行程</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可砍贡德尔（D7）或阿克苏姆（D5），拉利贝拉是核心必留；对自然风光感兴趣可在拉利贝拉加 1 天塞米恩山高原徒步。6–9 月为雨季，教堂周边路滑、山区航班易延误，能避开尽量避开。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 8 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达亚的斯亚贝巴</span>
+          <span class="d-desc">清晨落地，休整+倒时差</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">00:10–06:55</td><td class="t-what">北京✈亚的斯亚贝巴（ET605 直飞约 12h，A350）。落地办理入境，出示电子签/落地签材料</td></tr>
+          <tr><td class="t-time">08:00–10:00</td><td class="t-what">机场换汇（比尔）、买当地手机卡（Ethio Telecom/Safaricom，约 10–20 元套餐）</td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what">入住市区酒店（推荐 Bole 区，靠近机场与商圈），午餐英吉拉餐厅</td></tr>
+          <tr><td class="t-time">15:00–17:30</td><td class="t-what">市区初探：圣乔治大教堂外观、梅尔卡托集市门口（不深入）、博莱路咖啡店</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐+早睡倒时差（时差 -5h，北京时间晚 9 点时埃塞当地才下午 4 点）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">抵达是清晨，别安排满行程；时差虽只有 -5h，但红眼航班疲劳，第一晚早点休息。梅尔卡托集市小偷多，背包背胸前。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 亚的斯亚贝巴</span>
+          <span class="d-desc">首都人文一日</span>
+          <span class="d-tag ">🏛 首都日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>国家博物馆</b>（约 50 比尔）：露西化石（人类学镇馆之宝）、人类摇篮展与皇室藏品</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what">午餐：doro wat 辣鸡配英吉拉，或本地烤鱼</td></tr>
+          <tr><td class="t-time">13:30–15:30</td><td class="t-what"><b>圣三一大教堂</b>（免费，需衣着得体）：埃塞首任皇帝海尔·塞拉西墓葬，壁画精美</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>埃塞咖啡仪式体验</b>（约 100–200 比尔）：炭火烘焙、现磨现煮三杯，配爆米花</td></tr>
+          <tr><td class="t-time">17:30–19:30</td><td class="t-what"><b>梅尔卡托集市</b>（免费）：非洲最大露天市场，香料/咖啡豆/织物，注意随身物品</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">国家博物馆展品说明多为英文/阿姆哈拉语，建议请讲解或提前做功课；三一教堂周五下午与周日礼拜时段部分区域不开放。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 飞拉利贝拉</span>
+          <span class="d-desc">北部教堂群</span>
+          <span class="d-tag ">⛪ 飞抵圣地</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:00–07:00</td><td class="t-what">亚的斯博莱机场国内航站楼（提前 2h 到）</td></tr>
+          <tr><td class="t-time">08:00–09:00</td><td class="t-what">亚的斯✈拉利贝拉（约 1h，单程 60–120 美元）</td></tr>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what">酒店入住 + 向导接洽，购岩石教堂<strong>通票（50 美元，5 天有效）</strong></td></tr>
+          <tr><td class="t-time">11:00–13:00</td><td class="t-what"><b>北部教堂群</b>：Bete Medhane Alem（世界最大独石教堂）、Bete Maryam 圣母堂</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：镇上英吉拉/烤鱼</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what">继续北部：Bete Golgotha 各各他、Bete Denagel 与战壕隧道系统</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">拉利贝拉是活着的朝圣地，进教堂必须脱鞋，穿易脱的鞋；向导半日 15–30 美元强烈建议，教堂布局与暗门极易迷路。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 拉利贝拉全日</span>
+          <span class="d-desc">南部教堂群 + 圣乔治教堂</span>
+          <span class="d-tag alt">⛪ 教堂全日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–12:00</td><td class="t-what"><b>南部教堂群</b>：Bete Amanuel、Bete Gabriel-Rufael（含地窖与隧道）、Bete Abba Libanos</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：拉利贝拉镇上，尝试 shiro（鹰嘴豆炖）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>圣乔治教堂 Bete Giyorgis</b>（通票含）：十字形独石教堂，拉利贝拉名片，傍晚光线最好</td></tr>
+          <tr><td class="t-time">16:30–17:30</td><td class="t-what"><b>拉利贝拉博物馆</b>（通票含）：教堂文物与古抄本</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">悬崖日落观景点（Abune Yosef 方向）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣乔治教堂建议 16 点后到，人少光好；体力好可加 Yemrehana Krestos 洞中教堂（往返约 2h，含山路）。全山无正式路灯，天黑前回酒店。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 阿克苏姆</span>
+          <span class="d-desc">方尖碑与约柜传说</span>
+          <span class="d-tag ">🗿 帝国遗址日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–09:00</td><td class="t-what">拉利贝拉✈阿克苏姆（或经亚的斯转机，全程约 2–3h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>方尖碑公园 Stelae Park</b>（约 200–300 比尔）：24m 大碑、从罗马运回的重建方尖碑、地下墓室</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：阿克苏姆小镇</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>圣母锡安大教堂建筑群</b>（联票约 200–500 比尔）：传说中约柜的存放地，新老教堂并立</td></tr>
+          <tr><td class="t-time">17:00</td><td class="t-what">阿克苏姆考古博物馆（可选）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">阿克苏姆是埃塞东正教最神圣之地，教堂内禁止拍照、女性可能要求包头巾；方尖碑公园与教堂建筑群门票单独购买。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 巴赫达尔 + 塔纳湖</span>
+          <span class="d-desc">蓝尼罗河瀑布 + 湖中修道院</span>
+          <span class="d-tag alt">💧 塔纳湖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:30</td><td class="t-what">阿克苏姆✈巴赫达尔（约 1h）</td></tr>
+          <tr><td class="t-time">09:30–12:00</td><td class="t-what"><b>蓝尼罗河瀑布 Tis Abay</b>（约 200 比尔）：阿姆哈拉语意为「冒烟的水」，旱季水小、雨季最壮观</td></tr>
+          <tr><td class="t-time">12:00–13:30</td><td class="t-what">午餐：巴赫达尔湖畔餐馆（湖鱼）</td></tr>
+          <tr><td class="t-time">14:30–18:00</td><td class="t-what"><b>塔纳湖游船</b>（包船约 1500–2500 比尔/4h）：乌达姆尼修道院、岛上修士与羊皮古经，青尼罗河源头</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">湖边日落，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">塔纳湖 37 座湖中修道院选 2–3 座参观即可，游船分传统草船（tankwa）与机动船两种；修道院衣着要求严格，女性带围巾。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 赴贡德尔</span>
+          <span class="d-desc">法西尔盖比城堡群</span>
+          <span class="d-tag ">🏰 城堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–12:30</td><td class="t-what">巴赫达尔→贡德尔（大巴/包车约 180km，3h，沿途高原风光）</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">入住+午餐</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>法西尔盖比城堡群</b>（联票约 200 比尔）：「非洲的卡米洛特」石砌古堡，1979 年列入世界遗产</td></tr>
+          <tr><td class="t-time">17:30–18:30</td><td class="t-what"><b>德布雷伯汉教堂</b>（免费，衣着得体）：天花板天使壁画</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">市场/日落，晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">贡德尔海拔约 2200m，紫外线强注意防晒；城堡群含法西尔浴池（Timkat 主显节会场），联票多数有效 3 天。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 返程</span>
+          <span class="d-desc">贡德尔✈亚的斯转机✈北京</span>
+          <span class="d-tag return">🚄 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">06:30–07:30</td><td class="t-what">贡德尔✈亚的斯亚贝巴（约 1h）</td></tr>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what">机场休整/免税店，或市区补货埃塞咖啡豆（世界名产）</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">前往国际航站楼（预留充足转机时间）</td></tr>
+          <tr><td class="t-time">15:00–次日</td><td class="t-what">亚的斯亚贝巴✈北京（直飞约 12h），入境到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">回国段务必留足 4h 转机缓冲；埃塞咖啡豆、当地蜂蜜与十字架饰品是热门伴手礼。咖啡生豆别忘托运（限制每人数量）。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-cover.jpg" alt="拉利贝拉·圣乔治教堂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">拉利贝拉·圣乔治教堂 <small>50 美元通票</small></div>
+          <div class="sc-feat">十字形独石教堂。<b>整石凿刻 + 悬崖底色</b>，拉利贝拉灵魂名片。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 2h · ✈ 亚的斯直飞 1h</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-1.jpg" alt="拉利贝拉·白衣朝圣" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">拉利贝拉·白衣朝圣 <small>通票含</small></div>
+          <div class="sc-feat">活着的信仰现场。<b>白衣朝圣者 + 主显节</b>，1 月 Timkat 最盛。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 教堂群周边</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-2.jpg" alt="拉利贝拉·岩壁入口" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">拉利贝拉·岩壁入口 <small>通票含</small></div>
+          <div class="sc-feat">岩石教堂的<b>战壕隧道与入口门洞</b>，古建筑技术谜题。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 1h · 📍 北部教堂群</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-3.jpg" alt="塞米恩山·高原风光" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塞米恩山·高原风光 <small>徒步另计</small></div>
+          <div class="sc-feat">Abune Yosef 高原与<b>非洲屋脊</b>，可加 1 天徒步。</div>
+          <div class="sc-meta">📅 全年 · ⏱ 1 天 · 📍 拉利贝拉周边</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-4.jpg" alt="埃塞俄比亚咖啡仪式" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">埃塞俄比亚咖啡仪式 <small>100–200 比尔</small></div>
+          <div class="sc-feat">咖啡文化的发源地。<b>炭火烘焙 + 三杯仪式</b>，必体验。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 亚的斯各咖啡屋</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-5.jpg" alt="传统 Buna 咖啡" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">传统 Buna 咖啡 <small>50–150 比尔</small></div>
+          <div class="sc-feat">陶壶 Buna 与炭火。<b>耶加雪菲/西达摩</b>名产区咖啡。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1h · 📍 全境</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-6.jpg" alt="塔纳湖·渔人晨光" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">塔纳湖·渔人晨光 <small>游船另计</small></div>
+          <div class="sc-feat">青尼罗河源头。<b>草船渔人 + 湖中修道院</b>，湖光之王。</div>
+          <div class="sc-meta">📅 日出/全天 · ⏱ 3–4h · 📍 巴赫达尔</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ethiopia/ethiopia-7.jpg" alt="蓝尼罗河瀑布" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">蓝尼罗河瀑布 <small>约 200 比尔</small></div>
+          <div class="sc-feat">Tis Abay「冒烟的水」。<b>雨季（6–9 月）水量最大</b>。</div>
+          <div class="sc-meta">📅 8:00–17:00 · ⏱ 2h · 📍 巴赫达尔南 30km</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（圣乔治教堂、白衣朝圣、岩壁入口、塞米恩高原、咖啡仪式、塔纳湖渔人、蓝尼罗河瀑布等均为埃塞俄比亚实景），用于页面配图。更多免费景点：圣三一大教堂、圣乔治大教堂、梅尔卡托集市、德布雷伯汉教堂。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 元 ≈ 15 埃塞俄比亚比尔、1 美元 ≈ 7.2 元估算。往返直飞按淡季 7000–10000 元计，旺季（10 月–次年 3 月）上浮 2000–3000。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（12000–18000）</th>
+<th>标准（22000–35000）</th>
+<th>舒适（45000–65000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄亚的斯 7000–10000（淡季转机/直飞促销）</td>
+<td>直飞 12000–16000</td>
+<td>含商务舱/灵活票 20000–30000</td>
+</tr>
+<tr>
+<td>住宿（7 晚）</td>
+<td>招待所/民宿 1500–2500</td>
+<td>中档酒店 3500–5500</td>
+<td>高档酒店/度假村 9000–14000</td>
+</tr>
+<tr>
+<td>交通（国内）</td>
+<td>国内航班+大巴 2500–4000</td>
+<td>多程直飞+部分包车 5000–8000</td>
+<td>全包车+私人向导 10000–15000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础门票约 600–1000</td>
+<td>含向导与博物馆 1500–2500</td>
+<td>含塞米恩徒步等可选 3000–5000</td>
+</tr>
+<tr>
+<td>餐饮（8 天）</td>
+<td>本地餐馆+街头 1000–1500</td>
+<td>正常餐厅 2500–4000</td>
+<td>高档餐厅+全包 6000–9000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 29000 元）</span>
+      往返机票 14000 + 住宿 7 晚 4500 + 国内航班与交通 5500 + 门票与向导 2000 + 餐饮 3000 ≈ <strong>29000 元</strong>。大头是国际机票，埃塞航空促销季（每年 2–4 月与 9–11 月）提前订能省 3000–5000；国内航班连程购买比分段便宜。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>8.1 只走亚的斯+拉利贝拉的 5 天精华版</h3>
+
+
+    <ul>
+
+      <li>D1–D2 亚的斯亚贝巴（同主行程）</li>
+
+      <li>D3–D4 拉利贝拉岩石教堂（同主行程）</li>
+
+      <li>D5 亚的斯✈北京返程</li>
+
+      <li>砍阿克苏姆/巴赫达尔/贡德尔，适合假期短或第一次去非洲</li>
+
+    </ul>
+
+    <h3>8.2 加拉裂谷湖泊/塞米恩山补充</h3>
+
+
+    <p>对自然风光感兴趣，可在亚的斯加 1 天裂谷湖泊（Ziway/Awasa 观鸟）或从拉利贝拉加 1 天塞米恩国家公园高原徒步（悬崖+疣猴+鬣狗，需向导）。雨季（6–9 月）山区徒步路滑，量力而行。若时间更长可继续南下拼肯尼亚。</p>
+
+    <h3>8.3 深度与摄影调整</h3>
+
+
+    <p>喜欢古迹：阿克苏姆加到 2 天，增加 Yeha 神庙（埃塞最古老建筑，早于所罗门时代）与 Dungur 遗址；喜欢建筑：拉利贝拉加到 3 天，把 11 座教堂全部走完并上 Abune Yosef。8 天塞进全部会很赶，建议把塞米恩或 Yeha 单拎出来做独立行程。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 埃塞俄比亚 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→亚的斯亚贝巴约 12h</td>
+<td>往返 7000–16000 元</td>
+<td>埃塞航空 ET605，A350 每日执飞，唯一直飞航司</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>15–20h</td>
+<td>6000–11000 元</td>
+<td>经迪拜/伊斯坦布尔/多哈，便宜但费时</td>
+</tr>
+<tr>
+<td>国际铁路</td>
+<td>—</td>
+<td>—</td>
+<td>中国到埃塞无陆路，只能飞机</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 埃塞境内交通核心提醒</span>
+      国内段用<strong>埃塞航空短途航班</strong>最省时（亚的斯→拉利贝拉约 1h 单程 60–120 美元），城市间公路慢且颠簸（亚的斯→拉利贝拉大巴要 2 天）；航班旺季（10 月–次年 3 月）提前 2 周在官网预订，<strong>连程国际+国内段一起买通常更便宜</strong>。拉利贝拉—巴赫达尔—贡德尔段可飞可走公路，赶时间全飞。
+    </div>
+
+    <h3>8.2 埃塞俄比亚境内交通</h3>
+    <ul>
+      <li><strong>埃塞航空国内航线</strong>：亚的斯↔拉利贝拉/阿克苏姆/巴赫达尔/贡德尔，短途 40min–1h，衔接环线主力</li>
+      <li><strong>长途巴士</strong>：巴赫达尔→贡德尔约 180km（3h），亚的斯→各地长线慢且颠簸，慎选</li>
+      <li><strong>包车/向导车</strong>：北部环线 4×4 包车约 100–150 美元/天，含司机油费，适合 3–4 人拼</li>
+      <li><strong>市内交通</strong>：亚的斯打车 APP（RIDE/ZayRide）单程 50–200 比尔，路边出租谈价先问</li>
+      <li><strong>三轮摩托 Bajaj</strong>：拉利贝拉/贡德尔小镇主力，短途 20–50 比尔</li>
+      <li><strong>塔纳湖游船</strong>：包机动船约 1500–2500 比尔/4h，旺季提前一天约</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>亚的斯·博莱 Bole</td>
+<td>经济 200–400 / 标准 500–900</td>
+<td>机场近，商圈餐饮多</td>
+<td>高峰期满房快</td>
+</tr>
+<tr>
+<td>亚的斯·市中心</td>
+<td>经济 250–450 / 标准 600–1000</td>
+<td>博物馆/教堂步行可达</td>
+<td>晚间街面注意安全</td>
+</tr>
+<tr>
+<td>拉利贝拉·教堂区</td>
+<td>经济 300–500 / 标准 600–1000</td>
+<td>岩石教堂步行可达</td>
+<td>设施简单，供电不稳</td>
+</tr>
+<tr>
+<td>阿克苏姆·小镇</td>
+<td>经济 250–450 / 标准 500–800</td>
+<td>古迹集中，夜生活少</td>
+<td>选择少，提前订</td>
+</tr>
+<tr>
+<td>巴赫达尔·湖畔</td>
+<td>经济 300–500 / 标准 600–1000</td>
+<td>塔纳湖景，度假氛围</td>
+<td>旺季游船+酒店都紧张</td>
+</tr>
+<tr>
+<td>贡德尔·城堡区</td>
+<td>经济 250–450 / 标准 500–900</td>
+<td>古堡群门口，夜市热闹</td>
+<td>坡多，行李重的打车</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍛 必吃经典</h3>
+        <ul>
+          <li>英吉拉 injera：苔麸发酵饼，全国主食</li>
+          <li>doro wat：辣鸡炖蛋配英吉拉</li>
+          <li>kitfo：生牛肉碎（可做熟），Gurage 名菜</li>
+          <li>shiro：鹰嘴豆粉炖，素食友好</li>
+        </ul>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>kolo：烘焙大麦粒零食</li>
+          <li>烤玉米/烤土豆：集市街边</li>
+          <li>sambusa：三角炸饺（印度裔影响）</li>
+          <li>巧克力与坚果：高原特产</li>
+        </ul>
+      </div>
+      <div>
+        <h3>☕ 咖啡与饮品</h3>
+        <ul>
+          <li>埃塞咖啡仪式：炭火三杯 buna，必体验</li>
+          <li>耶加雪菲/西达摩手冲：世界名产区</li>
+          <li>红茶与蜂蜜酒 tej（自制果酒）</li>
+          <li>鲜榨果汁：牛油果/芒果汁满街都是</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>亚的斯：Bole 区国际餐厅+本地馆子</li>
+          <li>拉利贝拉：教堂区家庭餐馆</li>
+          <li>巴赫达尔：湖畔鱼餐厅</li>
+          <li>各城酒店餐厅：标准档的稳妥选择</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 英吉拉酸味浓，初尝选小份；② 街边水与冰块不卫生，只喝瓶装水；③ 生食类（kitfo/生菜）肠胃敏感者建议做熟；④ 餐馆普遍不标价，先看菜单问价再点；⑤ 斋戒日（每周三/五及东正教斋期）肉食餐馆可能不供荤菜，备素食选择。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（6 个月以上有效期）+ 打印的电子签</li>
+        <li>美元现金（100–300 美元备用换汇）</li>
+        <li>欧标转换插头（C/F 型两脚圆插）</li>
+        <li>防晒霜+帽子（高原紫外线强）</li>
+      </ul>
+      <ul>
+        <li>黄皮书（黄热病疫苗接种证明，入境抽查）</li>
+        <li>国内航班提前在埃塞航空官网订票</li>
+        <li>下载 Google 地图 + RIDE 打车 APP</li>
+        <li>备少量肠胃药与瓶装水习惯</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>签证选电子签而非落地签</strong>，落地签政策时有收紧且移民官有裁量权；② 埃塞用埃历与当地时钟制，航班按国际时间、服务按当地时间，预订时反复确认；③ 亚的斯梅尔卡托等集市扒手多，现金分装、背包背前；④ 北部教堂衣着要求严格（脱鞋、遮腿），女士备长裙/围巾。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      埃塞俄比亚是「<strong>人类摇篮与咖啡原乡</strong>」——拉利贝拉的 11 座独石教堂凿穿山岩，阿克苏姆的方尖碑与约柜传说连接帝国与神性，塔纳湖与蓝尼罗河瀑布则是高原上的碧蓝休止符。8 天环线把埃塞北部的宗教、历史与湖光串成一条不赶的路线，电子签办好、现金备足，剩下的交给这座「非洲屋脊」的晨光。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#6f4e37",
+    "d": 3,
+    "n": "北部主线 · 亚的斯亚贝巴→拉利贝拉→阿克苏姆→巴赫达尔→贡德尔",
+    "pts": [
+      [
+        9.025,
+        38.747
+      ],
+      [
+        12.032,
+        39.04
+      ],
+      [
+        14.122,
+        38.719
+      ],
+      [
+        11.601,
+        37.398
+      ],
+      [
+        12.607,
+        37.459
+      ]
+    ]
+  },
+  {
+    "c": "#4a7c59",
+    "d": 2,
+    "n": "返程 · 贡德尔✈亚的斯亚贝巴转机回国",
+    "pts": [
+      [
+        12.607,
+        37.459
+      ],
+      [
+        9.025,
+        38.747
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 9.0375,
+    "lng": 38.7619,
+    "name": "亚的斯亚贝巴·国家博物馆",
+    "t": "D2 上午 · 2.5h",
+    "fee": "约 50 比尔",
+    "note": "露西化石、人类摇篮"
+  },
+  {
+    "num": 2,
+    "prio": "nice",
+    "lat": 9.0306,
+    "lng": 38.7707,
+    "name": "亚的斯亚贝巴·圣三一大教堂",
+    "t": "D2 下午 · 1.5h",
+    "fee": "免费",
+    "note": "海尔·塞拉西墓葬"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 12.034,
+    "lng": 39.0385,
+    "name": "拉利贝拉·北部教堂群",
+    "t": "D3 下午 · 3h",
+    "fee": "50 美元通票",
+    "note": "Bete Medhane Alem、战壕"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 12.0297,
+    "lng": 39.0393,
+    "name": "拉利贝拉·圣乔治教堂",
+    "t": "D4 下午 · 2h",
+    "fee": "通票含",
+    "note": "十字形独石教堂"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 14.1308,
+    "lng": 38.7183,
+    "name": "阿克苏姆·方尖碑公园",
+    "t": "D5 上午 · 2.5h",
+    "fee": "约 200–300 比尔",
+    "note": "24m 大碑、地下墓室"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 14.1319,
+    "lng": 38.7195,
+    "name": "阿克苏姆·圣母锡安教堂",
+    "t": "D5 下午 · 2h",
+    "fee": "约 200–500 比尔",
+    "note": "约柜传说、新老教堂"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 11.601,
+    "lng": 37.398,
+    "name": "巴赫达尔·塔纳湖",
+    "t": "D6 下午 · 3.5h",
+    "fee": "游船 1500–2500 比尔",
+    "note": "湖中修道院、青尼罗河源"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 12.6074,
+    "lng": 37.459,
+    "name": "贡德尔·法西尔盖比城堡",
+    "t": "D7 下午 · 3h",
+    "fee": "联票约 200 比尔",
+    "note": "非洲的卡米洛特"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[8.4, 36.8], [14.9, 39.5]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#6f4e37\"></span>北部主线（亚的斯→贡德尔，城市间以埃塞航空短途航班衔接）<br><span class=\"sw\" style=\"background:#4a7c59\"></span>返程（贡德尔✈亚的斯亚贝巴转机回国）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

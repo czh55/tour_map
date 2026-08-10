@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 爱尔兰 10 天全景攻略 · 翡翠岛</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #2e7d32;
+    --red-light: #4a9d55;
+    --gold: #d4a017;
+    --ink: #2b332d;
+    --muted: #7c8a7f;
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --line: #e5e1d4;
+    --blue: #2e5a88;
+    --cover1: #1d5c33;
+    --ov1: rgba(29,92,51,.88);
+    --ov2: rgba(46,125,50,.72);
+    --ov3: rgba(212,160,23,.38);
+    --ov4: rgba(46,90,136,.20);
+    --key-bg: #f4edd9;
+    --info-bg: #eef3ec;
+    --head-bg: rgba(46,125,50,.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/ireland/ireland-cover.jpg" alt="爱尔兰旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 10 天环线 · 都柏林 + 西部海岸</div>
+      <h1>爱尔兰 10 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 都柏林 · 高威莫赫悬崖 · 科克布拉尼 · 凯里之环</div>
+      <div class="meta">
+        <span>🛫 行程链：北京 → 都柏林 → 高威 → 莫赫悬崖 → 科克 → 基拉尼/凯里之环 → 返程</span>
+        <span>📅 时间窗口：10 天 9 晚（都柏林 3 + 高威 3 + 科克 2 + 凯里之环 2）</span>
+        <span>✈️ 北京⇄都柏林 直飞约 11 小时 10 分钟（海南航空 HU751/HU752）</span>
+        <span>🛂 签证：爱尔兰 C 类签证（需单独办理，不与英国/申根互通）</span>
+        <span>🕐 时差 -7h（夏令时）/-8h（冬季） · 🔌 电压 230V G 型三脚插座</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 10 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 10 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">都柏林</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">高威</span>
+      <span class="arrow">→</span>
+      <span class="node">莫赫悬崖</span>
+      <span class="arrow">→</span>
+      <span class="node">科克</span>
+      <span class="arrow">→</span>
+      <span class="node">布拉尼城堡</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">凯里之环</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🕐 10 天怎么安排最合理</span>
+      爱尔兰是「<strong>一座翡翠岛、两片海岸线</strong>」的目的地：东岸都柏林是历史与酒吧文化的心脏，西岸高威—科克—凯里之环串起大西洋沿岸最壮美的悬崖、古城与牧场。10 天节奏刚好：都柏林 3 天打底（不赶景点），西行 7 天一路向东推进，最后一天从都柏林返程，<strong>全程不过度奔波</strong>。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最关键）</td>
+<td>中国护照需单独办爱尔兰短期 C 类签证（单次 €60 / 多次 €100 + VFS 服务费 ¥385），<strong>不与英国、申根互通</strong>；在线 AVATS 英文填表 + 本人到签证中心录指纹，约 20 个工作日</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>都柏林 3 天 + 高威/莫赫悬崖 3 天 + 科克 2 天 + 凯里之环 2 天</td>
+</tr>
+<tr>
+<td>返程约束</td>
+<td>海南航空 HU752 都柏林 12:00 起飞，D10 需一早从西部返回；建议 D9 傍晚结束凯里之环后返回科克/都柏林过夜</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 都柏林 → 高威 → 莫赫悬崖 → 科克 → 布拉尼 → 基拉尼/凯里之环 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 11000–16000 ／ 标准 20000–28000 ／ 舒适 45000–60000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 办爱尔兰签证 ② 订往返直飞机票与都柏林住宿 ③ 预约健力士/Book of Kells 时段票；要自驾务必提前订自动挡</td>
+</tr>
+<tr>
+<td>季节提醒</td>
+<td>5–9 月最佳（白天长、气温舒适），7–8 月游客最多；冬季多雨风大，海边景点体验打折</td>
+</tr>
+<tr>
+<td>支付</td>
+<td>欧元现金 + 信用卡/Apple Pay 广泛可用；小额场景备现金，1 欧元 ≈ 7.8 元人民币</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>签证是最大门槛</strong>：爱尔兰不是申根国，中国护照必须单独申请爱尔兰 C 类旅游签（单次 €60 + VFS 服务费），若同时去英国需另办英国签证，两地入境互不通用。② 爱尔兰<strong>靠左行驶</strong>，西部凯里之环等为单车道窄路、环岛密集，新手自驾风险高；不擅长左舵请选火车/巴士或跟一日团。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 10 天版</h2>
+
+    <p>以下为 10 天 9 晚的推荐节奏：都柏林安顿 3 天，再沿西海岸一路向西南推进。每日主景点 ≤2 个，城际以火车/巴士为主，凯里之环段才需要租车。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵都柏林</td>
+<td>北京✈都柏林（约 11.5h），圣三一学院 Book of Kells，入住市区</td>
+<td>都柏林</td>
+<td>抵达+文化</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>健力士啤酒厂 → 都柏林城堡/切斯特·比蒂图书馆 → 坦普尔酒吧区</td>
+<td>都柏林</td>
+<td>啤酒与古堡</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>圣帕特里克大教堂 → 凤凰公园 → 爱尔兰国家美术馆 → 酒吧之夜</td>
+<td>都柏林</td>
+<td>教堂与酒吧</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>都柏林→高威（火车 2.5h），高威湾、拉丁区、西班牙拱门</td>
+<td>高威</td>
+<td>海滨转场</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>莫赫悬崖 + 巴伦风景区一日（团游或自驾）</td>
+<td>高威</td>
+<td>悬崖日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>康尼马拉：凯尔莫尔修道院 + 康尼马拉国家公园（或阿兰群岛）</td>
+<td>高威</td>
+<td>西海岸</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>高威→科克（巴士/火车约 3.5h），英国市场 + 圣芬巴尔大教堂</td>
+<td>科克</td>
+<td>老城转场</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>布拉尼城堡 + 金赛尔海港小镇</td>
+<td>科克</td>
+<td>城堡与海港</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>科克→基拉尼：基拉尼国家公园 + 凯里之环自驾</td>
+<td>基拉尼</td>
+<td>自驾日</td>
+</tr>
+<tr>
+<td>D10 返程</td>
+<td>基拉尼晨游 → 返都柏林机场，HU752 12:00 飞北京</td>
+<td>—</td>
+<td>收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      时间紧可把 D6 康尼马拉换成高威市区半天，把西部压缩为 2 天；凯里之环 179km 环线一天能走完但较赶，可拆成两天（南线+北线）。带娃家庭建议跳过凯里之环自驾，改为基拉尼国家公园马车与湖边半日。返程 HU752 是都柏林 12:00 起飞，前夜务必回到科克/都柏林一带。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 10 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达都柏林</span>
+          <span class="d-desc">北京✈都柏林 + 圣三一学院</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">02:50</td><td class="t-what">北京首都 T2 乘海南航空 HU751（A330-300）直飞都柏林，约 11h10m，机上一觉倒时差</td></tr>
+          <tr><td class="t-time">07:00</td><td class="t-what">抵达都柏林 T1，入境约 30–60 分钟（非申根国单独过关，护照盖章）</td></tr>
+          <tr><td class="t-time">08:30</td><td class="t-what">机场 Airlink 747 大巴（约 €7，30–45min）或出租车（约 €30）到市中心</td></tr>
+          <tr><td class="t-time">10:00</td><td class="t-what">入住酒店/寄存行李，休整适应时差（比北京慢 7 小时）</td></tr>
+          <tr><td class="t-time">14:00–16:30</td><td class="t-what"><b>圣三一学院 Book of Kells 体验</b>（成人 €26 起，网上预约时段）：9 世纪泥金手抄福音书 + 长厅图书馆，音频导览</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">晚餐：格拉夫顿街或坦普尔酒吧区，第一杯健力士</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">海南航空 HU751 为红眼航班，落地正是都柏林清晨；机场到市区打车 25–30 分钟。Book of Kells 需网上定时预约，门票不可退改。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 健力士 + 都柏林城堡</span>
+          <span class="d-desc">啤酒厂与古堡一日</span>
+          <span class="d-tag ">🍺 都市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>健力士啤酒厂 Guinness Storehouse</b>（成人 €26 起，动态票价，网上订时段）：7 层玻璃酒杯建筑，参观酿造史 + 顶层 Gravity Bar 360° 俯瞰都柏林 + 免费一杯健力士</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">午餐：圣詹姆斯门附近餐厅或啤酒厂餐厅</td></tr>
+          <tr><td class="t-time">14:00–16:00</td><td class="t-what"><b>都柏林城堡</b>（庭院与切斯特·比蒂图书馆免费）：2026 年 5–12 月因欧盟轮值主席国内部关闭，城堡广场与全球顶级东方手稿馆仍可逛</td></tr>
+          <tr><td class="t-time">16:00–18:00</td><td class="t-what"><b>坦普尔酒吧区</b>（免费）：鹅卵石巷道、独立书店、爱尔兰手工艺品店</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐 + 传统音乐酒吧之夜</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">健力士门票 2026 年采用动态价格，越早订的时段越便宜（€22–30）；顶层免费黑啤记得在 Gravity Bar 兑换。都柏林城堡内部 2026 年全年关闭，出行前再确认恢复情况。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 圣帕特里克大教堂 + 凤凰公园</span>
+          <span class="d-desc">教堂、公园与博物馆</span>
+          <span class="d-tag alt">🏛 人文日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–11:00</td><td class="t-what"><b>圣帕特里克大教堂</b>（成人 €11.50，学生/老人 €10）：爱尔兰国教大教堂，Swift 曾在此任牧正，含语音导览</td></tr>
+          <tr><td class="t-time">11:30–13:30</td><td class="t-what"><b>凤凰公园</b>（免费）：欧洲最大城市公园之一，看野生黇鹿群，可租自行车</td></tr>
+          <tr><td class="t-time">13:30–14:30</td><td class="t-what">午餐：公园旁或回市中心</td></tr>
+          <tr><td class="t-time">15:00–17:00</td><td class="t-what"><b>爱尔兰国家美术馆</b>（免费）：叶芝、莫奈、毕加索藏画</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">晚餐：坦普尔酒吧区或圣殿区热闹酒吧，爱尔兰炖肉+苏打面包</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">圣帕特里克大教堂周日 9:00–10:30 与 13:00–14:30 闭馆做礼拜；凤凰公园的鹿群多在清晨与傍晚出没，上午去更容易看到。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 都柏林 → 高威</span>
+          <span class="d-desc">火车西行 2.5 小时</span>
+          <span class="d-tag ">🚄 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–11:00</td><td class="t-what">都柏林 Heuston 乘 Irish Rail 火车到高威（2h20m–2h45m，网上单程 €13–19）或 Citylink 巴士（2.5–3h，€12–18）</td></tr>
+          <tr><td class="t-time">11:00</td><td class="t-what">到达高威，入住市中心酒店（步行可达一切）</td></tr>
+          <tr><td class="t-time">12:00–13:00</td><td class="t-what">午餐：拉丁区 Quay Street 海鲜浓汤+苏打面包</td></tr>
+          <tr><td class="t-time">14:00–17:00</td><td class="t-what"><b>高威湾漫步</b>（免费）：西班牙拱门、克拉达（Claddagh）渔村、盐山 Salthill 海滨步道</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">高威湾看日落 + 传统酒吧（高威是爱尔兰的「文化首都」，现场音乐密度全国第一）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">高威没有机场，均需从都柏林或香农转乘；火车站 Ceannt 与巴士站都在市中心步行范围内。高威赛马等大型活动期间住宿紧张，提前订。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 莫赫悬崖 + 巴伦</span>
+          <span class="d-desc">大西洋之巅一日</span>
+          <span class="d-tag ">🌊 悬崖日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">高威出发：可报莫赫悬崖半日团（¥388 起，含交通）或一日团含巴伦（¥506 起），也可自驾（约 1h 车程）</td></tr>
+          <tr><td class="t-time">10:30–14:00</td><td class="t-what"><b>莫赫悬崖 Cliffs of Moher</b>（门票 €5，12 岁以下免费，夏季 8:00–21:00）：奥布莱恩塔、悬崖步道，214 米高俯瞰大西洋</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：杜林 Doolin 村（近悬崖的滨海小村）</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>巴伦风景区 The Burren</b>（免费）：月球表面般的石灰岩高原 + 邓盖尔城堡遗迹</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">返高威，晚餐：海鲜+生蚝</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">莫赫悬崖风极大、无护栏路段很多，务必沿步道走并远离边缘；穿防滑鞋和防风外套。团队游通常上午出发，下午风小光线好。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 康尼马拉一日</span>
+          <span class="d-desc">荒野湖区与修道院</span>
+          <span class="d-tag ">🏔 西海岸日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00</td><td class="t-what">高威出发康尼马拉（Connemara）一日：可自驾或参当地小团</td></tr>
+          <tr><td class="t-time">10:30–13:00</td><td class="t-what"><b>凯尔莫尔修道院 Kylemore Abbey</b>（门票约 €17.5，含花园）：维多利亚哥特式修道院，湖畔机位绝佳</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：康尼马拉峡谷边的小餐馆</td></tr>
+          <tr><td class="t-time">14:30–17:00</td><td class="t-what"><b>康尼马拉国家公园</b>（免费）+ 科伊湖/克里姆山远眺，沿途随处可见自由放牧的羊群</td></tr>
+          <tr><td class="t-time">18:00</td><td class="t-what">返高威（若精力充沛可加阿兰群岛：罗萨拉港渡轮往返约 €30，渡海 40 分钟）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">康尼马拉是《哈利·波特》取景地之一，秋冬季山雾浓、雨天多；建议晴天出行。阿兰群岛值得单独一天，D6 二选一即可。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 高威 → 科克</span>
+          <span class="d-desc">西南老城转场</span>
+          <span class="d-tag alt">🚄 转场日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">高威出发：无直达火车，乘 Citylink 巴士（约 3h）或火车经利默里克转（约 3.5–4h）到科克</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">到达科克 Kent 站，入住市中心（圣帕特里克街一带）</td></tr>
+          <tr><td class="t-time">13:00–14:00</td><td class="t-what">午餐：<b>英国市场 English Market</b>（免费，周日休）：1702 年至今的室内市场，熟食海鲜牛乳</td></tr>
+          <tr><td class="t-time">14:30–16:30</td><td class="t-what"><b>科克老城</b>（免费）：圣芬巴尔大教堂彩窗、河畔步道、圣帕特里克街</td></tr>
+          <tr><td class="t-time">17:30</td><td class="t-what">晚餐：科克是「爱尔兰美食之都」，Bunsen 汉堡或米其林推荐小馆</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">高威—科克直线 190km 但无直达铁路，巴士经利默里克最省心；租车自驾约 2.5h。科克消费比都柏林低 15–20%，住宿性价比高。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 布拉尼城堡 + 金赛尔</span>
+          <span class="d-desc">吻巧言石 + 海港小镇</span>
+          <span class="d-tag ">🏰 城堡日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–09:30</td><td class="t-what">科克乘 Bus Éireann 215 路（约 30min）到布拉尼村</td></tr>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>布拉尼城堡</b>（成人 €24，学生/老人 €19，9:00 开园）：登顶吻「巧言石」获得口才，60 英亩花园可逛 2–3h</td></tr>
+          <tr><td class="t-time">12:30–13:30</td><td class="t-what">返科克午餐</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what"><b>金赛尔 Kinsale</b>（免费）：爱尔兰最美海港小镇，彩色渔村房 + <b>查尔斯堡</b>（成人 €5）俯瞰海湾</td></tr>
+          <tr><td class="t-time">18:30</td><td class="t-what">返科克，晚餐：生蚝+本地黑啤</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">吻巧言石需要仰躺后仰身，工作人员全程辅助，恐高者可只看不吻；布拉尼城堡花园很大，至少留 2 小时。金赛尔有「爱尔兰美食之都的餐厅密度」，晚餐可考虑留在金赛尔吃。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 凯里之环自驾</span>
+          <span class="d-desc">基拉尼国家公园 + 179km 环线</span>
+          <span class="d-tag ">🚗 自驾日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30</td><td class="t-what">科克出发自驾或乘火车（经 Mallow 约 1.5h）到基拉尼；当天取租车</td></tr>
+          <tr><td class="t-time">10:00–12:00</td><td class="t-what"><b>基拉尼国家公园</b>（免费）：莫克罗丝庄园（Muckross House，成人约 €11.5）+ Ladies View 观景台，湖畔马车可选</td></tr>
+          <tr><td class="t-time">12:30</td><td class="t-what">从基拉尼顺时针开始<b>凯里之环</b>自驾：Kenmare → Sneem → Waterville → Cahersiveen → Killorglin → 基拉尼，全程 179km</td></tr>
+          <tr><td class="t-time">14:00–19:00</td><td class="t-what">沿途停靠：Kenmare 湖镇、Sneem 彩色村、Waterville 海滩、Kerry Cliffs 凯里悬崖、Killorglin 河镇</td></tr>
+          <tr><td class="t-time">20:00</td><td class="t-what">返基拉尼住宿（或当晚开回科克，次日返程更从容）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">凯里之环纯驾驶约 3.5–4h，含停靠建议 7–10h；沿途单车道窄路多，靠左行驶+在避让点让行来车。租车建议提前 1 个月订自动挡（旺季紧俏）。若不想开车，基拉尼有大量英文一日团。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D10 · 返程</span>
+          <span class="d-desc">基拉尼晨游 → 都柏林✈北京</span>
+          <span class="d-tag return">🛫 返程日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">07:00–08:30</td><td class="t-what">基拉尼国家公园晨游（免费）：湖边漫步或罗斯城堡晨曦（视前夜住宿地而定）</td></tr>
+          <tr><td class="t-time">08:30–09:00</td><td class="t-what">基拉尼乘火车（经 Mallow 转）或自驾返都柏林（约 4h）；若 D9 已回科克，改乘 6:00 首班火车 8:32 抵都柏林 Heuston</td></tr>
+          <tr><td class="t-time">09:00–09:45</td><td class="t-what">都柏林 Heuston 转 Airlink 747 机场大巴（€7）到都柏林机场 T1</td></tr>
+          <tr><td class="t-time">10:00–11:30</td><td class="t-what">机场办理登机 + 退税 + 免税店（爱尔兰威士忌、羊毛制品伴手礼）</td></tr>
+          <tr><td class="t-time">12:00</td><td class="t-what">都柏林✈北京 HU752（约 11h10m），次日早晨 05:10 抵京</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">返程 HU752 固定 12:00 起飞，D10 当天从西海岸赶回都柏林非常紧张，强烈建议 D9 傍晚结束凯里之环后返回科克/都柏林过夜，D10 用早班火车从容转机。若机票订的是傍晚航班，则可把凯里之环玩到 D10 中午。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-cover.jpg" alt="莫赫悬崖" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">莫赫悬崖 <small>€5（12 岁以下免费）</small></div>
+          <div class="sc-feat">爱尔兰名片。<b>214 米悬崖俯瞰大西洋</b>，奥布莱恩塔+悬崖步道，日落时分最美。</div>
+          <div class="sc-meta">📅 夏季 8:00–21:00 · ⏱ 3–4h · 🚌 高威出发一日团 ¥388 起</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-1.jpg" alt="圣三一学院·Book of Kells" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">圣三一学院·Book of Kells <small>€26 起（动态票价）</small></div>
+          <div class="sc-feat">9 世纪泥金福音书 + <b>长厅图书馆</b>（《哈利·波特》取景地），都柏林必去文化地标。</div>
+          <div class="sc-meta">📅 9:30–17:00 · ⏱ 1.5h · 🚇 圣三一学院，需网上预约</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-2.jpg" alt="健力士啤酒厂" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">健力士啤酒厂 <small>€26 起（含一杯）</small></div>
+          <div class="sc-feat">7 层玻璃酒杯造型建筑。<b>顶层 Gravity Bar 360° 俯瞰都柏林</b>，免费一杯健力士。</div>
+          <div class="sc-meta">📅 9:30–19:00 · ⏱ 2h · 🚇 LUAS 红线 James 站</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-3.jpg" alt="高威湾" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">高威湾 <small>免费</small></div>
+          <div class="sc-feat">爱尔兰「文化首都」。<b>西班牙拱门 + 盐山海滨步道</b>，酒吧现场音乐密度全国第一。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 半天 · 🚶 市中心步行可达</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-4.jpg" alt="布拉尼城堡" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">布拉尼城堡 <small>€24</small></div>
+          <div class="sc-feat">亲吻<b>巧言石</b>获得口才传说 + 60 英亩花园，科克近郊中世纪城堡。</div>
+          <div class="sc-meta">📅 9:00–17/18:00 · ⏱ 2–3h · 🚌 科克 215 路巴士 30min</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-5.jpg" alt="凯里之环" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">凯里之环 <small>免费（自驾）</small></div>
+          <div class="sc-feat">179km 大西洋环线。<b>Kenmare 湖镇 + Kerry Cliffs 悬崖</b>，爱尔兰自驾天花板。</div>
+          <div class="sc-meta">📅 全年 · ⏱ 1–2 天 · 🚗 基拉尼起终点</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-6.jpg" alt="爱尔兰绿地与羊群" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">爱尔兰绿地与羊群 <small>免费</small></div>
+          <div class="sc-feat">翡翠岛的灵魂。<b>绿丘+石墙+自由牧羊</b>，康尼马拉/凯里之环沿途随手都是壁纸。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 顺路 · 🚗 自驾沿线</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/ireland/ireland-7.jpg" alt="坦普尔酒吧区" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">坦普尔酒吧区 <small>免费</small></div>
+          <div class="sc-feat">都柏林夜生活心脏。<b>传统爱尔兰音乐 + 一杯健力士</b>，红色外墙酒吧是地标。</div>
+          <div class="sc-meta">📅 全天（晚间最热闹）· ⏱ 2–3h · 🚶 市中心步行</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（莫赫悬崖日落、圣三一学院长厅、健力士黑啤、高威湾、布拉尼城堡、凯里之环、康尼马拉羊群、坦普尔酒吧均为爱尔兰实景）。更多免费景点：凤凰公园、爱尔兰国家美术馆、基拉尼国家公园、英国市场（周日休）。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 欧元 ≈ 7.8 元人民币估算。往返直飞按海南航空淡季 5500–7500 元计，旺季 7–8 月更贵。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（11000–16000）</th>
+<th>标准（20000–28000）</th>
+<th>舒适（45000–60000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>直飞淡季 5500–6500</td>
+<td>直飞旺季 6500–8500</td>
+<td>直飞商务/灵活 12000–18000</td>
+</tr>
+<tr>
+<td>住宿（9 晚）</td>
+<td>青旅/B&B 300–450/晚</td>
+<td>3 星酒店 550–850/晚</td>
+<td>4 星/庄园酒店 1200–2000/晚</td>
+</tr>
+<tr>
+<td>境内交通</td>
+<td>火车+巴士 1200–1800</td>
+<td>火车+租车 3 天 2800–3800</td>
+<td>全程自驾+全险 5500–8000</td>
+</tr>
+<tr>
+<td>门票</td>
+<td>基础景点 900–1400</td>
+<td>全含门票+导览 2000–2800</td>
+<td>全含+体验项目 3800–5500</td>
+</tr>
+<tr>
+<td>餐饮（10 天）</td>
+<td>超市+简餐 1800–2500</td>
+<td>正常餐厅+酒吧 3500–5000</td>
+<td>精致餐厅+美食体验 9000–13000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 24000 元）</span>
+      往返直飞 7000 + 住宿 9 晚 6200（平均 690/晚）+ 境内交通 3300（火车+租车 3 天）+ 门票 2400 + 餐饮 4300 + 签证/杂费 1000 ≈ <strong>24000 元</strong>。大头是机票与住宿：提前 3 个月订直飞能省 1500–2500 元；两人同行分摊租车与住宿，人均可再降 2000–3000 元。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>10.1 只玩都柏林+高威的 7 天版</h3>
+
+
+    <ul>
+
+      <li>D1–D3 都柏林（同主行程）</li>
+
+      <li>D4 都柏林→高威，高威湾</li>
+
+      <li>D5 莫赫悬崖+巴伦</li>
+
+      <li>D6 康尼马拉或阿兰群岛</li>
+
+      <li>D7 返程（都柏林 12:00 航班）</li>
+
+    </ul>
+
+    <h3>10.2 亲子版调整</h3>
+
+
+    <p>都柏林可加 EPIC 移民博物馆、都柏林动物园、国家博物馆（均免费或低价）；凯里之环取消自驾，改基拉尼国家公园湖边马车+半日；莫赫悬崖注意风大，抱紧小孩。爱尔兰 5 岁以下儿童多数景点免票，带娃选复活节（4 月）或夏季白昼长的月份。</p>
+
+    <h3>10.3 秋冬淡季版（11–3 月）</h3>
+
+
+    <p>机票与住宿整体便宜 30–40%，但白昼短、雨多风大，莫赫悬崖与凯里之环体验打折。可增加室内项目：健力士、Book of Kells、国家美术馆、圣三一周边咖啡馆。12 月圣诞季都柏林酒吧点灯氛围佳，是城市观光的最佳季节。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 爱尔兰 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→都柏林约 11h10m</td>
+<td>往返 5500–8500 元</td>
+<td>海南航空 HU751/HU752，夏季 6–9 月每日一班，A330-300</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>14–20h</td>
+<td>4500–6500 元</td>
+<td>经上海/伦敦/迪拜/伊斯坦布尔，便宜但费时</td>
+</tr>
+<tr>
+<td>境内转场</td>
+<td>火车/巴士为主</td>
+<td>单程 €12–27</td>
+<td>都柏林↔高威↔科克↔基拉尼均有城际铁路/巴士</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 爱尔兰境内交通核心提醒</span>
+      城际火车 Irish Rail 提前 1–2 天在网上订最便宜（都柏林—高威 €13 起、都柏林—科克 €14 起，现场买贵 30–50%）。自驾必须靠左行驶、环岛让行，西部单车道窄路多；租车选择自动挡需提前 1 个月订（旺季 +€10–20/天）。都柏林机场到市区约 30–45 分钟，转机/转场留足 1 小时。
+    </div>
+
+    <h3>8.2 爱尔兰境内交通</h3>
+    <ul>
+      <li><strong>都柏林—高威</strong>：Irish Rail 火车 2h20m（网上 €13–19）或 Citylink/GoBus 巴士 2.5–3h（€12–18），机场有直达高威巴士约 €18</li>
+      <li><strong>都柏林—科克</strong>：Irish Rail 火车 2h30m（网上提前订 €14–27），Heuston—Kent 直达</li>
+      <li><strong>高威—科克</strong>：无直达火车，经利默里克转车约 4h，或 Citylink 巴士约 3h；自驾约 2.5h</li>
+      <li><strong>科克—基拉尼</strong>：火车经 Mallow 约 1.5h，或自驾 1h15m，巴士约 1.5h</li>
+      <li><strong>自驾</strong>：靠左行驶+环岛让行；租车 3 天约 €120–180，自动挡旺季需提前订</li>
+      <li><strong>市内</strong>：LEAP 交通卡公交通用，都柏林 LUAS 轻轨；市区景点以步行为主</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>都柏林·坦普尔/格拉夫顿街</td>
+<td>青旅 €30–50 / 3星 €90–160 / 4星 €180+</td>
+<td>步行可达所有景点</td>
+<td>旺季贵，酒吧区夜晚吵</td>
+</tr>
+<tr>
+<td>都柏林·多基区/海港</td>
+<td>3 星 €100–150</td>
+<td>安静、临海</td>
+<td>去市区需公交</td>
+</tr>
+<tr>
+<td>高威·市中心/拉丁区</td>
+<td>3星/B&B €80–140</td>
+<td>紧邻酒吧街与海湾</td>
+<td>赛马等活动日爆满</td>
+</tr>
+<tr>
+<td>科克·圣帕特里克街一带</td>
+<td>3星/B&B €70–130</td>
+<td>美食之城，物价低于都柏林</td>
+<td>老建筑隔音一般</td>
+</tr>
+<tr>
+<td>基拉尼·火车站附近</td>
+<td>3星/B&B €80–150</td>
+<td>凯里之环起点，交通便利</td>
+<td>旺季一房难求，提前 2–3 周订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍺 必喝必吃</h3>
+        <ul>
+          <li>健力士黑啤（酒吧现打，配一个苏打面包）</li>
+          <li>爱尔兰早餐：香肠+黑/白布丁+煎蛋（B&B 标配）</li>
+          <li>海鲜浓汤配苏打面包（高威、科克沿海最佳）</li>
+          <li>爱尔兰炖肉：羊肉+土豆+胡萝卜</li>
+        </ul>
+        <h3>🐟 在地名物</h3>
+        <ul>
+          <li>高威生蚝（9 月生蚝节）</li>
+          <li>科克英国市场熟食与手工奶酪</li>
+          <li>基拉尼湖边餐厅的鹿肉/羊肉</li>
+          <li>布拉尼村的羊毛与手织品（购物）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🥔 街头小吃</h3>
+        <ul>
+          <li>炸鱼薯条（海边小镇现炸）</li>
+          <li>Boxty 土豆煎饼（科克传统）</li>
+          <li>Coddle 炖肠（都柏林冬日晚餐）</li>
+          <li>克拉达戒指造型冰淇淋（高威）</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>都柏林：坦普尔酒吧区、格拉夫顿街</li>
+          <li>高威：拉丁区 Quay Street</li>
+          <li>科克：英国市场、圣帕特里克街</li>
+          <li>金赛尔：米其林推荐密度最高的海港小镇</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 酒吧点健力士说「A pint of Guinness」即可，一杯约 €6–7；② 热门餐馆（尤其金赛尔、高威 Quay Street）晚餐要提前订位，周五六爆满；③ 爱尔兰餐厅给 10–12.5% 服务费较常见，留意账单是否已含；④ 市场类小吃（英国市场、布拉尼村）现金更快，备少量 €10 以下零钱。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照 + 爱尔兰 C 类签证（单次 €60 + VFS 服务费，不与申根/英国互通）</li>
+        <li>往返直飞机票 + 机场快线（Airlink 747 约 €7）</li>
+        <li>欧元现金（小额场景，200–400 欧备用）+ 信用卡/Apple Pay</li>
+        <li>英标转换插头（230V G 型三脚，两孔英插不可用）</li>
+      </ul>
+      <ul>
+        <li>城际火车/巴士提前 1–2 天网上订票</li>
+        <li>健力士/Book of Kells/布拉尼门票提前网上预约</li>
+        <li>租车提前订自动挡 + 驾照翻译件（租车需满 21/23 岁）</li>
+        <li>查天气：海边风大防雨外套必带，莫赫悬崖勿越步道</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>爱尔兰不是申根国</strong>，中国护照必须单独办爱尔兰签证；若同程去英国，两地签证互不通用，需分别过关；② <strong>靠左行驶</strong>，凯里之环、莫赫悬崖沿线单车道窄路+环岛多，新手建议跟团或乘火车；③ 爱尔兰天气「一天四季」，海边风极大，<strong>防雨防风外套必备</strong>，悬崖步道外严禁靠近边缘；④ 2026 年 5–12 月都柏林城堡因欧盟轮值主席国内部关闭，可逛免费庭院与切斯特·比蒂图书馆，参观内容出行前确认。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      爱尔兰是「<strong>一岛、两季、一杯健力士</strong>」的目的地——都柏林的文学与酒吧、莫赫悬崖的大西洋之怒、凯里之环的绿丘海岸，10 天正好把东岸历史与西岸风光串成一条翡翠环线。签证是唯一的硬门槛，办下爱尔兰 C 类签、订好直飞，剩下的就交给绿丘、羊群和路边那间永远亮着灯的酒吧。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#2e7d32",
+    "d": 3,
+    "n": "西海岸主线 · 都柏林→高威→科克→基拉尼",
+    "pts": [
+      [
+        53.35,
+        -6.26
+      ],
+      [
+        53.27,
+        -9.05
+      ],
+      [
+        51.898,
+        -8.47
+      ],
+      [
+        52.06,
+        -9.51
+      ]
+    ]
+  },
+  {
+    "c": "#d4a017",
+    "d": 3,
+    "n": "凯里之环 · 基拉尼→Kenmare→Waterville→基拉尼",
+    "pts": [
+      [
+        52.06,
+        -9.51
+      ],
+      [
+        51.88,
+        -9.58
+      ],
+      [
+        51.84,
+        -9.9
+      ],
+      [
+        51.83,
+        -10.17
+      ],
+      [
+        51.95,
+        -10.22
+      ],
+      [
+        52.11,
+        -9.79
+      ],
+      [
+        52.06,
+        -9.51
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 53.344,
+    "lng": -6.257,
+    "name": "都柏林·圣三一学院",
+    "t": "D1 下午 · 1.5h",
+    "fee": "€26 起",
+    "note": "Book of Kells、长厅图书馆"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 53.342,
+    "lng": -6.287,
+    "name": "都柏林·健力士啤酒厂",
+    "t": "D2 上午 · 2h",
+    "fee": "€26 起",
+    "note": "7 层参观、Gravity Bar"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 53.27,
+    "lng": -9.05,
+    "name": "高威·高威湾",
+    "t": "D4 下午 · 半天",
+    "fee": "免费",
+    "note": "西班牙拱门、盐山步道"
+  },
+  {
+    "num": 4,
+    "prio": "must",
+    "lat": 52.97,
+    "lng": -9.43,
+    "name": "莫赫悬崖",
+    "t": "D5 全天 · 3–4h",
+    "fee": "€5",
+    "note": "奥布莱恩塔、悬崖步道"
+  },
+  {
+    "num": 5,
+    "prio": "must",
+    "lat": 51.932,
+    "lng": -8.569,
+    "name": "科克·布拉尼城堡",
+    "t": "D8 上午 · 2–3h",
+    "fee": "€24",
+    "note": "吻巧言石、花园"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 51.898,
+    "lng": -8.47,
+    "name": "科克·老城",
+    "t": "D7 下午 · 2h",
+    "fee": "免费",
+    "note": "英国市场、圣芬巴尔大教堂"
+  },
+  {
+    "num": 7,
+    "prio": "nice",
+    "lat": 51.706,
+    "lng": -8.522,
+    "name": "金赛尔",
+    "t": "D8 下午 · 2–3h",
+    "fee": "免费（查尔斯堡 €5）",
+    "note": "彩色海港小镇"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 52.06,
+    "lng": -9.51,
+    "name": "基拉尼·凯里之环",
+    "t": "D9 全天 · 自驾",
+    "fee": "免费（租车另计）",
+    "note": "国家公园、179km 环线"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[51.4, -10.7], [55.4, -6.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#2e7d32\"></span>西海岸主线（都柏林→高威→科克→基拉尼）<br><span class=\"sw\" style=\"background:#d4a017\"></span>凯里之环自驾（基拉尼环形）<br><span class=\"sw dash\"></span>返程段（基拉尼—都柏林为火车/巴士转场）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>

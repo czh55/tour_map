@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 阿联酋 9 天全景攻略 · 沙漠与霓虹</title>
+<link rel="stylesheet" href="leaflet/leaflet.min.css" />
+<script src="leaflet/leaflet.min.js"></script>
+<style>
+  /* 标题手写体（马善政楷书，本地加载） */
+  @font-face {
+    font-family: 'MaShanZheng';
+    src: url('fonts/MaShanZheng-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --red: #1b3a5c;
+    --red-light: #2c5b8a;
+    --gold: #d4a017;
+    --ink: #2e2c28;
+    --muted: #8a7f6a;
+    --bg: #faf7f1;
+    --card: #ffffff;
+    --line: #e8dfc8;
+    --blue: #3a6d9c;
+    --cover1: #0f2a44;
+    --ov1: rgba(15,42,68,.88);
+    --ov2: rgba(27,58,92,.74);
+    --ov3: rgba(212,160,23,.40);
+    --ov4: rgba(240,180,60,.22);
+    --key-bg: #fbf3dc;
+    --info-bg: #eef3f8;
+    --head-bg: rgba(212,160,23,.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 860px; min-width: 0; flex: 1 1 auto; padding: 0 20px; }
+
+  /* 左侧固定章节导航 */
+  .page { display: flex; justify-content: center; align-items: flex-start; gap: 28px; max-width: 1220px; margin: 0 auto; padding: 0 20px; }
+  .side-nav {
+    position: sticky; top: 24px; align-self: flex-start;
+    flex: 0 0 235px; width: 235px;
+    margin-top: 26px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 12px; box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    max-height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .side-nav .sn-title { font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive; font-size: 15px; font-weight: 400; color: var(--red); margin-bottom: 10px; }
+  .side-nav .sn-progress { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .side-nav .sn-progress-bar { height: 100%; width: 0; background: var(--gold); transition: width .1s linear; }
+  .side-nav nav.sn-list { display: flex; flex-direction: column; gap: 1px; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 8px;
+    font-size: 12.5px; color: var(--ink); text-decoration: none;
+    border-left: 3px solid transparent; line-height: 1.35;
+  }
+  .side-nav a:hover { background: var(--bg); }
+  .side-nav a.active { background: var(--bg); color: var(--red); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-no {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px;
+    background: var(--line); color: var(--muted);
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .side-nav a.active .sn-no { background: var(--red); color: #fff; }
+
+  /* 一级分组（最多 4 个栏目，手风琴展开） */
+  .side-nav .sn-group { margin: 2px 0; }
+  .side-nav .sn-g-title {
+    display: flex; align-items: center; gap: 7px;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 800; color: var(--blue);
+    cursor: pointer; user-select: none; line-height: 1.35;
+    border-left: 3px solid transparent;
+  }
+  .side-nav .sn-g-title::before {
+    content: '▸'; font-size: 10px; color: var(--gold); flex-shrink: 0;
+    transition: transform .15s ease;
+  }
+  .side-nav .sn-group.open > .sn-g-title::before { transform: rotate(90deg); }
+  .side-nav .sn-g-title:hover { background: var(--bg); }
+  .side-nav .sn-g-title.active { color: var(--red); border-left-color: var(--gold); }
+  .side-nav .sn-g-body {
+    display: none; padding: 2px 0 8px 4px; margin-left: 9px;
+    border-left: 1px dashed var(--line);
+  }
+  .side-nav .sn-group.open > .sn-g-body { display: block; }
+
+  /* 二级导航（章节下的小节，手风琴展开） */
+  .side-nav ul.sn-sub {
+    display: none; list-style: none; margin: 2px 0 4px; padding: 0;
+  }
+  .side-nav a.active + ul.sn-sub { display: block; }
+  .side-nav ul.sn-sub a {
+    display: block; margin: 1px 0; padding: 4px 8px 4px 14px;
+    font-size: 11.5px; color: var(--muted); font-weight: 500;
+    border-left: 2px solid var(--line); border-radius: 0 6px 6px 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .side-nav ul.sn-sub a:hover { color: var(--red); background: var(--bg); }
+  .side-nav ul.sn-sub a.active { color: var(--red); background: var(--bg); border-left-color: var(--gold); font-weight: 700; }
+  .side-nav .sn-back { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* 右下角一键返回顶部按钮 */
+  .back-top {
+    position: fixed; right: 22px; bottom: 26px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1px; width: 56px; height: 56px;
+    border: none; cursor: pointer;
+    background: var(--red); color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,.38), 0 2px 6px rgba(0,0,0,.15);
+    opacity: 0; visibility: hidden; transform: translateY(14px);
+    transition: opacity .25s ease, transform .25s ease, visibility .25s, background .2s ease;
+  }
+  .back-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+  .back-top:hover { background: var(--red-light); }
+  .back-top span { font-size: 9px; font-weight: 800; letter-spacing: .5px; line-height: 1; }
+  .back-top svg { width: 18px; height: 18px; }
+  @media (max-width: 640px) {
+    .back-top { right: 14px; bottom: 18px; width: 50px; height: 50px; }
+  }
+
+  header {
+    position: relative;
+    color: #fff;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  header .cover {
+    position: relative; height: 300px; overflow: hidden;
+    background: linear-gradient(135deg, var(--cover1) 0%, var(--red) 55%, var(--red-light) 140%);
+  }
+  header .cover img.cover-img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 60%;
+  }
+  header .cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(105deg,
+      var(--ov1) 0%,
+      var(--ov2) 32%,
+      var(--ov3) 62%,
+      var(--ov4) 100%);
+  }
+  header .cover::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(180deg, transparent 62%, var(--bg) 100%);
+    pointer-events: none;
+  }
+  header .cover .cover-inner {
+    position: relative; z-index: 3;
+    max-width: 860px; margin: 0 auto; padding: 56px 20px 64px;
+  }
+  header .kicker {
+    display: inline-block;
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: rgba(0,0,0,.18);
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 34px; font-weight: 400; letter-spacing: 3px; line-height: 1.3;
+    text-shadow: 0 2px 14px rgba(0,0,0,.45);
+  }
+  header .sub {
+    margin-top: 12px; font-size: 14px; opacity: .95;
+    text-shadow: 0 1px 8px rgba(0,0,0,.4);
+  }
+  header .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+  header .meta span {
+    font-size: 12.5px; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+    padding: 5px 12px; border-radius: 999px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.2);
+  }
+
+  nav.toc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 22px; margin: 26px 0;
+  }
+  nav.toc h2 { font-size: 15px; color: var(--red); margin-bottom: 10px; }
+  nav.toc ol { list-style: none; counter-reset: toc; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 18px; }
+  nav.toc li { counter-increment: toc; font-size: 13.5px; }
+  nav.toc a { color: var(--blue); text-decoration: none; display: block; padding: 3px 0; border-radius: 6px; }
+  nav.toc a::before { content: counter(toc) ". "; color: var(--gold); font-weight: 700; margin-right: 4px; }
+  nav.toc a:hover { background: var(--bg); color: var(--red); }
+
+  section { margin: 40px 0; }
+  h2.sec {
+    font-family: 'MaShanZheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+    font-size: 24px; font-weight: 400;
+    color: var(--red);
+    padding-bottom: 10px; border-bottom: 2px solid var(--gold);
+    margin-bottom: 18px; display: flex; align-items: center; gap: 10px;
+  }
+  h2.sec .no {
+    background: var(--red); color: #fff; font-size: 14px;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  h3 { font-size: 16.5px; color: var(--blue); margin: 22px 0 10px; }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  strong { color: var(--red); }
+  em { color: var(--muted); }
+
+  .callout { border-radius: 12px; padding: 16px 18px; margin: 16px 0; font-size: 14.5px; }
+  .callout.key { background: var(--key-bg); border-left: 4px solid var(--gold); }
+  .callout.warn { background: #fdecea; border-left: 4px solid #c62828; }
+  .callout.info { background: var(--info-bg); border-left: 4px solid var(--blue); }
+  .callout .t { font-weight: 700; display: block; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge.must { background: var(--red); color: #fff; }
+  .badge.nice { background: var(--info-bg); color: var(--blue); border: 1px solid var(--line); }
+  .badge.skip { background: #f0ece6; color: var(--muted); }
+
+  /* ===== 景点图鉴画廊 ===== */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin: 16px 0; }
+  .spot-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .spot-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.10); }
+  .spot-card .sc-img {
+    position: relative; width: 100%; height: 190px; overflow: hidden; background: var(--info-bg);
+  }
+  .spot-card .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .spot-card:hover .sc-img img { transform: scale(1.05); }
+  .spot-card .sc-img .sc-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+    color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  .sc-tag.must { background: var(--red); }
+  .sc-tag.nice { background: var(--blue); }
+  .sc-tag.skip { background: #7a6f68; }
+  .spot-card .sc-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+  .spot-card .sc-name { font-size: 16px; font-weight: 800; color: var(--red); }
+  .spot-card .sc-name small { font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .spot-card .sc-feat { margin-top: 6px; font-size: 13px; color: var(--ink); line-height: 1.6; flex: 1; }
+  .spot-card .sc-feat b { color: var(--gold); font-weight: 700; }
+  .spot-card .sc-meta { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .gallery-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 2px; }
+
+  /* ===== Interactive Map ===== */
+  .map-wrap { display: flex; gap: 14px; align-items: flex-start; margin: 12px 0; }
+  .map-wrap .map-container { flex: 1 1 auto; min-width: 0; margin: 0; }
+  .map-container { height: 480px; border-radius: 12px; border: 1px solid var(--line); z-index: 0; }
+  .map-fallback {
+    height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--info-bg); color: var(--muted); font-size: 14px; text-align: center; padding: 20px;
+  }
+
+  /* 地图侧边节点清单 */
+  .map-sidebar {
+    width: 320px; flex-shrink: 0;
+    max-height: 480px; overflow-y: auto;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .map-sidebar::-webkit-scrollbar { width: 8px; }
+  .map-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .side-title { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .side-item { display: flex; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .side-item:hover { background: var(--bg); }
+  .side-item.active { background: var(--bg); box-shadow: inset 3px 0 0 var(--gold); }
+  .side-item:last-child { border-bottom: none; }
+  .side-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; background: var(--red);
+  }
+  .side-item.nice .side-num { background: var(--blue); }
+  .side-item.skip .side-num { background: #8d8379; }
+  .side-main { min-width: 0; }
+  .side-name { font-size: 14px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .side-item.nice .side-name { color: var(--blue); }
+  .side-item.skip .side-name { color: var(--muted); }
+  .side-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .side-note { font-size: 12.5px; color: var(--ink); margin-top: 2px; line-height: 1.5; }
+
+  .map-pin {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.45);
+  }
+  .map-pin.must { background: var(--red); }
+  .map-pin.nice { background: var(--blue); }
+  .map-pin.skip { background: #8d8379; }
+  .map-pop h4 { color: var(--red); margin-bottom: 2px; font-size: 14px; }
+  .map-pop p { margin: 2px 0; font-size: 12.5px; line-height: 1.55; }
+  .map-pop .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-top: 3px; }
+  .map-pop .tag.must { background: var(--red); color: #fff; }
+  .map-pop .tag.nice { background: var(--info-bg); color: var(--blue); }
+  .map-pop .tag.skip { background: #f0ece6; color: #6b5f58; }
+  .map-legend {
+    background: rgba(255,255,255,.95); border-radius: 8px; padding: 8px 11px;
+    font-size: 12px; line-height: 1.7; box-shadow: 0 1px 5px rgba(0,0,0,.25);
+  }
+  .map-legend b { display: block; margin-bottom: 2px; color: var(--blue); }
+  .map-legend .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .map-legend .sw.dash { border-top: 3px dashed #9e9e9e; background: none; height: 0; }
+  .map-note { font-size: 13px; color: var(--muted); margin: 6px 0 4px; }
+  .leaflet-container { font: inherit; }
+
+  .table-scroll { overflow-x: auto; border-radius: 12px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--card); }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--red); color: #fff; font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--bg); }
+  td.c { text-align: center; }
+
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { position: relative; padding: 10px 0 10px 30px; border-left: 2px solid var(--line); margin-left: 8px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -7px; top: 17px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--card);
+  }
+  .timeline .when { font-weight: 700; color: var(--red); display: block; font-size: 13.5px; }
+  .timeline .what { font-size: 14px; }
+
+  /* ===== 逐小时时间线 ===== */
+  .hourline { margin: 14px 0; }
+  .hourline .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 14px 0; overflow: hidden;
+  }
+  .hourline .day-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: linear-gradient(90deg, var(--head-bg), transparent);
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .hourline .day-head .d-date { font-weight: 800; color: var(--red); font-size: 15.5px; }
+  .hourline .day-head .d-desc { color: var(--ink); font-size: 13.5px; }
+  .hourline .day-head .d-tag {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 11.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .hourline .day-head .d-tag.alt { background: var(--blue); }
+  .hourline .day-head .d-tag.return { background: #2e7d32; }
+  .hourline .day-head .d-tag.night { background: #5a3ea8; }
+  .hourline table { margin: 0; border: none; }
+  .hourline th { background: transparent; color: var(--muted); font-size: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .hourline td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px dashed var(--line); vertical-align: top; }
+  .hourline tbody tr:last-child td { border-bottom: none; }
+  .hourline tbody tr:nth-child(even) { background: var(--bg); }
+  .hourline td.t-time { white-space: nowrap; font-weight: 700; color: var(--blue); font-variant-numeric: tabular-nums; }
+  .hourline td.t-what { color: var(--ink); }
+  .hourline td.t-what b { color: var(--red); }
+  .hourline .hl-note { font-size: 12.5px; color: var(--muted); padding: 8px 16px; border-top: 1px solid var(--line); background: var(--bg); }
+
+  .gear { columns: 2; column-gap: 26px; }
+  .gear h3 { break-inside: avoid; margin-top: 8px; }
+  .gear ul { list-style: none; padding-left: 0; }
+  .gear ul li { padding-left: 20px; position: relative; font-size: 13.8px; }
+  .gear ul li::before { content: "✓"; position: absolute; left: 0; color: var(--red-light); font-weight: 700; }
+
+  .route-chain {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 8px; margin: 14px 0; font-size: 14.5px;
+  }
+  .route-chain .node {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 16px; font-weight: 600; color: var(--blue);
+  }
+  .route-chain .node.hl { background: var(--red); color: #fff; border-color: var(--red); }
+  .route-chain .arrow { color: var(--gold); font-weight: 700; }
+
+  footer { margin-top: 50px; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12.5px; text-align: center; }
+  @media (max-width: 1080px) {
+    .page { display: block; padding: 0; }
+    .side-nav { display: none; }
+    .wrap { margin: 0 auto; }
+  }
+  @media (max-width: 860px) {
+    .map-wrap { flex-direction: column; }
+    .map-sidebar { width: 100%; max-height: none; }
+    header .cover { height: 240px; }
+    header .cover .cover-inner { padding: 40px 20px 52px; }
+    header h1 { font-size: 27px; }
+    header .cover img.cover-img { object-position: center 55%; }
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 22px; }
+    .gear { columns: 1; }
+  }
+  @media print {
+    body { background: #fff; }
+    nav.toc, header .meta, .side-nav { display: none; }
+    section { break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cover">
+    <img class="cover-img" src="images/uae/uae-cover.jpg" alt="阿联酋旅游" loading="eager">
+    <div class="cover-inner">
+      <div class="kicker">2026 · 9 天三城 · 迪拜 + 阿布扎比 + 沙迦</div>
+      <h1>阿联酋 9 天全景攻略</h1>
+      <div class="sub">北京 ⇄ 迪拜 · 哈利法塔与帆船酒店 · 阿布扎比清真寺 · 沙漠冲沙</div>
+      <div class="meta">
+        <span>🛫 行程链：北京 → 迪拜 → 阿布扎比 → 沙迦 → 迪拜 → 返程</span>
+        <span>📅 时间窗口：9 天 8 晚（11 月–次年 3 月最佳）</span>
+        <span>✈️ 北京⇄迪拜直飞约 8.5 小时</span>
+        <span>🛂 签证：中国护照免签 30 天（2025.4 起放宽为 180 天内累计 90 天）</span>
+        <span>🕐 时差 -4 小时 · 🔌 电压 230V G 型插座（英标三脚）</span>
+        <span>🗓 版本：2026-08-09</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <aside class="side-nav" id="sideNav">
+    <div class="sn-title">📖 章节导航</div>
+    <div class="sn-progress"><div class="sn-progress-bar" id="snProgress"></div></div>
+    <nav class="sn-list">
+      <div class="sn-group">
+        <div class="sn-g-title">行程规划</div>
+        <div class="sn-g-body">
+          <a href="#s1" data-sp="s1"><span class="sn-no">1</span>核心结论</a><ul class="sn-sub" data-sub="s1"></ul>
+          <a href="#s2" data-sp="s2"><span class="sn-no">2</span>推荐行程 · 9 天版</a><ul class="sn-sub" data-sub="s2"></ul>
+          <a href="#s3" data-sp="s3"><span class="sn-no">3</span>逐小时时间线</a><ul class="sn-sub" data-sub="s3"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">沿途看点</div>
+        <div class="sn-g-body">
+          <a href="#s4" data-sp="s4"><span class="sn-no">4</span>景点图鉴</a><ul class="sn-sub" data-sub="s4"></ul>
+          <a href="#s5" data-sp="s5"><span class="sn-no">5</span>路线地图</a><ul class="sn-sub" data-sub="s5"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">费用备选</div>
+        <div class="sn-g-body">
+          <a href="#s6" data-sp="s6"><span class="sn-no">6</span>预算明细</a><ul class="sn-sub" data-sub="s6"></ul>
+          <a href="#s7" data-sp="s7"><span class="sn-no">7</span>备选方案</a><ul class="sn-sub" data-sub="s7"></ul>
+        </div>
+      </div>
+      <div class="sn-group">
+        <div class="sn-g-title">准备与应对</div>
+        <div class="sn-g-body">
+          <a href="#s8" data-sp="s8"><span class="sn-no">8</span>交通与住宿</a><ul class="sn-sub" data-sub="s8"></ul>
+          <a href="#s9" data-sp="s9"><span class="sn-no">9</span>美食清单</a><ul class="sn-sub" data-sub="s9"></ul>
+          <a href="#s10" data-sp="s10"><span class="sn-no">10</span>出行贴士</a><ul class="sn-sub" data-sub="s10"></ul>
+        </div>
+      </div>
+    </nav>
+    <a class="sn-back" href="#">↑ 回到顶部</a>
+  </aside>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">核心结论</a></li>
+      <li><a href="#s2">推荐行程 · 9 天版</a></li>
+      <li><a href="#s3">逐小时时间线</a></li>
+      <li><a href="#s4">景点图鉴</a></li>
+      <li><a href="#s5">路线地图</a></li>
+      <li><a href="#s6">预算明细（三档）</a></li>
+      <li><a href="#s7">备选方案</a></li>
+      <li><a href="#s8">交通与住宿</a></li>
+      <li><a href="#s9">美食清单</a></li>
+      <li><a href="#s10">出行贴士</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 1 ============ -->
+  <section id="s1">
+    <h2 class="sec"><span class="no">1</span>核心结论</h2>
+
+    <div class="route-chain">
+      <span class="node node hl">北京</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">迪拜</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">阿布扎比</span>
+      <span class="arrow">→</span>
+      <span class="node">沙迦</span>
+      <span class="arrow">→</span>
+      <span class="node node hl">迪拜返程</span>
+    </div>
+
+<div class="callout key">
+      <span class="t">🏙 9 天怎么安排最合理</span>
+      阿联酋是「<strong>沙漠与霓虹共生</strong>」的目的地——迪拜拼高度与豪气，阿布扎比拼文化与大气，沙迦拼市井与烟火。9 天刚好把三座城市一次走完：迪拜 5 天覆盖哈利法塔、帆船酒店、棕榈岛与沙漠冲沙，阿布扎比 3 天留给大清真寺、卢浮宫与法拉利世界，最后 1 天购物返程。<strong>节奏上迪拜放慢、阿布扎比集中</strong>，城际自驾/包车约 1.5 小时，全程不折腾。
+    </div>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>事项</th>
+<th>结论</th>
+</tr></thead><tbody>
+<tr>
+<td>事项</td>
+<td>结论</td>
+</tr>
+<tr>
+<td>签证（最省心）</td>
+<td>中国护照<strong>免签 30 天</strong>（2025 年 4 月起调整为 180 天内累计 90 天），无需任何材料，护照有效期 6 个月以上即可</td>
+</tr>
+<tr>
+<td>推荐方案</td>
+<td>迪拜 5 天（市区地标+海岸+沙漠）+ 阿布扎比 3 天（文化+乐园）+ 沙迦 1 天购物返程</td>
+</tr>
+<tr>
+<td>最佳季节</td>
+<td>11 月–次年 3 月（白天 20–30℃ 舒适）；6–9 月极热（40℃+）且奇迹花园闭园</td>
+</tr>
+<tr>
+<td>行程链</td>
+<td>北京 → 迪拜 → 阿布扎比 → 沙迦 → 迪拜 → 返程</td>
+</tr>
+<tr>
+<td>预算（人均）</td>
+<td>经济 10000–15000 ／ 标准 18000–26000 ／ 舒适 45000–65000（人民币）</td>
+</tr>
+<tr>
+<td>三件提前事</td>
+<td>① 订往返机票（提前 45 天，淡季往返 3500–4500 元）② 订哈利法塔/法拉利世界门票 ③ 预订沙漠冲沙与酒店</td>
+</tr>
+<tr>
+<td>时差与电源</td>
+<td>时差 -4 小时；电压 230V，<strong>G 型英标三脚插座</strong>，必须带转换头</td>
+</tr>
+<tr>
+<td>货币与支付</td>
+<td>1 迪拉姆 ≈ 1.95 元人民币；信用卡/Apple Pay 几乎通用，换少量现金备用即可</td>
+</tr>
+</tbody></table></div>
+
+<div class="callout warn">
+      <span class="t">⚠️ 两个容易忽略的点</span>
+      ① <strong>免签不等于无门槛</strong>：入境需出示返程机票与全程酒店预订单，建议随身带约 1000 美元等值现金以备抽查；若 180 天内累计停留超 90 天，超出部分每天罚款 50 迪拉姆。② 阿联酋是穆斯林国家，<strong>着装与行为要收敛</strong>：进大清真寺必须长衣长裤、女性戴头巾（门口免费借黑袍）；斋月期间白天禁食禁烟、多数餐厅白天不营业，行程尽量避开斋月。
+    </div>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="s2">
+    <h2 class="sec"><span class="no">2</span>推荐行程 · 9 天版</h2>
+
+    <p>以下为 9 天 8 晚的推荐节奏：迪拜 5 天（先市区地标、再海岸与沙漠），第 6 天转场阿布扎比 3 天，最后 1 天沙迦购物返程。每日主景点 ≤2 个，城际交通以自驾/包车为主。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>日期</th>
+<th>行程</th>
+<th>过夜地</th>
+<th>主题</th>
+</tr></thead><tbody>
+<tr>
+<td>D1 抵迪拜</td>
+<td>北京✈迪拜（约 8.5h），入境免签+虹膜扫描，入住市中心/码头，傍晚朱美拉海滩看帆船日落</td>
+<td>迪拜</td>
+<td>抵达+预热</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>哈利法塔 At The Top → 迪拜购物中心 Dubai Mall → 迪拜喷泉夜景</td>
+<td>迪拜</td>
+<td>都市地标</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>帆船酒店外观+朱美拉海滩 → 棕榈岛轻轨 → 亚特兰蒂斯水世界/失落的空间</td>
+<td>迪拜</td>
+<td>海岸与豪奢</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>阿法迪老城 → 黄金市场+香料市场 → 阿布拉木船渡湾 → 奇迹花园（冬季）</td>
+<td>迪拜</td>
+<td>老城烟火</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>沙漠冲沙：冲沙+骑骆驼+滑沙+BBQ 晚餐与表演（约 6 小时）</td>
+<td>迪拜</td>
+<td>沙漠日</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>迪拜→阿布扎比：谢赫扎耶德大清真寺（傍晚最美）→ 滨海大道散步</td>
+<td>阿布扎比</td>
+<td>转场+清真寺</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>卢浮宫阿布扎比 → 萨迪亚特岛 → 亚斯岛（法拉利世界外观/码头）</td>
+<td>阿布扎比</td>
+<td>文化日</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>法拉利世界全天（Formula Rossa）或 亚斯水世界 → 酋长国宫殿外观</td>
+<td>阿布扎比</td>
+<td>乐园日</td>
+</tr>
+<tr>
+<td>D9 返程</td>
+<td>阿布扎比→沙迦（蓝市场/黄金市场购物）→ 迪拜机场免税店 → 迪拜✈北京</td>
+<td>沙迦/迪拜</td>
+<td>购物+收尾</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout info">
+      <span class="t">🧭 路线可调原则</span>
+      夏天（6–9 月）奇迹花园闭园，D4 可改室内活动（迪拜Mall 水族馆、IMG 冒险乐园）；带娃家庭把亚特兰蒂斯水世界与法拉利世界取舍其一；时间紧可把沙迦压缩为半天，最后一天全留给机场免税店。11 月–3 月是旺季，机票酒店提前 1–2 个月订。
+    </div>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="s3">
+    <h2 class="sec"><span class="no">3</span>逐小时时间线</h2>
+
+    <p>以下为 9 天全程的逐小时执行时间线，可当作「当天打开照着走」的清单。标注 <b>※</b> 的可选项视体力与天气取舍。</p>
+
+    <div class="hourline">
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D1 · 抵达迪拜</span>
+          <span class="d-desc">入住市中心/码头</span>
+          <span class="d-tag alt">🛫 抵达日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">00:40–05:30</td><td class="t-what">北京✈迪拜（阿联酋航空 EK307 直飞约 8.5h，凌晨起飞、当地时间清晨到达）</td></tr>
+          <tr><td class="t-time">06:30–09:00</td><td class="t-what">入境：免签刷护照+虹膜扫描（IRIS），取行李后打车/Careem 到市中心酒店</td></tr>
+          <tr><td class="t-time">10:00–13:00</td><td class="t-what">入住补觉，下午醒来适应时差（北京比迪拜快 4 小时）</td></tr>
+          <tr><td class="t-time">16:00–19:00</td><td class="t-what"><b>朱美拉海滩</b>（免费）：白沙+帆船酒店日落剪影，迪拜第一张照片</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what">市中心/码头晚餐，夜晚城市灯光初体验</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">迪拜凌晨到达是常态，酒店一般可提前入住或寄存行李；机场到市中心打车约 AED 60–90（约 120–180 元）。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D2 · 哈利法塔 + 迪拜Mall</span>
+          <span class="d-desc">都市地标一日</span>
+          <span class="d-tag ">🏙 都市日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–10:30</td><td class="t-what"><b>迪拜购物中心 Dubai Mall</b>（免费）：全球最大商场，先逛水族馆外墙与瀑布装置</td></tr>
+          <tr><td class="t-time">10:30–12:30</td><td class="t-what"><b>哈利法塔 At The Top</b>（124/125 层）：非高峰时段线上约 AED 169–199，提前官网订</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">Dubai Mall 内午餐：美食广场全球 150+ 国家菜</td></tr>
+          <tr><td class="t-time">14:00–17:30</td><td class="t-what">逛街/溜冰场/VR 公园；可加购<b>迪拜水族馆</b>（联票约 AED 329）</td></tr>
+          <tr><td class="t-time">18:30–20:30</td><td class="t-what"><b>迪拜喷泉 Dubai Fountain</b>（免费）：每 30 分钟一场，晚 6 点后最佳，喷泉+哈利法塔灯光秀</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">哈利法塔日落时段（16:00–19:00）票价贵一倍且常售罄；傍晚先看喷泉、天黑后再上楼看夜景，性价比更高。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D3 · 帆船酒店 + 棕榈岛</span>
+          <span class="d-desc">海岸与豪奢一日</span>
+          <span class="d-tag ">🏖 海岸日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:00</td><td class="t-what"><b>朱美拉海滩/帆船酒店</b>（外观免费）：对岸 Jumeirah Beach 是最佳拍照点</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>棕榈岛轻轨 Monorail</b>（往返约 AED 30）：进岛沿途俯瞰棕榈叶与海滨别墅</td></tr>
+          <tr><td class="t-time">13:00–15:30</td><td class="t-what"><b>亚特兰蒂斯</b>：失落的空间水族馆（The Lost Chambers）或水世界冒险乐园（成人约 AED 320–350）</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what"><b>棕榈岛观景台 The View</b>（52 层，约 AED 100+）俯瞰全岛与天际线</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">迪拜码头 Marina 晚餐，游艇与高楼夜景</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">亚特兰蒂斯水世界+失落的空间可买联票（约 AED 370）；身高 1.2 米以下儿童票更便宜，3 岁以下免费。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D4 · 老城 + 黄金市场 + 奇迹花园</span>
+          <span class="d-desc">老城烟火一日</span>
+          <span class="d-tag ">🏮 老城日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:00–11:30</td><td class="t-what"><b>阿法迪历史街区 Al Fahidi</b>（免费）：风塔老宅、迪拜博物馆（约 AED 3，超便宜）</td></tr>
+          <tr><td class="t-time">11:30–13:00</td><td class="t-what"><b>黄金市场 Gold Souk + 香料市场</b>（免费）：黄金按克计价，砍价空间大</td></tr>
+          <tr><td class="t-time">13:00–13:30</td><td class="t-what"><b>阿布拉木船 Abra</b>（约 AED 1）：横渡迪拜湾，最便宜的地道体验</td></tr>
+          <tr><td class="t-time">15:00–18:00</td><td class="t-what"><b>奇迹花园</b>（冬季开放，成人约 AED 105）：1.5 亿朵鲜花拼成的巨型花海</td></tr>
+          <tr><td class="t-time">19:00</td><td class="t-what">晚餐：老城区阿拉伯菜/波斯烤肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">奇迹花园 6–9 月闭园（夏季高温），冬季行程必去；黄金市场购物记得砍到心理价位再买单。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D5 · 沙漠冲沙</span>
+          <span class="d-desc">红沙丘越野 + BBQ 晚宴</span>
+          <span class="d-tag alt">🏜 沙漠日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">15:00–16:00</td><td class="t-what">酒店接送（拼团含接送），前往拉巴卜红沙区</td></tr>
+          <tr><td class="t-time">16:30–18:30</td><td class="t-what"><b>沙漠冲沙 dune bashing</b>（约 45 分钟）：越野车翻越沙丘，肾上腺素项目</td></tr>
+          <tr><td class="t-time">18:30–19:30</td><td class="t-what">骑骆驼+滑沙+沙漠营地（含阿拉伯服装拍照，免费项目）</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what"><b>BBQ 晚餐 + 肚皮舞/火舞表演</b></td></tr>
+          <tr><td class="t-time">21:30</td><td class="t-what">送回酒店（拼团约 AED 120–250/人，私享越野车约 AED 650+/车）</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">冲沙颠簸较大，晕车人士慎选；夏季（6–9 月）沙漠炎热，务必选傍晚场次。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D6 · 转场阿布扎比 + 大清真寺</span>
+          <span class="d-desc">谢赫扎耶德大清真寺</span>
+          <span class="d-tag ">🕌 清真寺日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–10:00</td><td class="t-what">迪拜→阿布扎比（自驾 E11 高速约 1.5h / 包车）</td></tr>
+          <tr><td class="t-time">10:30–12:00</td><td class="t-what">入住阿布扎比酒店（滨海/市中心区域）</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">午餐+休息（中午热，室内躲高温）</td></tr>
+          <tr><td class="t-time">16:00–19:00</td><td class="t-what"><b>谢赫扎耶德大清真寺</b>（免费，需官网预约）：白色大理石+金箔穹顶，傍晚光线最美</td></tr>
+          <tr><td class="t-time">19:30–21:00</td><td class="t-what"><b>滨海大道 Corniche</b>（免费）散步，或阿联酋传统晚餐</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">大清真寺着装严格：女性头巾+长衣、男性长裤；周五 12:00–15:00 祈祷时段闭馆。门口免费借黑袍。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D7 · 卢浮宫阿布扎比 + 亚斯岛</span>
+          <span class="d-desc">文化 + 亚斯岛</span>
+          <span class="d-tag ">🎨 文化日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–12:30</td><td class="t-what"><b>卢浮宫阿布扎比</b>（成人 AED 70，18 岁以下免费）：光之穹顶下穿越文明史</td></tr>
+          <tr><td class="t-time">12:30–14:00</td><td class="t-what">萨迪亚特岛午餐</td></tr>
+          <tr><td class="t-time">14:30–17:30</td><td class="t-what"><b>亚斯岛 Yas Island</b>：法拉利世界外观/亚斯码头/华纳兄弟世界（选一）</td></tr>
+          <tr><td class="t-time">18:00–20:00</td><td class="t-what">亚斯码头夜景/晚餐：看 F1 赛道与法拉利世界红色屋顶</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">卢浮宫周一闭馆，安排行程时注意避开；18 岁以下免费，非常适合亲子。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D8 · 法拉利世界</span>
+          <span class="d-desc">世界最快过山车</span>
+          <span class="d-tag alt">🎢 乐园日</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">09:30–15:30</td><td class="t-what"><b>法拉利世界</b>全天（成人线上约 AED 295–345）：Formula Rossa 世界最快过山车 240km/h + 40+ 项目</td></tr>
+          <tr><td class="t-time">15:30–17:00</td><td class="t-what">或改选<b>亚斯水世界</b>（夏季更舒服）</td></tr>
+          <tr><td class="t-time">17:30–19:00</td><td class="t-what"><b>酋长国宫殿酒店</b>外观（八星级）与阿布扎比天际线拍照</td></tr>
+          <tr><td class="t-time">19:30</td><td class="t-what">晚餐：阿布扎比滨海餐厅/烤羊肉</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">法拉利世界是室内乐园全空调，夏季游玩首选；门票官网提前 1 天订比现场便宜约 AED 50。</div>
+      </div>
+      <div class="day">
+        <div class="day-head">
+          <span class="d-date">D9 · 沙迦购物返程</span>
+          <span class="d-desc">沙迦 + 迪拜机场</span>
+          <span class="d-tag return">🛍 购物返程</span>
+        </div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>时间</th><th>事项</th></tr></thead><tbody>
+          <tr><td class="t-time">08:30–09:30</td><td class="t-what">阿布扎比→沙迦（约 1.5h），先看<b>沙迦蓝市场/黄金市场</b></td></tr>
+          <tr><td class="t-time">09:30–11:30</td><td class="t-what">沙迦老城+艺术区（免费）：比迪拜更市井的购物氛围</td></tr>
+          <tr><td class="t-time">12:00–14:00</td><td class="t-what">返迪拜机场路上午餐</td></tr>
+          <tr><td class="t-time">14:30–16:00</td><td class="t-what">迪拜机场免税店最后一站（香水/椰枣/藏红花）</td></tr>
+          <tr><td class="t-time">17:00–01:00</td><td class="t-what">迪拜✈北京（直飞约 8.5h），次日清晨到家</td></tr>
+          </tbody></table></div>
+        <div class="hl-note">沙迦距迪拜机场约 30–40 分钟，安排在返程日最顺路；机场免税店 3 层中庭常有大促。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="s4">
+    <h2 class="sec"><span class="no">4</span>景点图鉴</h2>
+
+    <p>必去（<span class="badge must">必去</span>）/ 顺路（<span class="badge nice">顺路</span>）/ 可跳过（<span class="badge skip">可跳过</span>）。</p>
+
+    <div class="gallery">
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-cover.jpg" alt="哈利法塔 At The Top" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">哈利法塔 At The Top <small>AED 169 起</small></div>
+          <div class="sc-feat">世界最高建筑。<b>124/125 层观景台 + 迪拜喷泉</b>，日落黄金段最抢手。</div>
+          <div class="sc-meta">📅 10:00–20:00 · ⏱ 2–3h · 🚇 地铁 Burj Khalifa/Dubai Mall</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-2.jpg" alt="帆船酒店·朱美拉海滩" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">帆船酒店·朱美拉海滩 <small>外观免费</small></div>
+          <div class="sc-feat">七星级帆船造型。<b>日落剪影 + 白色沙滩</b>，迪拜名片。</div>
+          <div class="sc-meta">📅 全天 · ⏱ 1–2h · 🚗 打车/公交 Jumeirah</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-3.jpg" alt="棕榈岛·亚特兰蒂斯" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">棕榈岛·亚特兰蒂斯 <small>水世界 AED 320 起</small></div>
+          <div class="sc-feat">人工棕榈岛。<b>亚特兰蒂斯水世界 + 失落的空间</b>，亲子必去。</div>
+          <div class="sc-meta">📅 10:00–18:30 · ⏱ 4–6h · 🚝 棕榈岛轻轨</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-4.jpg" alt="沙漠冲沙" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">沙漠冲沙 <small>AED 120 起</small></div>
+          <div class="sc-feat">红沙丘越野。<b>冲沙 + 骆驼 + BBQ 晚宴</b>，阿联酋灵魂体验。</div>
+          <div class="sc-meta">📅 下午 15:00 出发 · ⏱ 约 6h · 🚐 含接送</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-5.jpg" alt="谢赫扎耶德大清真寺" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">谢赫扎耶德大清真寺 <small>免费（需预约）</small></div>
+          <div class="sc-feat">82 座圆顶纯白清真寺。<b>大理石 + 金箔书法</b>，傍晚最美。</div>
+          <div class="sc-meta">📅 9:00–22:00（周五 16:30 起） · ⏱ 2h · 🚗 阿布扎比市中心</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-6.jpg" alt="卢浮宫阿布扎比" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">卢浮宫阿布扎比 <small>AED 70（18 岁以下免费）</small></div>
+          <div class="sc-feat">光之穹顶博物馆。<b>跨文明收藏 + 几何光影</b>，周一闭馆。</div>
+          <div class="sc-meta">📅 10:00–20:30 · ⏱ 3h · 🚌 萨迪亚特岛</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-7.jpg" alt="迪拜老城·黄金市场" loading="lazy"><span class="sc-tag nice">顺路</span></div>
+        <div class="sc-body">
+          <div class="sc-name">迪拜老城·黄金市场 <small>免费</small></div>
+          <div class="sc-feat">百年市井。<b>黄金香料市场 + 阿布拉木船</b>，阿联酋的另一面。</div>
+          <div class="sc-meta">📅 10:00–22:00 · ⏱ 2–3h · 🚇 地铁 Gold Souq</div>
+        </div>
+      </div>
+      <div class="spot-card">
+        <div class="sc-img"><img src="images/uae/uae-1.jpg" alt="迪拜喷泉·夜景" loading="lazy"><span class="sc-tag must">必去</span></div>
+        <div class="sc-body">
+          <div class="sc-name">迪拜喷泉·夜景 <small>免费</small></div>
+          <div class="sc-feat">全球最大音乐喷泉。<b>水舞 + 哈利法塔灯光秀</b>，每 30 分钟一场。</div>
+          <div class="sc-meta">📅 18:00–23:00 · ⏱ 1h · 🚇 地铁 Dubai Mall</div>
+        </div>
+      </div>
+    </div><p class="gallery-note">图片为 Unsplash 主题图（哈利法塔、帆船酒店、棕榈岛、沙漠冲沙、大清真寺、卢浮宫阿布扎比、迪拜老城、迪拜夜景等均为阿联酋实景），用于页面配图。更多免费景点：朱美拉海滩、滨海大道、阿法迪历史街区、阿布拉木船、亚斯码头。</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="s5">
+    <h2 class="sec"><span class="no">5</span>路线地图</h2>
+
+    <p class="map-note">点击左侧节点可在地图上定位；点击地图 marker 会高亮对应节点。坐标为 WGS-84 转 GCJ-02 纠偏后标注。</p>
+
+    <div class="map-wrap">
+      <div id="mapMain" class="map-container"></div>
+      <aside class="map-sidebar" id="sidebarMain"></aside>
+    </div>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="s6">
+    <h2 class="sec"><span class="no">6</span>预算明细（三档）</h2>
+
+    <p>以下为<strong>单人、不含购物</strong>的估算，人民币计价；出发地基准<strong>北京</strong>。汇率按 1 迪拉姆 ≈ 1.95 元人民币估算。往返机票按淡季 4000–5500 元计。阿联酋酒店普遍收取旅游税（约 AED 15–20/晚），未计入下表。</p>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>项目</th>
+<th>经济（10000–15000）</th>
+<th>标准（18000–26000）</th>
+<th>舒适（45000–65000）</th>
+</tr></thead><tbody>
+<tr>
+<td>往返机票</td>
+<td>北京⇄迪拜 3800–4500</td>
+<td>灵活时段 5000–7000</td>
+<td>商务/好时段直飞 12000–18000</td>
+</tr>
+<tr>
+<td>住宿（8 晚）</td>
+<td>民宿/经济酒店 250–400/晚</td>
+<td>四星酒店 700–1200/晚</td>
+<td>五星/棕榈岛度假 2000–4000/晚</td>
+</tr>
+<tr>
+<td>交通（城际）</td>
+<td>拼车+地铁 800–1200</td>
+<td>城际包车/租车 1500–2500</td>
+<td>全程包车+接送机 4000–6000</td>
+</tr>
+<tr>
+<td>门票体验</td>
+<td>清真寺+卢浮宫等 1000–1500</td>
+<td>哈利法塔+冲沙+法拉利 3000–4000</td>
+<td>全含+私享冲沙+快通 8000–12000</td>
+</tr>
+<tr>
+<td>餐饮（9 天）</td>
+<td>快餐+美食街 1800–2500</td>
+<td>正常餐厅 3500–5000</td>
+<td>Fine dining/棕榈岛 9000–15000</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout key">
+      <span class="t">💰 标准档示例账单（人均约 22000 元）</span>
+      往返机票 6000 + 住宿 8 晚 8000（平均 1000/晚）+ 城际包车 1800 + 门票体验 3200 + 餐饮 4000 ≈ <strong>22000–26000 元</strong>。大头是住宿；哈利法塔、冲沙、法拉利三张票约占门票预算 70%，提前官网订能省 10–15%。
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="s7">
+    <h2 class="sec"><span class="no">7</span>备选方案</h2>
+
+    <h3>9.1 只看迪拜的 5 天版</h3>
+
+
+    <ul>
+
+      <li>D1 抵达+朱美拉海滩</li>
+
+      <li>D2 哈利法塔+迪拜Mall+喷泉</li>
+
+      <li>D3 帆船酒店+棕榈岛亚特兰蒂斯</li>
+
+      <li>D4 老城黄金市场+奇迹花园</li>
+
+      <li>D5 沙漠冲沙+返程</li>
+
+    </ul>
+
+    <h3>9.2 亲子版调整</h3>
+
+
+    <p>带娃推荐：棕榈岛亚特兰蒂斯水世界+失落的空间（可玩一天）、迪拜水族馆、亚斯水世界、法拉利世界按身高取舍；卢浮宫 18 岁以下免费很值得带。尽量避开 6–9 月出行——奇迹花园闭园且户外极热。3 岁以下多数景点免费。</p>
+
+    <h3>9.3 冬季豪华版（11–3 月）</h3>
+
+
+    <p>旺季升级：哈利法塔 SKY 148 层（AED 399 起）+ 阿玛尼酒店下午茶；帆船酒店 Al Mahara 海底餐厅晚餐；沙漠私享营地过夜（AED 1200–2800/人）；阿布扎比加酋长国宫殿下午茶。11–3 月价格最高，务必提前 1–2 个月锁房。</p>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="s8">
+    <h2 class="sec"><span class="no">8</span>交通与住宿</h2>
+
+    <h3>8.1 北京 ⇄ 阿联酋 交通</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>方式</th>
+<th>时长</th>
+<th>参考价</th>
+<th>备注</th>
+</tr></thead><tbody>
+<tr>
+<td>直飞（推荐）</td>
+<td>北京→迪拜约 8.5h</td>
+<td>往返 3500–4500 元（淡季）</td>
+<td>阿联酋航空 EK307/EK309、国航 CA941/CA945，迪拜国际机场 DXB</td>
+</tr>
+<tr>
+<td>转机</td>
+<td>11–18h</td>
+<td>2800–4200 元</td>
+<td>经多哈/曼谷/伊斯坦布尔，票价略低但费时</td>
+</tr>
+<tr>
+<td>迪拜—阿布扎比</td>
+<td>高速约 1.5h</td>
+<td>打车约 300–450 元/程</td>
+<td>E11 高速，包车或租车最方便</td>
+</tr>
+</tbody></table></div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 阿联酋境内交通核心提醒</span>
+      迪拜↔阿布扎比↔沙迦三角车程都在 30–90 分钟，<strong>包车或租车体验最佳</strong>（右舵驾驶需国际驾照翻译件）；迪拜市内地铁红线覆盖机场、市中心、老城，打车用 Careem/Uber；周五午后祈祷时段部分路段车流大，行程留出缓冲。
+    </div>
+
+    <h3>8.2 阿联酋境内交通</h3>
+    <ul>
+      <li><strong>城际包车/租车</strong>：迪拜—阿布扎比 E11 高速约 1.5h，全天包车约 800–1500 元</li>
+      <li><strong>迪拜地铁红线</strong>：覆盖机场—市中心—老城—棕榈岛入口，单程 AED 3–7，Nol 卡通用</li>
+      <li><strong>棕榈岛轻轨 Monorail</strong>：Gate Way 进岛约 AED 30 往返，看棕榈叶全貌</li>
+      <li><strong>阿布拉木船 Abra</strong>：横渡迪拜湾约 AED 1，老城最便宜体验</li>
+      <li><strong>出租车/Careem</strong>：起步约 AED 12（约 23 元），跨城与夜间加价</li>
+      <li><strong>阿布扎比市内</strong>：公交/旅游巴士到卢浮宫与亚斯岛，或打车（市区内约 AED 30–50）</li>
+    </ul>
+
+    <h3>8.3 住宿区域推荐</h3>
+
+<div class="table-scroll"><table>
+<thead><tr>
+<th>区域</th>
+<th>价格/晚</th>
+<th>优点</th>
+<th>短板</th>
+</tr></thead><tbody>
+<tr>
+<td>迪拜·市中心/Dubai Mall</td>
+<td>标准 800–2000 / 舒适 2000+</td>
+<td>哈利法塔、喷泉步行可达</td>
+<td>旺季贵，停车贵</td>
+</tr>
+<tr>
+<td>迪拜·码头 Marina/JBR</td>
+<td>标准 700–1500</td>
+<td>海边+餐厅多，夜景美</td>
+<td>离老城远</td>
+</tr>
+<tr>
+<td>迪拜·老城 Deira/Bur</td>
+<td>经济 300–600</td>
+<td>物价低、市井烟火、黄金市场旁</td>
+<td>酒店偏旧</td>
+</tr>
+<tr>
+<td>阿布扎比·市中心/滨海</td>
+<td>标准 600–1500</td>
+<td>大清真寺、滨海大道近</td>
+<td>到亚斯岛需打车约 20 分钟</td>
+</tr>
+<tr>
+<td>阿布扎比·亚斯岛</td>
+<td>标准 900–2000 / 舒适 2000+</td>
+<td>乐园酒店常送门票</td>
+<td>度假区餐饮选择少</td>
+</tr>
+<tr>
+<td>棕榈岛·亚特兰蒂斯</td>
+<td>舒适 2500–5000</td>
+<td>住客水世界+水族馆免费</td>
+<td>价格高昂，需提前 1 个月订</td>
+</tr>
+</tbody></table></div>
+  </section>
+
+  <!-- ============ 9 ============ -->
+  <section id="s9">
+    <h2 class="sec"><span class="no">9</span>美食清单</h2>
+
+        <div class="gear">
+      <div>
+        <h3>🍛 必吃经典</h3>
+        <ul>
+          <li>阿拉伯烤肉：烤羊排、卡巴烤肉串</li>
+          <li>中东美食：鹰嘴豆泥 hummus、法拉费 falafel、沙威玛</li>
+          <li>波斯烤肉+藏红花米饭</li>
+          <li>阿拉伯咖啡 Qahwa + 椰枣</li>
+        </ul>
+        <h3>🥘 在地名物</h3>
+        <ul>
+          <li>阿联酋传统：Machboos 香料焖饭（鸡/羊）</li>
+          <li>骆驼肉汉堡（市中心特色店）</li>
+          <li>海鲜：波斯湾烤鱼、黄油龙虾</li>
+          <li>迪拜 Mall 美食街：全球 150+ 国家菜一站吃</li>
+        </ul>
+      </div>
+      <div>
+        <h3>🍢 街头小吃</h3>
+        <ul>
+          <li>沙瓦玛 shawarma 卷饼（AED 10–20）</li>
+          <li>马拉瓦饼+奶酪（老城区）</li>
+          <li>阿拉伯甜点：炸糖丸 luqaimat、果仁千层酥</li>
+          <li>鲜榨石榴汁/甘蔗汁</li>
+        </ul>
+        <h3>📍 去哪吃</h3>
+        <ul>
+          <li>老城区 Al Fahidi 附近的阿拉伯餐馆</li>
+          <li>朱美拉海滩路海景餐厅带</li>
+          <li>阿布扎比滨海大道海边餐厅</li>
+          <li>迪拜 Mall 与亚斯岛美食广场</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="t">⚠️ 美食防坑</span>
+      ① 商场美食街的沙瓦玛和烤肉性价比最高，别只盯网红店；② 斋月期间白天餐馆多不营业，出行前查伊斯兰历；③ 海鲜餐厅注意「时价」菜单；④ 饮用水一律喝瓶装水（当地自来水不可直饮），沙漠营地饮用水管够。
+    </div>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section id="s10">
+    <h2 class="sec"><span class="no">10</span>出行贴士</h2>
+
+    <h3>10.1 行前清单</h3>
+    <div class="gear">
+      <ul>
+        <li>护照（有效期 6 个月以上）</li>
+        <li>免签入境：返程机票+酒店订单打印件</li>
+        <li>电源转换头（G 型英标三脚）+ 230V 适配</li>
+        <li>少量迪拉姆现金（商场基本刷卡/Apple Pay）</li>
+      </ul>
+      <ul>
+        <li>防晒：SPF50+ 防晒霜、墨镜、遮阳帽</li>
+        <li>长衣长裤+头巾（大清真寺着装）</li>
+        <li>哈利法塔/法拉利世界门票提前官网订</li>
+        <li>下载 Careem/Uber、Google 地图离线包</li>
+      </ul>
+    </div>
+
+    <h3>10.2 防踩坑</h3>
+    <div class="callout info">
+      <span class="t">🧳 四条提醒</span>
+      ① <strong>免签入境≠无门槛</strong>：返程机票、酒店预订单、约 1000 美元等值现金建议随身带，遇抽查配合即可；② <strong>着装与习俗</strong>：公共场合穿太暴露易被提醒，进清真寺必须长衣长裤、女性戴头巾，公共场合避免过于亲昵；③ <strong>气候</strong>：6–9 月白天气温 40℃+，户外行程一律排早晚，中午进商场/乐园吹空调；④ 打车认准计价器与正规平台（Careem/Uber），街边「议价司机」容易多收。
+    </div>
+
+    <div class="callout key">
+      <span class="t">🌟 一句话总结</span>
+      阿联酋是「<strong>沙漠底色上的超级城市实验</strong>」——迪拜的哈利法塔与帆船酒店、阿布扎比的白玉清真寺与光之穹顶、沙迦的黄金市井，9 天刚好串成一条「三城记」。免签入境、城际 1.5 小时、室内乐园足够大，是省心的中东之选；带好转换头与长衣长裤，剩下的就是跟着空调与霓虹慢慢逛。
+    </div>
+  </section>
+
+  <footer>
+    本方案信息基于 2026-08 网络公开资料整理。价格、班次、开放政策会变化，出行前 1 个月请重新核实。<br>
+    ✦ 图片来自 Unsplash（Unsplash License），部分为同主题示意图 ✦
+  </footer>
+
+</div>
+</div>
+
+<button id="backTop" class="back-top" title="返回顶部" aria-label="返回顶部">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  <span>TOP</span>
+</button>
+
+<script>
+
+(function () {
+  var body = document.body;
+  var IS_WORLD = true;
+
+  function showFallback(mapId, msg) {
+    var el = document.getElementById(mapId);
+    if (el) {
+      el.innerHTML = '<div class="map-fallback">' + msg + '</div>';
+    }
+  }
+
+  function initMaps() {
+    if (typeof L === 'undefined') {
+      showFallback('mapMain', '地图库未加载（leaflet/ 本地文件缺失或损坏），请确认 leaflet.min.js 存在。');
+      return;
+    }
+
+    function makeBaseLayer() {
+      if (IS_WORLD) {
+        // 高德全球瓦片（GCJ-02，国内可访问，海外低级别有数据）
+        // maxNativeZoom: 9 —— 高德海外瓦片只到 z9，放大时用 z9 底图拉伸，避免请求到空白瓦片
+        return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+          maxZoom: 18,
+          maxNativeZoom: 9,
+          subdomains: ['01', '02', '03', '04'],
+          attribution: '© 高德地图'
+        });
+      }
+      return L.tileLayer('https://webrd{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
+        maxZoom: 18,
+        subdomains: ['01', '02', '03', '04'],
+        attribution: '© 高德地图'
+      });
+    }
+
+    // WGS-84 → GCJ-02（火星坐标）纠偏；腾讯/高德瓦片均为 GCJ-02，统一纠偏
+    function transformLat(x, y) {
+      var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320.0 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+    function transformLng(x, y) {
+      var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return ret;
+    }
+    function toGCJ(lat, lng) {
+      var a = 6378245.0, ee = 0.00669342162296594323;
+      var dLat = transformLat(lng - 105.0, lat - 35.0);
+      var dLng = transformLng(lng - 105.0, lat - 35.0);
+      var radLat = lat / 180.0 * Math.PI;
+      var magic = Math.sin(radLat);
+      magic = 1 - ee * magic * magic;
+      var sqrtMagic = Math.sqrt(magic);
+      dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+      dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+      return [lat + dLat, lng + dLng];
+    }
+
+    function pin(num, prio) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="map-pin ' + prio + '">' + num + '</div>',
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+      });
+    }
+    function popHtml(html) {
+      return '<div class="map-pop">' + html + '</div>';
+    }
+    function tag(cls, label) { return '<span class="tag ' + cls + '">' + label + '</span>'; }
+
+    function renderSidebar(sidebarId, spots, mapRef, markerRefs) {
+      var el = document.getElementById(sidebarId);
+      if (!el) return;
+      var items = spots.map(function (s, i) {
+        var label = s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过');
+        var meta = [];
+        if (s.h) meta.push('海拔 ' + s.h);
+        if (s.fee) meta.push('门票 ' + s.fee);
+        meta.push(s.t);
+        var elItem = document.createElement('div');
+        elItem.className = 'side-item ' + s.prio;
+        elItem.setAttribute('data-idx', i);
+        elItem.innerHTML = '<span class="side-num">' + s.num + '</span>' +
+          '<div class="side-main">' +
+            '<div class="side-name">' + s.name + '<span class="badge ' + s.prio + '">' + label + '</span></div>' +
+            '<div class="side-meta">' + meta.join(' · ') + '</div>' +
+            '<div class="side-note">' + s.note + '</div>' +
+          '</div>';
+        return elItem;
+      });
+      el.innerHTML = '';
+      var title = document.createElement('div');
+      title.className = 'side-title';
+      title.textContent = '📍 节点清单（点击可在地图定位）';
+      el.appendChild(title);
+      items.forEach(function (item) {
+        el.appendChild(item);
+        item.addEventListener('click', function () {
+          var idx = parseInt(item.getAttribute('data-idx'), 10);
+          var mk = markerRefs[idx];
+          if (!mk) return;
+          setActive(idx);
+          mapRef.panTo(mk.getLatLng());
+          mk.openPopup();
+        });
+      });
+      function setActive(idx) {
+        items.forEach(function (x, i) { x.classList.toggle('active', i === idx); });
+      }
+      markerRefs.forEach(function (mk, i) {
+        mk.on('popupopen', function () {
+          setActive(i);
+          items[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      });
+    }
+
+    // ---- 全省地图 ----
+    var mapMain = L.map('mapMain', { scrollWheelZoom: true }).addLayer(makeBaseLayer());
+
+    // 路线：分段着色 [坐标数组(WGS-84), 颜色, 宽度, 名称]，渲染时统一纠偏
+    var routes = [
+  {
+    "c": "#c9362f",
+    "d": 3,
+    "n": "三国主线 · 迪拜→阿布扎比→沙迦",
+    "pts": [
+      [
+        25.1972,
+        55.2744
+      ],
+      [
+        25.1412,
+        55.1853
+      ],
+      [
+        25.1306,
+        55.1173
+      ],
+      [
+        24.4124,
+        54.4747
+      ],
+      [
+        24.534,
+        54.3983
+      ],
+      [
+        25.3316,
+        55.4103
+      ]
+    ]
+  },
+  {
+    "c": "#1e6fd9",
+    "d": 3,
+    "n": "沙漠支线 · 迪拜→拉巴卜红沙区",
+    "pts": [
+      [
+        25.1972,
+        55.2744
+      ],
+      [
+        25.05,
+        55.6
+      ]
+    ]
+  }
+];
+    routes.forEach(function (r) {
+      var pts = r.pts.map(function (p) { return toGCJ(p[0], p[1]); });
+      L.polyline(pts, { color: r.c, weight: r.d, opacity: 0.85 }).addTo(mapMain).bindPopup(popHtml('<h4>' + r.n + '</h4>'));
+    });
+
+    // 沿途景点
+    var spotsMain = [
+  {
+    "num": 1,
+    "prio": "must",
+    "lat": 25.1972,
+    "lng": 55.2744,
+    "name": "迪拜·哈利法塔",
+    "t": "D2 上午 · 2h",
+    "fee": "AED 169 起",
+    "note": "124/125 层观景台、迪拜喷泉"
+  },
+  {
+    "num": 2,
+    "prio": "must",
+    "lat": 25.1412,
+    "lng": 55.1853,
+    "name": "迪拜·帆船酒店",
+    "t": "D3 上午 · 1.5h",
+    "fee": "外观免费",
+    "note": "七星级帆船、朱美拉海滩"
+  },
+  {
+    "num": 3,
+    "prio": "must",
+    "lat": 25.1306,
+    "lng": 55.1173,
+    "name": "迪拜·棕榈岛亚特兰蒂斯",
+    "t": "D3 下午 · 4h",
+    "fee": "水世界 AED 320 起",
+    "note": "水世界、失落的空间水族馆"
+  },
+  {
+    "num": 4,
+    "prio": "nice",
+    "lat": 25.2696,
+    "lng": 55.302,
+    "name": "迪拜·黄金市场",
+    "t": "D4 上午 · 2.5h",
+    "fee": "免费",
+    "note": "黄金香料市场、阿布拉木船"
+  },
+  {
+    "num": 5,
+    "prio": "nice",
+    "lat": 25.06,
+    "lng": 55.243,
+    "name": "迪拜·奇迹花园",
+    "t": "D4 下午 · 2h",
+    "fee": "AED 105",
+    "note": "1.5 亿朵鲜花、巨型花海（冬季）"
+  },
+  {
+    "num": 6,
+    "prio": "must",
+    "lat": 25.05,
+    "lng": 55.6,
+    "name": "迪拜·沙漠冲沙",
+    "t": "D5 下午 · 6h",
+    "fee": "AED 120 起",
+    "note": "冲沙、骑骆驼、BBQ 晚餐"
+  },
+  {
+    "num": 7,
+    "prio": "must",
+    "lat": 24.4124,
+    "lng": 54.4747,
+    "name": "阿布扎比·大清真寺",
+    "t": "D6 傍晚 · 2h",
+    "fee": "免费（需预约）",
+    "note": "纯白大理石、金箔穹顶"
+  },
+  {
+    "num": 8,
+    "prio": "must",
+    "lat": 24.534,
+    "lng": 54.3983,
+    "name": "阿布扎比·卢浮宫",
+    "t": "D7 上午 · 3h",
+    "fee": "AED 70",
+    "note": "光之穹顶、跨文明收藏"
+  }
+];
+    var mainMarkers = [];
+    spotsMain.forEach(function (s) {
+      var p = toGCJ(s.lat, s.lng);
+      var mk = L.marker(p, { icon: pin(s.num, s.prio) }).addTo(mapMain)
+        .bindPopup(popHtml('<h4>' + s.name + '</h4>' +
+          '<p><strong>时间：</strong>' + s.t + '</p>' +
+          '<p><strong>门票：</strong>' + s.fee + '</p>' +
+          '<p>' + s.note + '</p>' + tag(s.prio, s.prio === 'must' ? '必去' : (s.prio === 'nice' ? '顺路' : '可跳过'))));
+      mainMarkers.push(mk);
+    });
+    renderSidebar('sidebarMain', spotsMain, mapMain, mainMarkers);
+
+    mapMain.fitBounds([[24.2, 54.2], [25.6, 56.0]]);
+
+    var legendHtml = "<div class=\"map-legend\"><b>图例</b><span class=\"sw\" style=\"background:#c9362f\"></span>三国主线（迪拜→阿布扎比→沙迦）<br><span class=\"sw\" style=\"background:#1e6fd9\"></span>沙漠冲沙支线（迪拜→拉巴卜红沙区）</div>";
+    var legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function () {
+      var div = L.DomUtil.create('div', '');
+      div.innerHTML = legendHtml;
+      return div;
+    };
+    legendControl.addTo(mapMain);
+  }
+
+  initMaps();
+
+  // ---- 左侧章节导航：4 个一级分组 + 二级章节 + 三级小节 + 阅读进度 ----
+  (function () {
+    var nav = document.getElementById('sideNav');
+    var bar = document.getElementById('snProgress');
+    if (!nav) return;
+
+    var subs = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub[data-sub]'));
+    subs.forEach(function (ul) {
+      var sp = ul.getAttribute('data-sub');
+      var sec = document.getElementById(sp);
+      if (!sec) return;
+      var hs = sec.querySelectorAll('h3');
+      Array.prototype.forEach.call(hs, function (h, i) {
+        if (!h.id) h.id = sp + '-h' + (i + 1);
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.textContent = h.textContent.replace(/\s+/g, ' ').trim();
+        a.title = a.textContent;
+        a.dataset.sub = h.id;
+        var li = document.createElement('li');
+        li.appendChild(a);
+        ul.appendChild(li);
+      });
+      if (!ul.children.length) ul.parentNode.removeChild(ul);
+    });
+
+    var groups = Array.prototype.slice.call(nav.querySelectorAll('.sn-group'));
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a[data-sp]'));
+    var secs = links.map(function (a) { return a.getAttribute('data-sp'); });
+    var subLinks = Array.prototype.slice.call(nav.querySelectorAll('ul.sn-sub a[data-sub]'));
+
+    function docTop(el) { return el.getBoundingClientRect().top + window.scrollY; }
+
+    function currentId() {
+      var y = window.scrollY + 130;
+      var cur = secs[0];
+      for (var i = 0; i < secs.length; i++) {
+        var el = document.getElementById(secs[i]);
+        if (!el) continue;
+        if (docTop(el) <= y) cur = secs[i];
+        else break;
+      }
+      return cur;
+    }
+
+    function currentSub(sp) {
+      var sec = document.getElementById(sp);
+      if (!sec) return null;
+      var hs = sec.querySelectorAll('h3');
+      var y = window.scrollY + 140;
+      var cur = null;
+      for (var i = 0; i < hs.length; i++) {
+        if (!hs[i].id) continue;
+        if (docTop(hs[i]) <= y) cur = hs[i].id;
+        else break;
+      }
+      return cur;
+    }
+
+    function groupFor(sp) {
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i].querySelector('a[data-sp="' + sp + '"]')) return groups[i];
+      }
+      return null;
+    }
+
+    function syncGroups(openId) {
+      groups.forEach(function (grp) {
+        var open = grp === openId;
+        grp.classList.toggle('open', open);
+        var t = grp.querySelector('.sn-g-title');
+        if (t) t.classList.toggle('active', open);
+      });
+    }
+
+    function update() {
+      var cur = currentId();
+      syncGroups(groupFor(cur));
+      links.forEach(function (a) {
+        a.classList.toggle('active', a.getAttribute('data-sp') === cur);
+      });
+      var activeSub = cur ? currentSub(cur) : null;
+      subLinks.forEach(function (a) {
+        a.classList.toggle('active', a.dataset.sub === activeSub);
+      });
+      if (bar) {
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p.toFixed(1) + '%';
+      }
+    }
+
+    Array.prototype.forEach.call(nav.querySelectorAll('.sn-g-title'), function (t) {
+      t.addEventListener('click', function () {
+        var grp = t.parentNode;
+        var wasOpen = grp.classList.contains('open');
+        groups.forEach(function (g2) { g2.classList.remove('open'); });
+        if (!wasOpen) grp.classList.add('open');
+        var cur = currentId();
+        var g = groupFor(cur);
+        groups.forEach(function (grp2) {
+          var tt = grp2.querySelector('.sn-g-title');
+          if (tt) tt.classList.toggle('active', grp2 === g);
+        });
+      });
+    });
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
+  // ---- 右下角一键返回顶部 ----
+  (function () {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    var SHOW_AFTER = 320;
+    function onScroll() {
+      btn.classList.toggle('show', window.scrollY > SHOW_AFTER);
+    }
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+})();
+
+</script>
+</body>
+</html>
